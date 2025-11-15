@@ -1,0 +1,326 @@
+1) प्रोडक्ट का सार (elevator pitch)
+
+एक समावेशी (inclusive) डेटिंग ऐप जहाँ यूज़र अपनी जेंडर/ऑरिएंटेशन (हेटरोज़ेक्सुअल, गे, लेस्बियन, बाइ, ट्रांस आदि) चुनकर, विस्तृत प्रोफ़ाइल (Nature, interests, likes, personality traits, preferences) भरते हैं। ऐप उनके इन्ट्रेस्ट/पर्सनालिटी के आधार पर सुझाव देता है, यूज़र swipe/like/reject कर सकता है, और जब दोनों ने एक-दूसरे को like किया तो match बनता है — बाद में प्लेटफ़ॉर्म पर chat/call/VC के ज़रिये संवाद कर सकते हैं। फ्री लॉयर में लिमिटेड प्रोफ़ाइल्स; प्रीमियम से अनलिमिटेड और अतिरिक्त फीचर्स।
+
+2) मुख्य फीचर्स (MVP → v1 → future)
+
+MVP (ज़रूरी):
+
+साइनअप: मोबाइल नंबर / ईमेल + OTP, बेसिक उम्र व लोकेशन व जेंडर/सैक्सुअल ऑरिएंटेशन फील्ड्स
+
+ऑनबोर्डिंग: विस्तृत प्रश्नावली (personality, interests, hobbies, dealbreakers, preferred age range, distance preference, dating intent: casual/relationship/marriage)
+
+प्रॉफाइल: फोटो अपलोड (वेरीफिकेशन ऑप्शन), छोटा bio, interests tags, personality badges
+
+Discovery feed: swipe/like/reject या card-style profile suggestions
+
+Double opt-in matching: सिर्फ तब ही चैट खुलती है जब दोनों ने like किया (Tinder जैसा)। 
+Tinder
+
+In-app chat (text), images blocked initially / limited, report/block features
+
+Basic safety tools: block/report, hide distance, app-lock (PIN/biometric). (Grindr/Bumble जैसी से प्रेरणा). 
+help.grindr.com
++1
+
+Monetization (MVP): freemium — free daily likes limit, paid unlimited, boosts.
+
+v1 (प्राथमिक अपग्रेड्स):
+
+Voice notes, video prompts, short video profile, read receipts opt-in
+
+Advanced filters (education, caste? optional for India), horoscope (if चाहें), human curation (like TrulyMadly's matchmaker option). 
+TrulyMadly
+
+Women-first / preference-based messaging option (optionally enable; Bumble-styled feature). 
+Bumble
+
+Safety center with tips, verified profiles, background checks (optional/paid)
+
+Analytics dashboard for retention/engagement
+
+future (scale & differentiation):
+
+Group/double-dates, friends invite, events, AI dating-coach, location-based safe-dates integration, health & consent education modules. (industry trend examples include Tinder experiments). 
+The Verge
+
+3) उपयोगकर्ता प्रवाह (User flows — संक्षेप)
+
+Landing → Signup (OTP) → Basic details
+
+Onboarding questionnaire (20–40 structured Qs + optional open fields) → Personality score/profile score computed
+
+Upload photos + optional verification (selfie OTP / ID)
+
+Discovery feed shows matched profiles (matching score + reason badges e.g., “Common interest: Trekking, Similar personality”)
+
+User likes/rejects → mutual like → match → in-app chat/call/VC
+
+Option to schedule meet (share date/time/location) or convert to phone.
+
+Safety: report/block flow + moderation queue.
+
+4) मैचिंग अल्गोरिथ्म — high level (suggested approach)
+
+हम multi-layered, explainable scoring रखेंगे:
+
+Hard constraints (filter layer) — age range, gender preference, distance, blocked users → फिल्टर से निकालें।
+
+Interest overlap score — Jaccard similarity between interest tag sets (0–1).
+
+Personality compatibility score — Onboarding के personality questionnaire से ဗेektors; cosine similarity या pre-defined compatibility matrix (e.g., MBTI-like mapping)।
+
+Behavioral score — recent activity, responsiveness, like/skip ratio (engagement weight)।
+
+Recency & freshness — नए यूज़र या हाल ही में active profiles को थोड़ा boost।
+
+Diversity & fairness boost — prevent filter bubble; exploration slots show 1–2 serendipitous profiles.
+
+Final weighted score = w1interest + w2personality + w3behavior + w4recency + w5*mutual-network (friends-of-friends optional).
+
+— Parameters (w1..w5) को A/B टेस्ट करके अनुकूल करें। शुरुआत में सरल weighted sum रखें, आगे ML/learning-to-rank लगाएँ।
+
+5) ऑनबोर्डिंग क्वेश्चन पोर्टफोलियो (important fields)
+
+Name / preferred name
+
+Age / DOB (age verification)
+
+Gender identity (male/female/non-binary/trans/other + custom)
+
+Sexual orientation (straight/gay/lesbian/bisexual/queer/other)
+
+Looking for: casual / relationship / marriage / friends
+
+Location (city + geo-permission)
+
+Age preference, distance preference (km)
+
+Interests (select tags, e.g., trekking, cooking, reading) — multi-select
+
+Personality (short forced-choice items: social/introvert, planner/spontaneous, romantic/practical)
+
+Dealbreakers / likes (kids, smoking, pets)
+
+Optional: education, profession, religion/caste optional, languages, horoscope (if you want)
+
+Optional verification: selfie/photo verification, Govt ID (only if you plan strict verification).
+
+6) डेटा मॉडल / DB स्कीमाः (simplified)
+
+Users
+
+id, name, dob, gender, orientation, email, phone, password_hash (or auth provider), city, geo (lat,lng), createdAt, lastActiveAt, verified (bool), verificationType
+
+profile: photos[], bio, interests[], personalityVector[], lookingFor, ageRange, distancePref, dealbreakers[]
+
+preferences: notifications, messageSettings, visibility (public/private)
+
+Interactions
+
+likes: {fromUserId, toUserId, createdAt, type: like/superlike}
+
+matches: {userA, userB, matchedAt, status: active/blocked}
+
+messages: {matchId, from, to, text, media, timestamp}
+
+reports: {reporter, reportedUser, reason, evidence, status}
+
+payments/subscriptions: {userId, plan, start, end, txId}
+
+7) API Endpoint skeleton (REST style)
+
+POST /auth/signup — OTP flow
+
+POST /auth/login
+
+GET /users/:id/profile — view public profile
+
+PUT /users/:id/profile — update profile
+
+POST /users/:id/photo — upload photo
+
+GET /discover — returns ranked list with reasons & score
+
+POST /interactions/like — like profile
+
+POST /interactions/unlike
+
+GET /matches — list matches
+
+POST /matches/:id/message — send message
+
+POST /reports — report user
+
+POST /payments/subscribe — subscription purchase
+
+(Use JWT tokens for auth; refresh tokens; rate limits)
+
+8) टेक्नोलॉजी स्टैक (recommendation)
+
+Frontend: React Native (one codebase for Android & iOS) OR separate React for web + React Native for mobile. Use TypeScript. UI: Tailwind/NativeBase.
+
+Backend: Node.js (Express/NestJS) या Python (FastAPI) — prefer Node for JS full-stack parity.
+
+Real-time chat: WebSockets (Socket.IO) or Firebase Realtime / PubSub. For scale, use a message broker (Redis pub/sub or Kafka).
+
+DB: PostgreSQL (relational for users, interactions) + Redis for caching & fast counters; ElasticSearch for search & ranking; S3-compatible storage for photos.
+
+Media processing: Lambda-like functions for resizing, face-detection for verification.
+
+ML: Python services (scikit-learn / LightGBM / TF) for ranking.
+
+Payments: Stripe / Razorpay (India) for subscriptions.
+
+Push notifications: FCM (Android), APNs (iOS).
+
+Hosting: Kubernetes on GCP/AWS/GCP Cloud Run. Use CD/CI pipelines.
+
+9) Safety, moderation, and compliance (critical)
+
+Age verification: DOB + OTP + optional ID verification for stricter flows. Block under-18.
+
+Reporting & moderation queue: triage reports (auto-block for severe reports, human review for edge cases).
+
+Content moderation: automatic NSFW detection for images (blur + manual review). Limit sending of photos initially until trust built.
+
+Privacy: GDPR-like options: data export, delete account, limited profile visibility. Store minimal PII, encrypt at rest, TLS in transit.
+
+LGBTQ+ safety: discreet mode (hide app icon), hide distance feature, tailored safety tips — crucial in sensitive locales (Grindr-like features). 
+Grindr
++1
+
+Consent education: short tips in chat or profile (safe sex, meeting tips).
+
+Legal: Terms & Privacy, age attestation, local law compliance (India-specific compliance e.g., IT Act provisions).
+
+10) Monetization model (recommended)
+
+Freemium: free daily likes (e.g., 20 swipes/day) → pay to unlock unlimited.
+
+Subscriptions: Monthly / Quarterly / Yearly (boosts, unlimited likes, read receipts, incognito mode).
+
+Microtransactions: Super-likes, Boosts (place your profile first for X minutes).
+
+Verification fee: optional paid ID verification (trusted badge).
+
+Ads: optional (careful with sensitive audience).
+
+Premium experiences: human matchmaker, event tickets.
+
+11) KPI & Analytics (track these)
+
+DAU / MAU, retention (D1, D7, D30)
+
+Match rate (likes → mutual / matches per 100 users)
+
+Messages per match, reply rate (engagement)
+
+Conversion rate to paid plans
+
+Average time to first message after match
+
+Reports per 1k users (safety metric)
+
+12) UX & UI Notes (high impact)
+
+Show “why suggested” badges (common interests, mutual friends, personality match) — increases trust.
+
+Keep onboarding quick but allow “complete later” — friction tradeoff.
+
+Respect privacy: optional to show age exact or range, option to hide last active.
+
+Use micro-interactions and clear CTAs: like, super-like, pass.
+
+Accessibility: readable fonts, color contrast, screen-reader support.
+
+13) Moderation policy (short)
+
+Zero tolerance for hate speech, sexual exploitation, underage content.
+
+Staged enforcement: warning → temp ban → permanent ban.
+
+Evidence-based bans: store chat snippets (with privacy policy) for moderation.
+
+Human review team + ML flagging (abuse, nudity, spam).
+
+14) MVP timeline (high-level)
+
+Week 0–2: Requirements, wireframes, design system, DB schema
+
+Week 3–6: Auth, onboarding questionnaire, profile create/edit, photo upload
+
+Week 7–10: Discovery feed, likes, matching logic, basic chat (text)
+
+Week 11–14: Moderation flows, reports, safety center, subscription integration
+
+Week 15–18: Beta test (closed), bug fixes, analytics instrumentation
+
+Launch (after beta feedback)
+
+15) Growth & launch strategy (India-focused)
+
+Soft-launch city-wise (metro like Bangalore / Mumbai) to tune network effects.
+
+Partnerships: college events, cafés, local events, creators.
+
+Influencer campaigns emphasizing inclusivity & safety.
+
+Referral bonuses (free premium days per referral).
+
+Content marketing: dating tips, safety guides, success stories.
+
+Paid UA: Instagram Reels/YouTube Shorts targeting 18–35 demos.
+
+Localize UI (Hindi + regional languages).
+
+16) Competitor analysis — सारांश (sources)
+
+Tinder — swipe-based double-opt-in matching; paid tiers and boosts; global model. 
+Tinder
++1
+
+Bumble — women-first messaging in hetero matches; premium features & travel/boost products. 
+Bumble
++1
+
+Grindr — LGBT-focused; privacy/discreet features and special safety guidance for users in high-risk regions. 
+help.grindr.com
++1
+
+TrulyMadly (India) — Indian matchmaking emphasis, trust/verification features, premium matchmaking and quizzes. भारतीय बाजार पर लोकलाइजेशन और ट्रस्ट-बिल्डिंग ज़रूरी है। 
+TrulyMadly
++1
+
+इंडियन डेटिंग रुझान: 2025 तक कई यूज़र्स रिलेशनशिप/कमिटमेंट के लिए ऐप्स इस्तेमाल कर रहे हैं — इसलिए commitment-focused features (like deeper questionnaires, matchmakers, marriage-intent filters) Indian market में सहायक होंगे। 
+Coupal
+
+17) Privacy & Legal quick checklist (India)
+
+Privacy policy (data retention, deletion, export)
+
+Age check (18+) & parental consent not applicable — disallow minors
+
+Local takedown & moderation compliance (IT rules)
+
+Payment KYC if required for payout features
+
+Secure storage (encryption), security audit.
+
+18) Metrics for phased ML adoption
+
+Phase 1: Rule-based weighted matching (A/B test weights).
+
+Phase 2: Supervised ranker: label positive matches/conversations and train model (LightGBM).
+
+Phase 3: Personalization with embeddings (Siamese networks for profile similarity).
+
+Phase 4: Anti-abuse models (spam, fake accounts, catfishing detection).
+
+19) Edge-cases & ethical notes
+
+Respect gender & orientation: let users set pronouns & custom gender. Avoid forcing binary choices.
+
+Data minimization: collect what’s necessary.
+
+Handle vulnerable groups carefully (LGBT users in sensitive areas) — discrete safety options.

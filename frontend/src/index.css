@@ -1,0 +1,255 @@
+@import "tailwindcss";
+
+/* ============================================
+   THEME CSS VARIABLES - Centralized Theme Management
+   ============================================ */
+:root {
+  /* Primary Colors - Baby Pink Shades */
+  --color-baby-pink: #FFE5E5;
+  --color-baby-pink-light: #FFF0F0;
+  --color-baby-pink-lighter: #FFF5F5;
+  
+  /* Accent Colors - Dark Pink/Red */
+  --color-dark-pink: #FF1744;
+  --color-dark-pink-hover: #D32F2F;
+  --color-light-pink-border: #FFB3BA;
+  
+  /* Neutral Colors */
+  --color-grey: #757575;
+  --color-grey-dark: #616161;
+  --color-grey-light: #E0E0E0;
+  --color-black: #212121;
+  --color-white: #FFFFFF;
+  
+  /* Semantic Colors */
+  --color-error: #FF1744;
+  --color-success: #4CAF50;
+  --color-warning: #FF9800;
+  --color-info: #2196F3;
+  
+  /* Border Radius */
+  --border-radius-sm: 0.75rem;   /* 12px */
+  --border-radius-md: 1rem;       /* 16px */
+  --border-radius-lg: 1.5rem;     /* 24px */
+  --border-radius-xl: 2rem;       /* 32px */
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Prevent horizontal scroll */
+html, body {
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar styling */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari, Opera */
+}
+
+/* Smooth scrolling */
+* {
+  scroll-behavior: smooth;
+}
+
+/* Heart-themed background for dating app */
+.heart-background {
+  background: linear-gradient(135deg, #FFE5E5 0%, #FFF0F0 30%, #FFE5E5 60%, #FFF5F5 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated gradient orbs */
+.heart-background::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: -10%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(255, 182, 193, 0.25) 0%, rgba(255, 182, 193, 0.1) 50%, transparent 70%);
+  border-radius: 50%;
+  animation: floatOrb 20s ease-in-out infinite;
+  z-index: -1;
+}
+
+.heart-background::after {
+  content: '';
+  position: absolute;
+  bottom: -15%;
+  right: -10%;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(255, 105, 180, 0.2) 0%, rgba(255, 105, 180, 0.05) 50%, transparent 70%);
+  border-radius: 50%;
+  animation: floatOrb 25s ease-in-out infinite reverse;
+  z-index: -1;
+}
+
+@keyframes floatOrb {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0.6;
+  }
+  33% {
+    transform: translate(40px, -40px) rotate(120deg);
+    opacity: 0.8;
+  }
+  66% {
+    transform: translate(-30px, 30px) rotate(240deg);
+    opacity: 0.4;
+  }
+}
+
+/* Decorative heart elements */
+.heart-decoration {
+  position: absolute;
+  opacity: 0.15;
+  animation: heartFloat 18s ease-in-out infinite;
+  z-index: -1;
+  pointer-events: none;
+  font-size: 2rem;
+}
+
+.heart-decoration:nth-child(1) {
+  top: 8%;
+  left: 8%;
+  animation-delay: 0s;
+  font-size: 2.5rem;
+}
+
+.heart-decoration:nth-child(2) {
+  top: 15%;
+  right: 12%;
+  animation-delay: 2s;
+  font-size: 2rem;
+}
+
+.heart-decoration:nth-child(3) {
+  bottom: 12%;
+  left: 15%;
+  animation-delay: 4s;
+  font-size: 2.2rem;
+}
+
+.heart-decoration:nth-child(4) {
+  bottom: 20%;
+  right: 8%;
+  animation-delay: 6s;
+  font-size: 1.8rem;
+}
+
+.heart-decoration:nth-child(5) {
+  top: 50%;
+  left: 5%;
+  animation-delay: 8s;
+  font-size: 1.5rem;
+}
+
+.heart-decoration:nth-child(6) {
+  top: 60%;
+  right: 5%;
+  animation-delay: 10s;
+  font-size: 1.8rem;
+}
+
+@keyframes heartFloat {
+  0%, 100% {
+    transform: translateY(0) scale(1) rotate(0deg);
+    opacity: 0.15;
+  }
+  25% {
+    transform: translateY(-25px) scale(1.1) rotate(5deg);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translateY(-15px) scale(1.05) rotate(-5deg);
+    opacity: 0.18;
+  }
+  75% {
+    transform: translateY(-30px) scale(1.15) rotate(3deg);
+    opacity: 0.22;
+  }
+}
+
+/* Additional decorative circles */
+.heart-background .decoration-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 192, 203, 0.1) 0%, transparent 70%);
+  z-index: -1;
+  pointer-events: none;
+  animation: pulseCircle 15s ease-in-out infinite;
+}
+
+.heart-background .decoration-circle:nth-of-type(1) {
+  width: 200px;
+  height: 200px;
+  top: 30%;
+  left: 50%;
+  animation-delay: 0s;
+}
+
+.heart-background .decoration-circle:nth-of-type(2) {
+  width: 150px;
+  height: 150px;
+  top: 70%;
+  left: 30%;
+  animation-delay: 5s;
+}
+
+@keyframes pulseCircle {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.2;
+  }
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  .heart-background::before {
+    width: 200px;
+    height: 200px;
+  }
+  
+  .heart-background::after {
+    width: 250px;
+    height: 250px;
+  }
+  
+  .heart-decoration {
+    font-size: 1.5rem;
+  }
+  
+  .heart-decoration:nth-child(1) {
+    font-size: 1.8rem;
+  }
+  
+  .heart-decoration:nth-child(2) {
+    font-size: 1.5rem;
+  }
+  
+  .heart-decoration:nth-child(3) {
+    font-size: 1.6rem;
+  }
+  
+  .heart-decoration:nth-child(4) {
+    font-size: 1.3rem;
+  }
+  
+  .heart-decoration:nth-child(5),
+  .heart-decoration:nth-child(6) {
+    font-size: 1.2rem;
+  }
+}
