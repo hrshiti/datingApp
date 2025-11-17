@@ -11,6 +11,7 @@ export default function CustomDatePicker({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [showYearPicker, setShowYearPicker] = useState(false);
   const datePickerRef = useRef(null);
 
   useEffect(() => {
@@ -24,6 +25,7 @@ export default function CustomDatePicker({
     const handleClickOutside = (event) => {
       if (datePickerRef.current && !datePickerRef.current.contains(event.target)) {
         setIsOpen(false);
+        setShowYearPicker(false);
       }
     };
 
@@ -32,6 +34,13 @@ export default function CustomDatePicker({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // Close year picker when date picker closes
+  useEffect(() => {
+    if (!isOpen) {
+      setShowYearPicker(false);
+    }
+  }, [isOpen]);
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Select date of birth';
@@ -89,6 +98,39 @@ export default function CustomDatePicker({
     });
   };
 
+  const navigateYear = (direction) => {
+    setCurrentMonth(prev => {
+      const newDate = new Date(prev);
+      if (direction === 'prev') {
+        newDate.setFullYear(prev.getFullYear() - 1);
+      } else {
+        newDate.setFullYear(prev.getFullYear() + 1);
+      }
+      return newDate;
+    });
+  };
+
+  const handleYearSelect = (year) => {
+    setCurrentMonth(prev => {
+      const newDate = new Date(prev);
+      newDate.setFullYear(year);
+      return newDate;
+    });
+    setShowYearPicker(false);
+  };
+
+  // Generate list of years (from 18 years ago to 100 years ago)
+  const getYearList = () => {
+    const today = new Date();
+    const maxYear = maxDate ? new Date(maxDate).getFullYear() : today.getFullYear() - 18;
+    const minYear = today.getFullYear() - 100;
+    const years = [];
+    for (let year = maxYear; year >= minYear; year--) {
+      years.push(year);
+    }
+    return years;
+  };
+
   const daysInMonth = getDaysInMonth(currentMonth);
   const firstDay = getFirstDayOfMonth(currentMonth);
   const days = [];
@@ -116,9 +158,9 @@ export default function CustomDatePicker({
           error
             ? 'border-red-500 focus:border-red-600'
             : isOpen
-            ? 'border-[#1877F2] bg-white'
-            : 'border-[#90CAF9] hover:border-[#1877F2]'
-        } bg-white text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-opacity-20`}
+            ? 'border-[#FF91A4] bg-white'
+            : 'border-[#FFB6C1] hover:border-[#FF91A4]'
+        } bg-white text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20`}
       >
         <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#757575] w-4 h-4 pointer-events-none" />
         <span className={value ? 'text-[#212121]' : 'text-[#757575]'}>
@@ -133,24 +175,113 @@ export default function CustomDatePicker({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-            className="absolute z-50 w-full mt-1 bg-white border-2 border-[#90CAF9] rounded-xl shadow-lg p-3"
+            className="absolute z-50 w-full mt-1 bg-white border-2 border-[#FFB6C1] rounded-xl shadow-lg p-3"
           >
-            {/* Month Navigation */}
+            {/* Month & Year Navigation */}
             <div className="flex items-center justify-between mb-3">
               <button
                 type="button"
                 onClick={() => navigateMonth('prev')}
                 className="p-1 hover:bg-[#FFF0F0] rounded transition-colors"
+                title="Previous month"
               >
                 <ChevronLeft className="w-5 h-5 text-[#757575]" />
               </button>
-              <span className="text-sm font-semibold text-[#212121]">
-                {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-              </span>
+              <div className="flex items-center gap-2">
+                {/* Month Selector */}
+                <button
+                  type="button"
+                  onClick={() => setShowYearPicker(false)}
+                  className="px-2 py-1 text-sm font-semibold text-[#212121] hover:bg-[#FFF0F0] rounded transition-colors"
+                >
+                  {monthNames[currentMonth.getMonth()]}
+                </button>
+                {/* Year Selector */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowYearPicker(!showYearPicker)}
+                    className="px-2 py-1 text-sm font-semibold text-[#FF91A4] hover:bg-[#FFE4E1] rounded transition-colors flex items-center gap-1"
+                  >
+                    {currentMonth.getFullYear()}
+                    <ChevronRight 
+                      className={`w-3 h-3 text-[#FF91A4] transition-transform ${showYearPicker ? 'rotate-90' : ''}`} 
+                    />
+                  </button>
+                  
+                  {/* Year Picker Dropdown */}
+                  <AnimatePresence>
+                    {showYearPicker && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute top-full left-0 mt-1 bg-white border-2 border-[#FFB6C1] rounded-xl shadow-lg p-2 z-50 max-h-48 overflow-y-auto"
+                        style={{ width: '120px' }}
+                      >
+                        <div className="flex items-center justify-between mb-2 px-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const currentYear = currentMonth.getFullYear();
+                              const newYear = Math.max(currentYear - 10, getYearList()[getYearList().length - 1]);
+                              handleYearSelect(newYear);
+                            }}
+                            className="p-1 hover:bg-[#FFF0F0] rounded transition-colors"
+                            title="Previous 10 years"
+                          >
+                            <ChevronLeft className="w-4 h-4 text-[#757575]" />
+                          </button>
+                          <span className="text-xs font-medium text-[#757575]">Year</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const currentYear = currentMonth.getFullYear();
+                              const maxYear = maxDate ? new Date(maxDate).getFullYear() : new Date().getFullYear() - 18;
+                              const newYear = Math.min(currentYear + 10, maxYear);
+                              handleYearSelect(newYear);
+                            }}
+                            className="p-1 hover:bg-[#FFF0F0] rounded transition-colors"
+                            title="Next 10 years"
+                          >
+                            <ChevronRight className="w-4 h-4 text-[#757575]" />
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-1 gap-1 max-h-40 overflow-y-auto">
+                          {getYearList().map((year) => {
+                            const isSelected = year === currentMonth.getFullYear();
+                            const maxYear = maxDate ? new Date(maxDate).getFullYear() : new Date().getFullYear() - 18;
+                            const isDisabled = year > maxYear;
+                            return (
+                              <button
+                                key={year}
+                                type="button"
+                                onClick={() => !isDisabled && handleYearSelect(year)}
+                                disabled={isDisabled}
+                                className={`px-2 py-1.5 text-xs rounded transition-all text-left ${
+                                  isDisabled
+                                    ? 'text-[#E0E0E0] cursor-not-allowed'
+                                    : isSelected
+                                    ? 'bg-[#FF91A4] text-white font-semibold'
+                                    : 'text-[#212121] hover:bg-[#FFF0F0]'
+                                }`}
+                              >
+                                {year}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
               <button
                 type="button"
                 onClick={() => navigateMonth('next')}
                 className="p-1 hover:bg-[#FFF0F0] rounded transition-colors"
+                title="Next month"
               >
                 <ChevronRight className="w-5 h-5 text-[#757575]" />
               </button>
@@ -183,7 +314,7 @@ export default function CustomDatePicker({
                       disabled
                         ? 'text-[#E0E0E0] cursor-not-allowed'
                         : selected
-                        ? 'bg-[#1877F2] text-white'
+                        ? 'bg-[#FF91A4] text-white'
                         : 'text-[#212121] hover:bg-[#FFF0F0]'
                     }`}
                   >

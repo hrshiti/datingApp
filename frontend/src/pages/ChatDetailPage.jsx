@@ -151,7 +151,7 @@ export default function ChatDetailPage() {
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="fixed top-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-b-2 border-[#90CAF9] shadow-sm"
+        className="fixed top-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-b-2 border-[#FFB6C1] shadow-sm"
       >
         <div className="max-w-2xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
@@ -160,13 +160,13 @@ export default function ChatDetailPage() {
                 onClick={() => navigate('/chats')}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-1.5 hover:bg-[#E7F3FF] rounded-lg transition-colors"
+                className="p-1.5 hover:bg-[#FFE4E1] rounded-lg transition-colors"
               >
                 <ArrowLeft className="w-5 h-5 text-[#212121]" />
               </motion.button>
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#1877F2] to-[#42A5F5] p-0.5">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FF91A4] to-[#FF91A4] p-0.5">
                     <img
                       src={profile.photos?.[0] || `https://ui-avatars.com/api/?name=${profile.name}&background=FF1744&color=fff&size=100`}
                       alt={profile.name}
@@ -188,14 +188,14 @@ export default function ChatDetailPage() {
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-2 hover:bg-[#E7F3FF] rounded-lg transition-colors"
+                className="p-2 hover:bg-[#FFE4E1] rounded-lg transition-colors"
               >
-                <Heart className="w-5 h-5 text-[#1877F2]" />
+                <Heart className="w-5 h-5 text-[#FF91A4]" />
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-2 hover:bg-[#E7F3FF] rounded-lg transition-colors"
+                className="p-2 hover:bg-[#FFE4E1] rounded-lg transition-colors"
               >
                 <MoreVertical className="w-5 h-5 text-[#212121]" />
               </motion.button>
@@ -248,8 +248,8 @@ export default function ChatDetailPage() {
                     <div
                       className={`px-4 py-2.5 rounded-2xl ${
                         message.isSent
-                          ? 'bg-gradient-to-r from-[#1877F2] to-[#42A5F5] text-white rounded-tr-sm'
-                          : 'bg-white text-[#212121] border border-[#90CAF9]/30 rounded-tl-sm'
+                          ? 'bg-gradient-to-r from-[#FF91A4] to-[#FF91A4] text-white rounded-tr-sm'
+                          : 'bg-white text-[#212121] border border-[#FFB6C1]/30 rounded-tl-sm'
                       } shadow-sm`}
                     >
                       <p className="text-sm leading-relaxed break-words">{message.text}</p>
@@ -274,7 +274,7 @@ export default function ChatDetailPage() {
       </div>
 
       {/* Input Area - Fixed at Bottom */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t-2 border-[#90CAF9]/30 shadow-lg pb-4 sm:pb-3 pt-2">
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t-2 border-[#FFB6C1]/30 shadow-lg pb-4 sm:pb-3 pt-2">
         <div className="max-w-2xl mx-auto px-4 py-3">
           <div className="flex items-center gap-2">
             <input
@@ -288,7 +288,7 @@ export default function ChatDetailPage() {
                 }
               }}
               placeholder="Type a message..."
-              className="flex-1 px-4 py-3 bg-[#E7F3FF] border-2 border-[#90CAF9]/30 rounded-xl text-[#212121] placeholder-[#757575] focus:outline-none focus:border-[#1877F2] transition-all"
+              className="flex-1 px-4 py-3 bg-[#FFE4E1] border-2 border-[#FFB6C1]/30 rounded-xl text-[#212121] placeholder-[#757575] focus:outline-none focus:border-[#FF91A4] transition-all"
             />
             <motion.button
               onClick={handleSendMessage}
@@ -297,7 +297,7 @@ export default function ChatDetailPage() {
               whileTap={{ scale: 0.95 }}
               className={`p-3 rounded-xl transition-all ${
                 newMessage.trim()
-                  ? 'bg-gradient-to-r from-[#1877F2] to-[#42A5F5] text-white shadow-md hover:shadow-lg'
+                  ? 'bg-gradient-to-r from-[#FF91A4] to-[#FF91A4] text-white shadow-md hover:shadow-lg'
                   : 'bg-[#E0E0E0] text-[#757575] cursor-not-allowed'
               }`}
             >

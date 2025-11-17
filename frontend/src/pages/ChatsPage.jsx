@@ -122,7 +122,7 @@ export default function ChatsPage() {
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="relative z-20 bg-white/95 backdrop-blur-md border-b-2 border-[#90CAF9] shadow-sm"
+        className="relative z-20 bg-white/95 backdrop-blur-md border-b-2 border-[#FFB6C1] shadow-sm"
       >
         <div className="max-w-2xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
@@ -131,12 +131,12 @@ export default function ChatsPage() {
                 onClick={() => navigate('/discover')}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-1.5 hover:bg-[#E7F3FF] rounded-lg transition-colors sm:hidden"
+                className="p-1.5 hover:bg-[#FFE4E1] rounded-lg transition-colors sm:hidden"
               >
                 <ArrowLeft className="w-5 h-5 text-[#212121]" />
               </motion.button>
               <div className="flex items-center gap-2">
-                <MessageCircle className="w-5 h-5 text-[#1877F2]" />
+                <MessageCircle className="w-5 h-5 text-[#FF91A4]" />
                 <h1 className="text-xl font-bold text-[#212121]">Chats</h1>
               </div>
             </div>
@@ -144,14 +144,14 @@ export default function ChatsPage() {
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-2 hover:bg-[#E7F3FF] rounded-lg transition-colors"
+                className="p-2 hover:bg-[#FFE4E1] rounded-lg transition-colors"
               >
                 <Search className="w-5 h-5 text-[#212121]" />
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-2 hover:bg-[#E7F3FF] rounded-lg transition-colors"
+                className="p-2 hover:bg-[#FFE4E1] rounded-lg transition-colors"
               >
                 <MoreVertical className="w-5 h-5 text-[#212121]" />
               </motion.button>
@@ -185,7 +185,7 @@ export default function ChatsPage() {
                     onClick={() => handleChatClick({ userId: profile.id, name: profile.name })}
                   >
                     <div className="relative">
-                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#1877F2] to-[#42A5F5] p-1">
+                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#FF91A4] to-[#FF91A4] p-1">
                         <div className="w-full h-full rounded-full bg-white p-0.5">
                           <img
                             src={profile.photos?.[0] || `https://ui-avatars.com/api/?name=${profile.name}&background=FF1744&color=fff&size=100`}
@@ -223,12 +223,12 @@ export default function ChatsPage() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.1 + index * 0.05 }}
                   onClick={() => handleChatClick(chat)}
-                  className="bg-white rounded-xl p-4 shadow-sm border border-[#90CAF9]/20 hover:shadow-md transition-all cursor-pointer"
+                  className="bg-white rounded-xl p-4 shadow-sm border border-[#FFB6C1]/20 hover:shadow-md transition-all cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
                     {/* Avatar */}
                     <div className="relative flex-shrink-0">
-                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#E7F3FF] to-[#F0F8FF] p-0.5">
+                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] p-0.5">
                         <img
                           src={chat.avatar}
                           alt={chat.name}
@@ -258,7 +258,7 @@ export default function ChatsPage() {
                           {chat.lastMessage}
                         </p>
                         {chat.unread > 0 && (
-                          <span className="ml-2 px-2 py-0.5 bg-[#1877F2] text-white text-xs font-bold rounded-full flex-shrink-0">
+                          <span className="ml-2 px-2 py-0.5 bg-[#FF91A4] text-white text-xs font-bold rounded-full flex-shrink-0">
                             {chat.unread}
                           </span>
                         )}
@@ -276,8 +276,8 @@ export default function ChatsPage() {
                 animate={{ opacity: 1 }}
                 className="text-center py-12"
               >
-                <div className="w-20 h-20 bg-gradient-to-br from-[#E7F3FF] to-[#F0F8FF] rounded-full flex items-center justify-center mx-auto mb-4">
-                  <MessageCircle className="w-10 h-10 text-[#1877F2]" />
+                <div className="w-20 h-20 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] rounded-full flex items-center justify-center mx-auto mb-4">
+                  <MessageCircle className="w-10 h-10 text-[#FF91A4]" />
                 </div>
                 <h3 className="text-lg font-bold text-[#212121] mb-2">No messages yet</h3>
                 <p className="text-sm text-[#757575]">
@@ -290,7 +290,7 @@ export default function ChatsPage() {
       </div>
 
       {/* Bottom Navigation Bar - Mobile Only */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t-2 border-[#90CAF9]/30 shadow-lg">
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t-2 border-[#FFB6C1]/30 shadow-lg">
         <div className="flex items-center justify-around px-2 py-2">
           {/* Profile */}
           <motion.button
@@ -298,8 +298,8 @@ export default function ChatsPage() {
             whileTap={{ scale: 0.9 }}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors"
           >
-            <UserCircle className={`w-5 h-5 ${location.pathname === '/profile' ? 'text-[#1877F2]' : 'text-[#212121]'}`} />
-            <span className={`text-xs font-medium ${location.pathname === '/profile' ? 'text-[#1877F2]' : 'text-[#212121]'}`}>
+            <UserCircle className={`w-5 h-5 ${location.pathname === '/profile' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            <span className={`text-xs font-medium ${location.pathname === '/profile' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
               Profile
             </span>
           </motion.button>
@@ -310,8 +310,8 @@ export default function ChatsPage() {
             whileTap={{ scale: 0.9 }}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors"
           >
-            <Sparkles className={`w-5 h-5 ${location.pathname === '/discover' ? 'text-[#1877F2]' : 'text-[#212121]'}`} />
-            <span className={`text-xs font-medium ${location.pathname === '/discover' ? 'text-[#1877F2]' : 'text-[#212121]'}`}>
+            <Sparkles className={`w-5 h-5 ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            <span className={`text-xs font-medium ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
               Discover
             </span>
           </motion.button>
@@ -322,8 +322,8 @@ export default function ChatsPage() {
             whileTap={{ scale: 0.9 }}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors"
           >
-            <Users className={`w-5 h-5 ${location.pathname === '/discover' ? 'text-[#1877F2]' : 'text-[#212121]'}`} />
-            <span className={`text-xs font-medium ${location.pathname === '/discover' ? 'text-[#1877F2]' : 'text-[#212121]'}`}>
+            <Users className={`w-5 h-5 ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            <span className={`text-xs font-medium ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
               People
             </span>
           </motion.button>
@@ -346,13 +346,13 @@ export default function ChatsPage() {
             whileTap={{ scale: 0.9 }}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative"
           >
-            <MessageCircle className={`w-5 h-5 ${location.pathname === '/chats' ? 'text-[#1877F2]' : 'text-[#212121]'}`} />
+            <MessageCircle className={`w-5 h-5 ${location.pathname === '/chats' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
             {matches.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#1877F2] text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#FF91A4] text-white text-[10px] rounded-full flex items-center justify-center font-bold">
                 {matches.length}
               </span>
             )}
-            <span className={`text-xs font-medium ${location.pathname === '/chats' ? 'text-[#1877F2]' : 'text-[#212121]'}`}>
+            <span className={`text-xs font-medium ${location.pathname === '/chats' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
               Chats
             </span>
           </motion.button>

@@ -335,12 +335,12 @@ export default function DiscoveryFeedPage() {
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="relative z-20 bg-white/95 backdrop-blur-md border-b-2 border-[#90CAF9] shadow-sm"
+        className="relative z-20 bg-white/95 backdrop-blur-md border-b-2 border-[#FFB6C1] shadow-sm"
       >
         <div className="max-w-md mx-auto px-4 py-2">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#1877F2] to-[#42A5F5] flex items-center justify-center shadow-lg">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#FF91A4] to-[#FF91A4] flex items-center justify-center shadow-lg">
                 <Sparkles className="w-4 h-4 text-white" />
               </div>
               <div>
@@ -356,11 +356,11 @@ export default function DiscoveryFeedPage() {
                   onClick={() => setShowMatches(!showMatches)}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="relative p-2 bg-[#E7F3FF] rounded-lg hover:bg-[#1877F2] hover:text-white transition-all"
+                  className="relative p-2 bg-[#FFE4E1] rounded-lg hover:bg-[#FF91A4] hover:text-white transition-all"
                 >
-                  <MessageCircle className="w-4 h-4 text-[#1877F2]" />
+                  <MessageCircle className="w-4 h-4 text-[#FF91A4]" />
                   {matches.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#1877F2] text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#FF91A4] text-white text-[10px] rounded-full flex items-center justify-center font-bold">
                       {matches.length}
                     </span>
                   )}
@@ -372,9 +372,9 @@ export default function DiscoveryFeedPage() {
                 onClick={() => navigate('/filters')}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="p-2 bg-[#E7F3FF] rounded-lg hover:bg-[#1877F2] hover:text-white transition-all"
+                className="p-2 bg-[#FFE4E1] rounded-lg hover:bg-[#FF91A4] hover:text-white transition-all"
               >
-                <Filter className="w-4 h-4 text-[#1877F2]" />
+                <Filter className="w-4 h-4 text-[#FF91A4]" />
               </motion.button>
             </div>
           </div>
@@ -393,8 +393,8 @@ export default function DiscoveryFeedPage() {
                   isPremium
                     ? 'bg-gradient-to-r from-[#FFD700] to-[#FFA500]'
                     : remainingLikes <= 5
-                      ? 'bg-[#1877F2]'
-                      : 'bg-gradient-to-r from-[#1877F2] to-[#42A5F5]'
+                      ? 'bg-[#FF91A4]'
+                      : 'bg-gradient-to-r from-[#FF91A4] to-[#FF91A4]'
                 }`}
               />
             </div>
@@ -422,8 +422,8 @@ export default function DiscoveryFeedPage() {
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white rounded-3xl shadow-2xl p-8 sm:p-12 text-center max-w-md mx-auto"
           >
-            <div className="w-24 h-24 bg-gradient-to-br from-[#E7F3FF] to-[#F0F8FF] rounded-full flex items-center justify-center mx-auto mb-6">
-              <User className="w-12 h-12 text-[#1877F2]" />
+            <div className="w-24 h-24 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] rounded-full flex items-center justify-center mx-auto mb-6">
+              <User className="w-12 h-12 text-[#FF91A4]" />
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-[#212121] mb-3">No more profiles</h2>
             <p className="text-[#757575] mb-8">
@@ -449,14 +449,14 @@ export default function DiscoveryFeedPage() {
                     window.location.reload();
                   }
                 }}
-                className="flex-1 px-6 py-3 bg-[#1877F2] text-white rounded-xl font-semibold hover:bg-[#1565C0] transition-all shadow-lg"
+                className="flex-1 px-6 py-3 bg-[#FF91A4] text-white rounded-xl font-semibold hover:bg-[#FF69B4] transition-all shadow-lg"
               >
                 Reset & See Again
               </button>
               {matches.length > 0 && (
                 <button
                   onClick={() => setShowMatches(true)}
-                  className="flex-1 px-6 py-3 bg-[#E7F3FF] text-[#1877F2] rounded-xl font-semibold hover:bg-[#1877F2] hover:text-white transition-all border-2 border-[#1877F2]"
+                  className="flex-1 px-6 py-3 bg-[#FFE4E1] text-[#FF91A4] rounded-xl font-semibold hover:bg-[#FF91A4] hover:text-white transition-all border-2 border-[#FF91A4]"
                 >
                   View Matches ({matches.length})
                 </button>
@@ -531,7 +531,7 @@ export default function DiscoveryFeedPage() {
                 </button>
                 <button
                   onClick={handleUpgradePremium}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-[#1877F2] to-[#42A5F5] text-white rounded-xl font-semibold hover:shadow-lg transition-all"
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-[#FF91A4] to-[#FF91A4] text-white rounded-xl font-semibold hover:shadow-lg transition-all"
                 >
                   Upgrade Now
                 </button>
@@ -542,7 +542,7 @@ export default function DiscoveryFeedPage() {
       </AnimatePresence>
 
       {/* Bottom Navigation Bar - Mobile Only */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t-2 border-[#90CAF9]/30 shadow-lg">
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t-2 border-[#FFB6C1]/30 shadow-lg">
         <div className="flex items-center justify-around px-2 py-2">
           {/* Profile */}
           <motion.button
@@ -550,8 +550,8 @@ export default function DiscoveryFeedPage() {
             whileTap={{ scale: 0.9 }}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors"
           >
-            <UserCircle className={`w-5 h-5 ${location.pathname === '/profile' ? 'text-[#1877F2]' : 'text-[#212121]'}`} />
-            <span className={`text-xs font-medium ${location.pathname === '/profile' ? 'text-[#1877F2]' : 'text-[#212121]'}`}>
+            <UserCircle className={`w-5 h-5 ${location.pathname === '/profile' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            <span className={`text-xs font-medium ${location.pathname === '/profile' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
               Profile
             </span>
           </motion.button>
@@ -562,8 +562,8 @@ export default function DiscoveryFeedPage() {
             whileTap={{ scale: 0.9 }}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors"
           >
-            <Sparkles className={`w-5 h-5 ${location.pathname === '/discover' ? 'text-[#1877F2]' : 'text-[#212121]'}`} />
-            <span className={`text-xs font-medium ${location.pathname === '/discover' ? 'text-[#1877F2]' : 'text-[#212121]'}`}>
+            <Sparkles className={`w-5 h-5 ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            <span className={`text-xs font-medium ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
               Discover
             </span>
           </motion.button>
@@ -578,8 +578,8 @@ export default function DiscoveryFeedPage() {
             whileTap={{ scale: 0.9 }}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative"
           >
-            <Users className={`w-5 h-5 ${location.pathname === '/discover' ? 'text-[#1877F2]' : 'text-[#212121]'}`} />
-            <span className={`text-xs font-medium ${location.pathname === '/discover' ? 'text-[#1877F2]' : 'text-[#212121]'}`}>
+            <Users className={`w-5 h-5 ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            <span className={`text-xs font-medium ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
               People
             </span>
           </motion.button>
@@ -596,7 +596,7 @@ export default function DiscoveryFeedPage() {
           >
             <Heart className="w-5 h-5 text-[#212121]" />
             {likes.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#1877F2] text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#FF91A4] text-white text-[10px] rounded-full flex items-center justify-center font-bold">
                 {likes.length}
               </span>
             )}
@@ -611,13 +611,13 @@ export default function DiscoveryFeedPage() {
             whileTap={{ scale: 0.9 }}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative"
           >
-            <MessageCircle className={`w-5 h-5 ${location.pathname === '/chats' ? 'text-[#1877F2]' : 'text-[#212121]'}`} />
+            <MessageCircle className={`w-5 h-5 ${location.pathname === '/chats' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
             {matches.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#1877F2] text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#FF91A4] text-white text-[10px] rounded-full flex items-center justify-center font-bold">
                 {matches.length}
               </span>
             )}
-            <span className={`text-xs font-medium ${location.pathname === '/chats' ? 'text-[#1877F2]' : 'text-[#212121]'}`}>
+            <span className={`text-xs font-medium ${location.pathname === '/chats' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
               Chats
             </span>
           </motion.button>

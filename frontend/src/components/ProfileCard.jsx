@@ -124,7 +124,7 @@ export default function ProfileCard({
         {/* Scrollable Container - Image scrolls first, then content */}
         <div className="flex-1 overflow-y-auto scrollbar-hide pb-20 sm:pb-0 -mt-2">
           {/* Full Width Photo Carousel - Scrollable */}
-          <div className="relative w-full h-[70vh] bg-gradient-to-br from-[#E7F3FF] via-[#F0F8FF] to-[#E7F3FF]">
+          <div className="relative w-full h-[70vh] bg-gradient-to-br from-[#FFE4E1] via-[#FFF0F5] to-[#FFE4E1]">
           {profile.photos && profile.photos.length > 0 ? (
             <>
               <AnimatePresence mode="wait">
@@ -195,7 +195,7 @@ export default function ProfileCard({
                 <motion.div
                   initial={{ opacity: 0, scale: 0 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="absolute top-4 right-4 bg-gradient-to-br from-[#1877F2] to-[#42A5F5] text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg z-10"
+                  className="absolute top-4 right-4 bg-gradient-to-br from-[#FF91A4] to-[#FF91A4] text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg z-10"
                 >
                   {matchScore}% Match
                 </motion.div>
@@ -212,7 +212,7 @@ export default function ProfileCard({
                       transition={{ delay: index * 0.1 }}
                       className="bg-white/95 backdrop-blur-sm text-[#212121] px-3 py-1.5 rounded-full text-xs font-semibold shadow-md flex items-center gap-1"
                     >
-                      <Sparkles className="w-3 h-3 text-[#1877F2]" />
+                      <Sparkles className="w-3 h-3 text-[#FF91A4]" />
                       <span>{reason.text}</span>
                     </motion.div>
                   ))}
@@ -234,7 +234,7 @@ export default function ProfileCard({
             </>
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <div className="text-8xl text-[#1877F2] font-bold">
+              <div className="text-8xl text-[#FF91A4] font-bold">
                 {profile.name.charAt(0).toUpperCase()}
               </div>
             </div>
@@ -259,32 +259,32 @@ export default function ProfileCard({
               <h3 className="text-sm font-semibold text-[#212121] mb-3">About me</h3>
               <div className="flex flex-wrap gap-2">
                 {profile.optional?.education && (
-                  <span className="px-3 py-1.5 bg-[#E7F3FF] text-[#212121] rounded-full text-xs font-medium">
+                  <span className="px-3 py-1.5 bg-[#FFE4E1] text-[#212121] rounded-full text-xs font-medium">
                     {formatEducation(profile.optional.education)}
                   </span>
                 )}
                 {profile.dealbreakers?.drinking && (
-                  <span className="px-3 py-1.5 bg-[#E7F3FF] text-[#212121] rounded-full text-xs font-medium">
+                  <span className="px-3 py-1.5 bg-[#FFE4E1] text-[#212121] rounded-full text-xs font-medium">
                     {formatDealbreaker('drinking', profile.dealbreakers.drinking)}
                   </span>
                 )}
                 {profile.dealbreakers?.smoking && (
-                  <span className="px-3 py-1.5 bg-[#E7F3FF] text-[#212121] rounded-full text-xs font-medium">
+                  <span className="px-3 py-1.5 bg-[#FFE4E1] text-[#212121] rounded-full text-xs font-medium">
                     {formatDealbreaker('smoking', profile.dealbreakers.smoking)}
                   </span>
                 )}
                 {profile.dealbreakers?.kids && (
-                  <span className="px-3 py-1.5 bg-[#E7F3FF] text-[#212121] rounded-full text-xs font-medium">
+                  <span className="px-3 py-1.5 bg-[#FFE4E1] text-[#212121] rounded-full text-xs font-medium">
                     {formatDealbreaker('kids', profile.dealbreakers.kids)}
                   </span>
                 )}
                 {profile.dealbreakers?.pets && (
-                  <span className="px-3 py-1.5 bg-[#E7F3FF] text-[#212121] rounded-full text-xs font-medium">
+                  <span className="px-3 py-1.5 bg-[#FFE4E1] text-[#212121] rounded-full text-xs font-medium">
                     {formatDealbreaker('pets', profile.dealbreakers.pets)}
                   </span>
                 )}
                 {profile.personality?.social && (
-                  <span className="px-3 py-1.5 bg-[#E7F3FF] text-[#212121] rounded-full text-xs font-medium capitalize">
+                  <span className="px-3 py-1.5 bg-[#FFE4E1] text-[#212121] rounded-full text-xs font-medium capitalize">
                     {profile.personality.social.replace('-', ' ')}
                   </span>
                 )}
@@ -300,7 +300,7 @@ export default function ProfileCard({
                     <motion.span
                       key={interest}
                       whileHover={{ scale: 1.05 }}
-                      className="px-3 py-1.5 bg-gradient-to-r from-[#E7F3FF] to-[#F0F8FF] text-[#1877F2] rounded-full text-xs font-semibold border border-[#90CAF9]/30"
+                      className="px-3 py-1.5 bg-gradient-to-r from-[#FFE4E1] to-[#FFF0F5] text-[#FF91A4] rounded-full text-xs font-semibold border border-[#FFB6C1]/30"
                     >
                       {interest}
                     </motion.span>
@@ -316,7 +316,7 @@ export default function ProfileCard({
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(profile.personality).map(([key, value]) => (
                     value && (
-                      <span key={key} className="px-3 py-1.5 bg-[#F0F8FF] text-[#212121] rounded-full text-xs font-medium capitalize border border-[#90CAF9]/20">
+                      <span key={key} className="px-3 py-1.5 bg-[#FFF0F5] text-[#212121] rounded-full text-xs font-medium capitalize border border-[#FFB6C1]/20">
                         {value.replace('-', ' ')}
                       </span>
                     )
@@ -339,7 +339,7 @@ export default function ProfileCard({
                     <h3 className="text-sm font-semibold text-[#212121] mb-2">Languages</h3>
                     <div className="flex flex-wrap gap-2">
                       {profile.optional.languages.map((lang) => (
-                        <span key={lang} className="px-3 py-1.5 bg-[#E7F3FF] text-[#212121] rounded-full text-xs font-medium">
+                        <span key={lang} className="px-3 py-1.5 bg-[#FFE4E1] text-[#212121] rounded-full text-xs font-medium">
                           {lang}
                         </span>
                       ))}
@@ -351,10 +351,10 @@ export default function ProfileCard({
 
             {/* Location Details */}
             {profile.location?.city && (
-              <div className="mb-5 pb-4 border-b border-[#90CAF9]/20">
+              <div className="mb-5 pb-4 border-b border-[#FFB6C1]/20">
                 <h3 className="text-sm font-semibold text-[#212121] mb-2">My location</h3>
                 <div className="flex items-center text-sm text-[#757575]">
-                  <MapPin className="w-4 h-4 mr-1 text-[#1877F2]" />
+                  <MapPin className="w-4 h-4 mr-1 text-[#FF91A4]" />
                   <span>{profile.location.city}</span>
                   {distance !== null && (
                     <span className="ml-2">• {distance} km away</span>
@@ -365,7 +365,7 @@ export default function ProfileCard({
             </div>
 
             {/* Action Buttons - Scrollable (Inside Content) */}
-            <div className="flex items-center justify-center gap-6 p-6 bg-white border-t border-[#90CAF9]/20 pb-8">
+            <div className="flex items-center justify-center gap-6 p-6 bg-white border-t border-[#FFB6C1]/20 pb-8">
               <motion.button
                 onClick={onPass}
                 whileHover={{ scale: 1.1, rotate: -5 }}
@@ -388,7 +388,7 @@ export default function ProfileCard({
                 onClick={onLike}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="w-16 h-16 rounded-full bg-gradient-to-br from-[#1877F2] to-[#42A5F5] flex items-center justify-center shadow-lg hover:shadow-xl transition-all"
+                className="w-16 h-16 rounded-full bg-gradient-to-br from-[#FF91A4] to-[#FF91A4] flex items-center justify-center shadow-lg hover:shadow-xl transition-all"
               >
                 <Heart className="w-7 h-7 text-white fill-white" />
               </motion.button>

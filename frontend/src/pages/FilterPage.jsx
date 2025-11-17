@@ -249,7 +249,7 @@ export default function FilterPage() {
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="relative z-20 bg-white/95 backdrop-blur-md border-b-2 border-[#90CAF9] shadow-sm"
+        className="relative z-20 bg-white/95 backdrop-blur-md border-b-2 border-[#FFB6C1] shadow-sm"
       >
         <div className="max-w-2xl mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
@@ -258,12 +258,12 @@ export default function FilterPage() {
                 onClick={() => navigate('/discover')}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-1.5 hover:bg-[#E7F3FF] rounded-lg transition-colors"
+                className="p-1.5 hover:bg-[#FFE4E1] rounded-lg transition-colors"
               >
                 <ArrowLeft className="w-5 h-5 text-[#212121]" />
               </motion.button>
               <div className="flex items-center gap-2">
-                <Sliders className="w-4 h-4 text-[#1877F2]" />
+                <Sliders className="w-4 h-4 text-[#FF91A4]" />
                 <h1 className="text-lg font-bold text-[#212121]">Filters</h1>
               </div>
             </div>
@@ -271,7 +271,7 @@ export default function FilterPage() {
               onClick={handleReset}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-3 py-1.5 text-xs font-semibold text-[#757575] hover:text-[#1877F2] transition-colors"
+              className="px-3 py-1.5 text-xs font-semibold text-[#757575] hover:text-[#FF91A4] transition-colors"
             >
               Reset
             </motion.button>
@@ -286,7 +286,7 @@ export default function FilterPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-4 bg-white rounded-xl p-4 shadow-sm border border-[#90CAF9]/20"
+            className="mb-4 bg-white rounded-xl p-4 shadow-sm border border-[#FFB6C1]/20"
           >
             <h2 className="text-base font-bold text-[#212121] mb-3">Age Range</h2>
             <div className="flex items-center gap-3">
@@ -298,7 +298,7 @@ export default function FilterPage() {
                   value={filters.ageRange.min}
                   onChange={(e) => handleAgeRangeChange('min', e.target.value)}
                   onBlur={() => handleAgeRangeBlur('min')}
-                  className="w-full px-3 py-2 bg-[#E7F3FF] border-2 border-[#90CAF9]/30 rounded-lg text-[#212121] font-semibold text-sm focus:outline-none focus:border-[#1877F2] transition-all"
+                  className="w-full px-3 py-2 bg-[#FFE4E1] border-2 border-[#FFB6C1]/30 rounded-lg text-[#212121] font-semibold text-sm focus:outline-none focus:border-[#FF91A4] transition-all"
                 />
               </div>
               <div className="pt-6 text-[#757575] font-bold text-lg">-</div>
@@ -311,7 +311,7 @@ export default function FilterPage() {
                   onChange={(e) => handleAgeRangeChange('max', e.target.value)}
                   onBlur={() => handleAgeRangeBlur('max')}
                   placeholder="Any"
-                  className="w-full px-3 py-2 bg-[#E7F3FF] border-2 border-[#90CAF9]/30 rounded-lg text-[#212121] font-semibold text-sm focus:outline-none focus:border-[#1877F2] transition-all"
+                  className="w-full px-3 py-2 bg-[#FFE4E1] border-2 border-[#FFB6C1]/30 rounded-lg text-[#212121] font-semibold text-sm focus:outline-none focus:border-[#FF91A4] transition-all"
                 />
               </div>
             </div>
@@ -322,11 +322,11 @@ export default function FilterPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="mb-4 bg-white rounded-xl p-4 shadow-sm border border-[#90CAF9]/20"
+            className="mb-4 bg-white rounded-xl p-4 shadow-sm border border-[#FFB6C1]/20"
           >
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-base font-bold text-[#212121]">Distance</h2>
-              <div className="px-3 py-1 bg-gradient-to-r from-[#E7F3FF] to-[#F0F8FF] rounded-lg text-sm font-bold text-[#1877F2]">
+              <div className="px-3 py-1 bg-gradient-to-r from-[#FFE4E1] to-[#FFF0F5] rounded-lg text-sm font-bold text-[#FF91A4]">
                 {filters.distancePref} km
               </div>
             </div>
@@ -337,7 +337,7 @@ export default function FilterPage() {
               step="5"
               value={filters.distancePref}
               onChange={(e) => handleDistanceChange(e.target.value)}
-              className="w-full h-2 bg-[#E7F3FF] rounded-lg appearance-none cursor-pointer accent-[#1877F2]"
+              className="w-full h-2 bg-[#FFE4E1] rounded-lg appearance-none cursor-pointer accent-[#FF91A4]"
             />
           </motion.div>
 
@@ -346,7 +346,7 @@ export default function FilterPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="mb-4 bg-white rounded-xl p-4 shadow-sm border border-[#90CAF9]/20"
+            className="mb-4 bg-white rounded-xl p-4 shadow-sm border border-[#FFB6C1]/20"
           >
             <h2 className="text-base font-bold text-[#212121] mb-3">Gender</h2>
             <CustomDropdown
@@ -362,7 +362,7 @@ export default function FilterPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="mb-4 bg-white rounded-xl p-4 shadow-sm border border-[#90CAF9]/20"
+            className="mb-4 bg-white rounded-xl p-4 shadow-sm border border-[#FFB6C1]/20"
           >
             <h2 className="text-base font-bold text-[#212121] mb-3">Looking For</h2>
             <div className="flex flex-wrap gap-2">
@@ -374,8 +374,8 @@ export default function FilterPage() {
                   whileTap={{ scale: 0.95 }}
                   className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-all ${
                     filters.lookingFor.includes(option.value)
-                      ? 'bg-gradient-to-r from-[#1877F2] to-[#42A5F5] text-white shadow-sm'
-                      : 'bg-[#E7F3FF] text-[#212121] border border-[#90CAF9]/30 hover:border-[#1877F2]'
+                      ? 'bg-gradient-to-r from-[#FF91A4] to-[#FF91A4] text-white shadow-sm'
+                      : 'bg-[#FFE4E1] text-[#212121] border border-[#FFB6C1]/30 hover:border-[#FF91A4]'
                   }`}
                 >
                   {option.label}
@@ -389,12 +389,12 @@ export default function FilterPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="mb-4 bg-white rounded-xl p-4 shadow-sm border border-[#90CAF9]/20"
+            className="mb-4 bg-white rounded-xl p-4 shadow-sm border border-[#FFB6C1]/20"
           >
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-base font-bold text-[#212121]">Interests</h2>
               {filters.interests.length > 0 && (
-                <span className="px-2 py-0.5 bg-[#1877F2] text-white text-xs font-bold rounded-full">
+                <span className="px-2 py-0.5 bg-[#FF91A4] text-white text-xs font-bold rounded-full">
                   {filters.interests.length}
                 </span>
               )}
@@ -408,8 +408,8 @@ export default function FilterPage() {
                   whileTap={{ scale: 0.95 }}
                   className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-all ${
                     filters.interests.includes(interest)
-                      ? 'bg-gradient-to-r from-[#E7F3FF] to-[#F0F8FF] text-[#1877F2] border-2 border-[#1877F2] shadow-sm'
-                      : 'bg-[#E7F3FF] text-[#212121] border border-[#90CAF9]/30 hover:border-[#1877F2]'
+                      ? 'bg-gradient-to-r from-[#FFE4E1] to-[#FFF0F5] text-[#FF91A4] border-2 border-[#FF91A4] shadow-sm'
+                      : 'bg-[#FFE4E1] text-[#212121] border border-[#FFB6C1]/30 hover:border-[#FF91A4]'
                   }`}
                 >
                   {interest}
@@ -423,7 +423,7 @@ export default function FilterPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="mb-4 bg-white rounded-xl p-4 shadow-sm border border-[#90CAF9]/20"
+            className="mb-4 bg-white rounded-xl p-4 shadow-sm border border-[#FFB6C1]/20"
           >
             <h2 className="text-base font-bold text-[#212121] mb-3">Personality</h2>
             <div className="grid grid-cols-2 gap-3">
@@ -449,7 +449,7 @@ export default function FilterPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
-            className="mb-4 bg-white rounded-xl p-4 shadow-sm border border-[#90CAF9]/20"
+            className="mb-4 bg-white rounded-xl p-4 shadow-sm border border-[#FFB6C1]/20"
           >
             <h2 className="text-base font-bold text-[#212121] mb-3">Dealbreakers</h2>
             <div className="grid grid-cols-2 gap-3">
@@ -509,7 +509,7 @@ export default function FilterPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
-            className="mb-4 bg-white rounded-xl p-4 shadow-sm border border-[#90CAF9]/20"
+            className="mb-4 bg-white rounded-xl p-4 shadow-sm border border-[#FFB6C1]/20"
           >
             <h2 className="text-base font-bold text-[#212121] mb-3">Additional Filters</h2>
             <div className="grid grid-cols-2 gap-3">
@@ -535,7 +535,7 @@ export default function FilterPage() {
                     optional: { ...prev.optional, profession: e.target.value }
                   }))}
                   placeholder="Any profession"
-                  className="w-full px-3 py-2 bg-[#E7F3FF] border-2 border-[#90CAF9]/30 rounded-lg text-[#212121] font-semibold text-sm focus:outline-none focus:border-[#1877F2] transition-all"
+                  className="w-full px-3 py-2 bg-[#FFE4E1] border-2 border-[#FFB6C1]/30 rounded-lg text-[#212121] font-semibold text-sm focus:outline-none focus:border-[#FF91A4] transition-all"
                 />
               </div>
             </div>
@@ -544,7 +544,7 @@ export default function FilterPage() {
       </div>
 
       {/* Fixed Bottom Actions */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t-2 border-[#90CAF9]/30 shadow-lg p-3">
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t-2 border-[#FFB6C1]/30 shadow-lg p-3">
         <div className="max-w-2xl mx-auto flex gap-2">
           <motion.button
             onClick={() => navigate('/discover')}
@@ -558,7 +558,7 @@ export default function FilterPage() {
             onClick={handleApply}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="flex-1 px-4 py-2.5 bg-gradient-to-r from-[#1877F2] to-[#42A5F5] text-white rounded-lg font-semibold text-sm shadow-md hover:shadow-lg transition-all"
+            className="flex-1 px-4 py-2.5 bg-gradient-to-r from-[#FF91A4] to-[#FF91A4] text-white rounded-lg font-semibold text-sm shadow-md hover:shadow-lg transition-all"
           >
             Apply Filters
           </motion.button>

@@ -128,7 +128,7 @@ export default function ProfilePage() {
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="relative z-20 bg-white/95 backdrop-blur-md border-b-2 border-[#90CAF9] shadow-sm"
+        className="relative z-20 bg-white/95 backdrop-blur-md border-b-2 border-[#FFB6C1] shadow-sm"
       >
         <div className="max-w-2xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
@@ -137,7 +137,7 @@ export default function ProfilePage() {
               onClick={handleEditProfile}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#1877F2] to-[#42A5F5] text-white rounded-lg text-sm font-semibold shadow-md hover:shadow-lg transition-all"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#FF91A4] to-[#FF91A4] text-white rounded-lg text-sm font-semibold shadow-md hover:shadow-lg transition-all"
             >
               <Edit2 className="w-4 h-4" />
               <span>Edit Profile</span>
@@ -158,7 +158,7 @@ export default function ProfilePage() {
             {/* Profile Photo */}
             <div className="flex flex-col items-center mb-4">
               <div className="relative">
-                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-[#1877F2] to-[#42A5F5] p-1">
+                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-[#FF91A4] to-[#FF91A4] p-1">
                   {profileSetup?.photos && profileSetup.photos.length > 0 ? (
                     <img
                       src={profileSetup.photos[0].preview || `https://ui-avatars.com/api/?name=${step1.name || 'User'}&background=FF1744&color=fff&size=200`}
@@ -167,7 +167,7 @@ export default function ProfilePage() {
                     />
                   ) : (
                     <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
-                      <UserCircle className="w-16 h-16 text-[#1877F2]" />
+                      <UserCircle className="w-16 h-16 text-[#FF91A4]" />
                     </div>
                   )}
                 </div>
@@ -201,27 +201,27 @@ export default function ProfilePage() {
               <h3 className="text-sm font-semibold text-[#212121] mb-2">About me</h3>
               <div className="flex flex-wrap gap-2">
                 {step6?.optional?.education && (
-                  <span className="px-3 py-1.5 bg-[#E7F3FF] text-[#212121] rounded-full text-xs font-medium">
+                  <span className="px-3 py-1.5 bg-[#FFE4E1] text-[#212121] rounded-full text-xs font-medium">
                     {formatEducation(step6.optional.education)}
                   </span>
                 )}
                 {step5?.dealbreakers?.drinking && (
-                  <span className="px-3 py-1.5 bg-[#E7F3FF] text-[#212121] rounded-full text-xs font-medium">
+                  <span className="px-3 py-1.5 bg-[#FFE4E1] text-[#212121] rounded-full text-xs font-medium">
                     {formatDealbreaker('drinking', step5.dealbreakers.drinking)}
                   </span>
                 )}
                 {step5?.dealbreakers?.smoking && (
-                  <span className="px-3 py-1.5 bg-[#E7F3FF] text-[#212121] rounded-full text-xs font-medium">
+                  <span className="px-3 py-1.5 bg-[#FFE4E1] text-[#212121] rounded-full text-xs font-medium">
                     {formatDealbreaker('smoking', step5.dealbreakers.smoking)}
                   </span>
                 )}
                 {step5?.dealbreakers?.kids && (
-                  <span className="px-3 py-1.5 bg-[#E7F3FF] text-[#212121] rounded-full text-xs font-medium">
+                  <span className="px-3 py-1.5 bg-[#FFE4E1] text-[#212121] rounded-full text-xs font-medium">
                     {formatDealbreaker('kids', step5.dealbreakers.kids)}
                   </span>
                 )}
                 {step5?.dealbreakers?.pets && (
-                  <span className="px-3 py-1.5 bg-[#E7F3FF] text-[#212121] rounded-full text-xs font-medium">
+                  <span className="px-3 py-1.5 bg-[#FFE4E1] text-[#212121] rounded-full text-xs font-medium">
                     {formatDealbreaker('pets', step5.dealbreakers.pets)}
                   </span>
                 )}
@@ -236,7 +236,7 @@ export default function ProfilePage() {
                   {step3.interests.map((interest) => (
                     <span
                       key={interest}
-                      className="px-3 py-1.5 bg-gradient-to-r from-[#E7F3FF] to-[#F0F8FF] text-[#1877F2] rounded-full text-xs font-semibold border border-[#90CAF9]/30"
+                      className="px-3 py-1.5 bg-gradient-to-r from-[#FFE4E1] to-[#FFF0F5] text-[#FF91A4] rounded-full text-xs font-semibold border border-[#FFB6C1]/30"
                     >
                       {interest}
                     </span>
@@ -282,15 +282,15 @@ export default function ProfilePage() {
               {/* Settings */}
               <motion.div
                 whileHover={{ backgroundColor: '#FFF5F5' }}
-                className="flex items-center justify-between p-4 border-b border-[#90CAF9]/20 cursor-pointer"
+                className="flex items-center justify-between p-4 border-b border-[#FFB6C1]/20 cursor-pointer"
                 onClick={() => {
                   // Navigate to settings page
                   alert('Settings page coming soon!');
                 }}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#E7F3FF] rounded-full flex items-center justify-center">
-                    <Settings className="w-5 h-5 text-[#1877F2]" />
+                  <div className="w-10 h-10 bg-[#FFE4E1] rounded-full flex items-center justify-center">
+                    <Settings className="w-5 h-5 text-[#FF91A4]" />
                   </div>
                   <span className="text-base font-semibold text-[#212121]">Settings</span>
                 </div>
@@ -300,14 +300,14 @@ export default function ProfilePage() {
               {/* Privacy */}
               <motion.div
                 whileHover={{ backgroundColor: '#FFF5F5' }}
-                className="flex items-center justify-between p-4 border-b border-[#90CAF9]/20 cursor-pointer"
+                className="flex items-center justify-between p-4 border-b border-[#FFB6C1]/20 cursor-pointer"
                 onClick={() => {
                   alert('Privacy settings coming soon!');
                 }}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#E7F3FF] rounded-full flex items-center justify-center">
-                    <Eye className="w-5 h-5 text-[#1877F2]" />
+                  <div className="w-10 h-10 bg-[#FFE4E1] rounded-full flex items-center justify-center">
+                    <Eye className="w-5 h-5 text-[#FF91A4]" />
                   </div>
                   <span className="text-base font-semibold text-[#212121]">Privacy</span>
                 </div>
@@ -317,14 +317,14 @@ export default function ProfilePage() {
               {/* Safety & Security */}
               <motion.div
                 whileHover={{ backgroundColor: '#FFF5F5' }}
-                className="flex items-center justify-between p-4 border-b border-[#90CAF9]/20 cursor-pointer"
+                className="flex items-center justify-between p-4 border-b border-[#FFB6C1]/20 cursor-pointer"
                 onClick={() => {
                   alert('Safety center coming soon!');
                 }}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#E7F3FF] rounded-full flex items-center justify-center">
-                    <Shield className="w-5 h-5 text-[#1877F2]" />
+                  <div className="w-10 h-10 bg-[#FFE4E1] rounded-full flex items-center justify-center">
+                    <Shield className="w-5 h-5 text-[#FF91A4]" />
                   </div>
                   <span className="text-base font-semibold text-[#212121]">Safety & Security</span>
                 </div>
@@ -334,14 +334,14 @@ export default function ProfilePage() {
               {/* App Lock */}
               <motion.div
                 whileHover={{ backgroundColor: '#FFF5F5' }}
-                className="flex items-center justify-between p-4 border-b border-[#90CAF9]/20 cursor-pointer"
+                className="flex items-center justify-between p-4 border-b border-[#FFB6C1]/20 cursor-pointer"
                 onClick={() => {
                   alert('App lock feature coming soon!');
                 }}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#E7F3FF] rounded-full flex items-center justify-center">
-                    <Lock className="w-5 h-5 text-[#1877F2]" />
+                  <div className="w-10 h-10 bg-[#FFE4E1] rounded-full flex items-center justify-center">
+                    <Lock className="w-5 h-5 text-[#FF91A4]" />
                   </div>
                   <span className="text-base font-semibold text-[#212121]">App Lock</span>
                 </div>
@@ -351,14 +351,14 @@ export default function ProfilePage() {
               {/* Notifications */}
               <motion.div
                 whileHover={{ backgroundColor: '#FFF5F5' }}
-                className="flex items-center justify-between p-4 border-b border-[#90CAF9]/20 cursor-pointer"
+                className="flex items-center justify-between p-4 border-b border-[#FFB6C1]/20 cursor-pointer"
                 onClick={() => {
                   alert('Notification settings coming soon!');
                 }}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#E7F3FF] rounded-full flex items-center justify-center">
-                    <Bell className="w-5 h-5 text-[#1877F2]" />
+                  <div className="w-10 h-10 bg-[#FFE4E1] rounded-full flex items-center justify-center">
+                    <Bell className="w-5 h-5 text-[#FF91A4]" />
                   </div>
                   <span className="text-base font-semibold text-[#212121]">Notifications</span>
                 </div>
@@ -368,14 +368,14 @@ export default function ProfilePage() {
               {/* Help & Support */}
               <motion.div
                 whileHover={{ backgroundColor: '#FFF5F5' }}
-                className="flex items-center justify-between p-4 border-b border-[#90CAF9]/20 cursor-pointer"
+                className="flex items-center justify-between p-4 border-b border-[#FFB6C1]/20 cursor-pointer"
                 onClick={() => {
                   alert('Help center coming soon!');
                 }}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#E7F3FF] rounded-full flex items-center justify-center">
-                    <HelpCircle className="w-5 h-5 text-[#1877F2]" />
+                  <div className="w-10 h-10 bg-[#FFE4E1] rounded-full flex items-center justify-center">
+                    <HelpCircle className="w-5 h-5 text-[#FF91A4]" />
                   </div>
                   <span className="text-base font-semibold text-[#212121]">Help & Support</span>
                 </div>
@@ -384,15 +384,15 @@ export default function ProfilePage() {
 
               {/* Logout */}
               <motion.div
-                whileHover={{ backgroundColor: '#E7F3FF' }}
+                whileHover={{ backgroundColor: '#FFE4E1' }}
                 className="flex items-center justify-between p-4 cursor-pointer"
                 onClick={handleLogout}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#1877F2]/10 rounded-full flex items-center justify-center">
-                    <LogOut className="w-5 h-5 text-[#1877F2]" />
+                  <div className="w-10 h-10 bg-[#FF91A4]/10 rounded-full flex items-center justify-center">
+                    <LogOut className="w-5 h-5 text-[#FF91A4]" />
                   </div>
-                  <span className="text-base font-semibold text-[#1877F2]">Logout</span>
+                  <span className="text-base font-semibold text-[#FF91A4]">Logout</span>
                 </div>
                 <span className="text-[#757575]">→</span>
               </motion.div>
@@ -402,7 +402,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Bottom Navigation Bar - Mobile Only */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t-2 border-[#90CAF9]/30 shadow-lg">
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t-2 border-[#FFB6C1]/30 shadow-lg">
         <div className="flex items-center justify-around px-2 py-2">
           {/* Profile */}
           <motion.button
@@ -410,8 +410,8 @@ export default function ProfilePage() {
             whileTap={{ scale: 0.9 }}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors"
           >
-            <UserCircle className={`w-5 h-5 ${location.pathname === '/profile' ? 'text-[#1877F2]' : 'text-[#212121]'}`} />
-            <span className={`text-xs font-medium ${location.pathname === '/profile' ? 'text-[#1877F2]' : 'text-[#212121]'}`}>
+            <UserCircle className={`w-5 h-5 ${location.pathname === '/profile' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            <span className={`text-xs font-medium ${location.pathname === '/profile' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
               Profile
             </span>
           </motion.button>
@@ -422,8 +422,8 @@ export default function ProfilePage() {
             whileTap={{ scale: 0.9 }}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors"
           >
-            <Sparkles className={`w-5 h-5 ${location.pathname === '/discover' ? 'text-[#1877F2]' : 'text-[#212121]'}`} />
-            <span className={`text-xs font-medium ${location.pathname === '/discover' ? 'text-[#1877F2]' : 'text-[#212121]'}`}>
+            <Sparkles className={`w-5 h-5 ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            <span className={`text-xs font-medium ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
               Discover
             </span>
           </motion.button>
@@ -434,8 +434,8 @@ export default function ProfilePage() {
             whileTap={{ scale: 0.9 }}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative"
           >
-            <Users className={`w-5 h-5 ${location.pathname === '/discover' ? 'text-[#1877F2]' : 'text-[#212121]'}`} />
-            <span className={`text-xs font-medium ${location.pathname === '/discover' ? 'text-[#1877F2]' : 'text-[#212121]'}`}>
+            <Users className={`w-5 h-5 ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            <span className={`text-xs font-medium ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
               People
             </span>
           </motion.button>
@@ -460,8 +460,8 @@ export default function ProfilePage() {
             whileTap={{ scale: 0.9 }}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative"
           >
-            <MessageCircle className={`w-5 h-5 ${location.pathname === '/chats' ? 'text-[#1877F2]' : 'text-[#212121]'}`} />
-            <span className={`text-xs font-medium ${location.pathname === '/chats' ? 'text-[#1877F2]' : 'text-[#212121]'}`}>
+            <MessageCircle className={`w-5 h-5 ${location.pathname === '/chats' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            <span className={`text-xs font-medium ${location.pathname === '/chats' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
               Chats
             </span>
           </motion.button>

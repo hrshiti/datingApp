@@ -12,11 +12,11 @@ import './App.css';
 
 function Home() {
   return (
-    <div className="min-h-screen bg-blue-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#FFF0F5] flex items-center justify-center p-4">
       <div className="text-center">
         <h1 className="text-3xl font-bold text-black mb-4">Welcome Home!</h1>
         <p className="text-gray-600 mb-6">You're successfully logged in.</p>
-        <a href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+        <a href="/login" className="text-[#FF91A4] hover:text-[#FF69B4] font-medium">
           Go to Login
         </a>
       </div>

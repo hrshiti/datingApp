@@ -163,7 +163,7 @@ export default function EditProfilePage() {
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="relative z-20 bg-white/95 backdrop-blur-md border-b-2 border-[#90CAF9] shadow-sm"
+        className="relative z-20 bg-white/95 backdrop-blur-md border-b-2 border-[#FFB6C1] shadow-sm"
       >
         <div className="max-w-2xl mx-auto px-4 py-3">
           <div className="flex items-center gap-3">
@@ -171,7 +171,7 @@ export default function EditProfilePage() {
               onClick={() => navigate('/profile')}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              className="p-1.5 hover:bg-[#E7F3FF] rounded-lg transition-colors"
+              className="p-1.5 hover:bg-[#FFE4E1] rounded-lg transition-colors"
             >
               <ArrowLeft className="w-5 h-5 text-[#212121]" />
             </motion.button>
@@ -190,7 +190,7 @@ export default function EditProfilePage() {
             className="bg-white rounded-2xl shadow-lg p-6 mb-4"
           >
             <div className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#1877F2] to-[#42A5F5] rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF91A4] rounded-full flex items-center justify-center">
                 <User className="w-5 h-5 text-white" />
               </div>
               <h2 className="text-xl font-bold text-[#212121]">Personal Details</h2>
@@ -211,8 +211,8 @@ export default function EditProfilePage() {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="Enter your full name"
-                    className={`w-full pl-12 pr-4 py-3 bg-[#E7F3FF] border-2 rounded-xl text-[#212121] placeholder-[#757575] focus:outline-none transition-all ${
-                      errors.name ? 'border-[#1877F2]' : 'border-[#90CAF9]/30 focus:border-[#1877F2]'
+                    className={`w-full pl-12 pr-4 py-3 bg-[#FFE4E1] border-2 rounded-xl text-[#212121] placeholder-[#757575] focus:outline-none transition-all ${
+                      errors.name ? 'border-[#FF91A4]' : 'border-[#FFB6C1]/30 focus:border-[#FF91A4]'
                     }`}
                   />
                 </div>
@@ -220,7 +220,7 @@ export default function EditProfilePage() {
                   <motion.p
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-sm text-[#1877F2] mt-1 ml-1"
+                    className="text-sm text-[#FF91A4] mt-1 ml-1"
                   >
                     {errors.name}
                   </motion.p>
@@ -241,8 +241,8 @@ export default function EditProfilePage() {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="Enter your email address"
-                    className={`w-full pl-12 pr-4 py-3 bg-[#E7F3FF] border-2 rounded-xl text-[#212121] placeholder-[#757575] focus:outline-none transition-all ${
-                      errors.email ? 'border-[#1877F2]' : 'border-[#90CAF9]/30 focus:border-[#1877F2]'
+                    className={`w-full pl-12 pr-4 py-3 bg-[#FFE4E1] border-2 rounded-xl text-[#212121] placeholder-[#757575] focus:outline-none transition-all ${
+                      errors.email ? 'border-[#FF91A4]' : 'border-[#FFB6C1]/30 focus:border-[#FF91A4]'
                     }`}
                   />
                 </div>
@@ -250,7 +250,7 @@ export default function EditProfilePage() {
                   <motion.p
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-sm text-[#1877F2] mt-1 ml-1"
+                    className="text-sm text-[#FF91A4] mt-1 ml-1"
                   >
                     {errors.email}
                   </motion.p>
@@ -277,8 +277,8 @@ export default function EditProfilePage() {
                     }}
                     placeholder="Enter your 10-digit phone number"
                     maxLength={10}
-                    className={`w-full pl-12 pr-4 py-3 bg-[#E7F3FF] border-2 rounded-xl text-[#212121] placeholder-[#757575] focus:outline-none transition-all ${
-                      errors.phone ? 'border-[#1877F2]' : 'border-[#90CAF9]/30 focus:border-[#1877F2]'
+                    className={`w-full pl-12 pr-4 py-3 bg-[#FFE4E1] border-2 rounded-xl text-[#212121] placeholder-[#757575] focus:outline-none transition-all ${
+                      errors.phone ? 'border-[#FF91A4]' : 'border-[#FFB6C1]/30 focus:border-[#FF91A4]'
                     }`}
                   />
                 </div>
@@ -286,7 +286,7 @@ export default function EditProfilePage() {
                   <motion.p
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-sm text-[#1877F2] mt-1 ml-1"
+                    className="text-sm text-[#FF91A4] mt-1 ml-1"
                   >
                     {errors.phone}
                   </motion.p>
@@ -303,7 +303,7 @@ export default function EditProfilePage() {
               className={`w-full mt-6 py-3 rounded-xl font-semibold text-white shadow-md transition-all ${
                 isLoading
                   ? 'bg-[#E0E0E0] cursor-not-allowed'
-                  : 'bg-gradient-to-r from-[#1877F2] to-[#42A5F5] hover:shadow-lg'
+                  : 'bg-gradient-to-r from-[#FF91A4] to-[#FF91A4] hover:shadow-lg'
               }`}
             >
               {isLoading ? 'Saving...' : 'Save Changes'}
@@ -318,7 +318,7 @@ export default function EditProfilePage() {
             className="bg-white rounded-2xl shadow-lg p-6"
           >
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#1877F2] to-[#42A5F5] rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF91A4] rounded-full flex items-center justify-center">
                 <Edit2 className="w-5 h-5 text-white" />
               </div>
               <h2 className="text-xl font-bold text-[#212121]">Edit All Details</h2>
@@ -332,7 +332,7 @@ export default function EditProfilePage() {
               onClick={handleEditAll}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full py-3 bg-white border-2 border-[#1877F2] text-[#1877F2] rounded-xl font-semibold shadow-md hover:bg-[#E7F3FF] transition-all"
+              className="w-full py-3 bg-white border-2 border-[#FF91A4] text-[#FF91A4] rounded-xl font-semibold shadow-md hover:bg-[#FFE4E1] transition-all"
             >
               Edit All Details
             </motion.button>

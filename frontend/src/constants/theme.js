@@ -4,14 +4,14 @@
 export const theme = {
   colors: {
     // Primary Colors - Meta Blue Shades
-    babyPink: '#E7F3FF',
-    babyPinkLight: '#F0F8FF',
+    babyPink: '#FFE4E1',
+    babyPinkLight: '#FFF0F5',
     babyPinkLighter: '#F5FAFF',
     
     // Accent Colors - Meta Blue
-    darkPink: '#1877F2',  // Meta Blue
-    darkPinkHover: '#1565C0',  // Darker Blue
-    lightPinkBorder: '#90CAF9',  // Light Blue Border
+    darkPink: '#FF91A4',  // Meta Blue
+    darkPinkHover: '#FF69B4',  // Darker Blue
+    lightPinkBorder: '#FFB6C1',  // Light Blue Border
     
     // Neutral Colors
     grey: '#757575',
@@ -24,7 +24,7 @@ export const theme = {
     error: '#E53935',
     success: '#4CAF50',
     warning: '#FF9800',
-    info: '#1877F2',
+    info: '#FF91A4',
   },
   
   borderRadius: {
