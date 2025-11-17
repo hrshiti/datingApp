@@ -283,10 +283,7 @@ export default function ProfilePage() {
               <motion.div
                 whileHover={{ backgroundColor: '#FFF5F5' }}
                 className="flex items-center justify-between p-4 border-b border-[#FFB6C1]/20 cursor-pointer"
-                onClick={() => {
-                  // Navigate to settings page
-                  alert('Settings page coming soon!');
-                }}
+                onClick={() => navigate('/settings')}
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-[#FFE4E1] rounded-full flex items-center justify-center">
@@ -318,9 +315,7 @@ export default function ProfilePage() {
               <motion.div
                 whileHover={{ backgroundColor: '#FFF5F5' }}
                 className="flex items-center justify-between p-4 border-b border-[#FFB6C1]/20 cursor-pointer"
-                onClick={() => {
-                  alert('Safety center coming soon!');
-                }}
+                onClick={() => navigate('/safety')}
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-[#FFE4E1] rounded-full flex items-center justify-center">

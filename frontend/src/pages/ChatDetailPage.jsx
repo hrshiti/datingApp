@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { ArrowLeft, Send, MoreVertical, Heart } from 'lucide-react';
+import { ArrowLeft, Send, MoreVertical, Heart, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mockProfiles } from '../data/mockProfiles';
+import ReportBlockModal from '../components/ReportBlockModal';
 
 export default function ChatDetailPage() {
   const navigate = useNavigate();
@@ -13,6 +14,8 @@ export default function ChatDetailPage() {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [profile, setProfile] = useState(null);
+  const [showReportBlockModal, setShowReportBlockModal] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
   // Dummy messages data
   const dummyMessages = [
@@ -128,6 +131,37 @@ export default function ChatDetailPage() {
     return date.toLocaleDateString();
   };
 
+  const handleReport = (reason) => {
+    // Store reported user in localStorage
+    const reportedUsers = JSON.parse(localStorage.getItem('reportedUsers') || '[]');
+    const alreadyReported = reportedUsers.some(r => r.userId === profile.id);
+    if (!alreadyReported) {
+      reportedUsers.push({
+        userId: profile.id,
+        userName: profile.name,
+        reason: reason,
+        reportedAt: new Date().toISOString()
+      });
+      localStorage.setItem('reportedUsers', JSON.stringify(reportedUsers));
+      alert(`Thank you for reporting. We'll review this profile.`);
+    } else {
+      alert('You have already reported this user.');
+    }
+    setShowReportBlockModal(false);
+  };
+
+  const handleBlock = () => {
+    // Store blocked user in localStorage
+    const blockedUsers = JSON.parse(localStorage.getItem('blockedUsers') || '[]');
+    if (!blockedUsers.includes(profile.id)) {
+      blockedUsers.push(profile.id);
+      localStorage.setItem('blockedUsers', JSON.stringify(blockedUsers));
+    }
+    alert(`${profile.name} has been blocked.`);
+    // Navigate back to chats
+    navigate('/chats');
+  };
+
   if (!profile) {
     return (
       <div className="h-screen heart-background flex items-center justify-center">
@@ -184,7 +218,7 @@ export default function ChatDetailPage() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 relative">
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -192,13 +226,39 @@ export default function ChatDetailPage() {
               >
                 <Heart className="w-5 h-5 text-[#FF91A4]" />
               </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="p-2 hover:bg-[#FFE4E1] rounded-lg transition-colors"
-              >
-                <MoreVertical className="w-5 h-5 text-[#212121]" />
-              </motion.button>
+              <div className="relative">
+                <motion.button
+                  onClick={() => setShowMenu(!showMenu)}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="p-2 hover:bg-[#FFE4E1] rounded-lg transition-colors"
+                >
+                  <MoreVertical className="w-5 h-5 text-[#212121]" />
+                </motion.button>
+                
+                {/* Dropdown Menu */}
+                <AnimatePresence>
+                  {showMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-[#FFB6C1] overflow-hidden z-40"
+                    >
+                      <button
+                        onClick={() => {
+                          setShowMenu(false);
+                          setShowReportBlockModal(true);
+                        }}
+                        className="w-full px-4 py-3 text-left hover:bg-[#FFE4E1] transition-colors flex items-center gap-3 text-[#212121]"
+                      >
+                        <Shield className="w-4 h-4 text-[#FF91A4]" />
+                        <span className="text-sm font-medium">Report & Block</span>
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           </div>
         </div>
@@ -306,6 +366,26 @@ export default function ChatDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Report/Block Modal */}
+      <ReportBlockModal
+        isOpen={showReportBlockModal}
+        onClose={() => {
+          setShowReportBlockModal(false);
+          setShowMenu(false);
+        }}
+        userName={profile?.name || 'User'}
+        onReport={handleReport}
+        onBlock={handleBlock}
+      />
+
+      {/* Click outside to close menu */}
+      {showMenu && (
+        <div
+          className="fixed inset-0 z-30"
+          onClick={() => setShowMenu(false)}
+        />
+      )}
     </div>
   );
 }

@@ -199,6 +199,20 @@ export default function DiscoveryFeedPage() {
           return false;
         }
 
+        // Exclude blocked users
+        const blockedUsers = JSON.parse(localStorage.getItem('blockedUsers') || '[]');
+        if (blockedUsers.includes(profile.id)) {
+          return false;
+        }
+
+        // Exclude reported users (optional - you might want to show them but flag them)
+        // For now, we'll exclude them too
+        const reportedUsers = JSON.parse(localStorage.getItem('reportedUsers') || '[]');
+        const isReported = reportedUsers.some(r => r.userId === profile.id);
+        if (isReported) {
+          return false;
+        }
+
         return true;
       })
       .map(profile => {
@@ -304,9 +318,8 @@ export default function DiscoveryFeedPage() {
   };
 
   const handleUpgradePremium = () => {
-    setIsPremium(true);
-    localStorage.setItem('isPremium', JSON.stringify(true));
     setShowPremiumPrompt(false);
+    navigate('/premium');
   };
 
   const currentProfile = profiles[currentIndex];

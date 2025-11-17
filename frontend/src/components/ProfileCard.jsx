@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, X, Heart, Star, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { MapPin, X, Heart, Star, ChevronLeft, ChevronRight, Sparkles, MoreVertical, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { calculateDistance } from '../data/mockProfiles';
+import ReportBlockModal from './ReportBlockModal';
 
 export default function ProfileCard({ 
   profile, 
@@ -16,6 +17,8 @@ export default function ProfileCard({
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [showReportBlockModal, setShowReportBlockModal] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
   // Reset drag state when swipe direction changes (card is being removed)
   useEffect(() => {
@@ -217,6 +220,47 @@ export default function ProfileCard({
               
               {/* Gradient Overlay for Name */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              
+              {/* Report/Block Menu Button - Top Right */}
+              <div className="absolute top-4 right-4 z-20">
+                <div className="relative">
+                  <motion.button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowMenu(!showMenu);
+                    }}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="p-2 bg-white/20 backdrop-blur-md hover:bg-white/30 rounded-full transition-all"
+                  >
+                    <MoreVertical className="w-5 h-5 text-white" />
+                  </motion.button>
+                  
+                  {/* Dropdown Menu */}
+                  <AnimatePresence>
+                    {showMenu && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                        className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-[#FFB6C1] overflow-hidden z-40"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          onClick={() => {
+                            setShowMenu(false);
+                            setShowReportBlockModal(true);
+                          }}
+                          className="w-full px-4 py-3 text-left hover:bg-[#FFE4E1] transition-colors flex items-center gap-3 text-[#212121]"
+                        >
+                          <Shield className="w-4 h-4 text-[#FF91A4]" />
+                          <span className="text-sm font-medium">Report & Block</span>
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
               
               {/* Photo Indicators - Bottom Center */}
               {profile.photos.length > 1 && (
@@ -467,6 +511,54 @@ export default function ProfileCard({
             </div>
           </div>
         </div>
+
+        {/* Report/Block Modal */}
+        <ReportBlockModal
+          isOpen={showReportBlockModal}
+          onClose={() => {
+            setShowReportBlockModal(false);
+            setShowMenu(false);
+          }}
+          userName={profile?.name || 'User'}
+          onReport={(reason) => {
+            // Store reported user in localStorage
+            const reportedUsers = JSON.parse(localStorage.getItem('reportedUsers') || '[]');
+            const alreadyReported = reportedUsers.some(r => r.userId === profile.id);
+            if (!alreadyReported) {
+              reportedUsers.push({
+                userId: profile.id,
+                userName: profile.name,
+                reason: reason,
+                reportedAt: new Date().toISOString()
+              });
+              localStorage.setItem('reportedUsers', JSON.stringify(reportedUsers));
+              alert(`Thank you for reporting. We'll review this profile.`);
+            } else {
+              alert('You have already reported this user.');
+            }
+            setShowReportBlockModal(false);
+          }}
+          onBlock={() => {
+            // Store blocked user in localStorage
+            const blockedUsers = JSON.parse(localStorage.getItem('blockedUsers') || '[]');
+            if (!blockedUsers.includes(profile.id)) {
+              blockedUsers.push(profile.id);
+              localStorage.setItem('blockedUsers', JSON.stringify(blockedUsers));
+            }
+            alert(`${profile.name} has been blocked.`);
+            // Trigger pass action to remove from feed
+            onPass();
+            setShowReportBlockModal(false);
+          }}
+        />
+
+        {/* Click outside to close menu */}
+        {showMenu && (
+          <div
+            className="fixed inset-0 z-30"
+            onClick={() => setShowMenu(false)}
+          />
+        )}
       </motion.div>
     </AnimatePresence>
   );

@@ -8,6 +8,9 @@ import DiscoveryFeedPage from './pages/DiscoveryFeedPage';
 import FilterPage from './pages/FilterPage';
 import ChatsPage from './pages/ChatsPage';
 import ChatDetailPage from './pages/ChatDetailPage';
+import SettingsPage from './pages/SettingsPage';
+import SafetyCenterPage from './pages/SafetyCenterPage';
+import PremiumPage from './pages/PremiumPage';
 import './App.css';
 
 function Home() {
@@ -41,6 +44,9 @@ function App() {
         <Route path="/filters" element={<FilterPage />} />
         <Route path="/chats" element={<ChatsPage />} />
         <Route path="/chat/:userId" element={<ChatDetailPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/safety" element={<SafetyCenterPage />} />
+        <Route path="/premium" element={<PremiumPage />} />
         <Route path="/home" element={<Home />} />
         <Route path="*" element={<Navigate to="/signup" replace />} />
       </Routes>
