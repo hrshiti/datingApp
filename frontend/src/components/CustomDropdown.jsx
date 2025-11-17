@@ -43,9 +43,9 @@ export default function CustomDropdown({
           error
             ? 'border-red-500 focus:border-red-600'
             : isOpen
-            ? 'border-[#FF1744] bg-white'
-            : 'border-[#FFB3BA] hover:border-[#FF1744]'
-        } bg-white text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#FF1744] focus:ring-opacity-20`}
+            ? 'border-[#1877F2] bg-white'
+            : 'border-[#90CAF9] hover:border-[#1877F2]'
+        } bg-white text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-opacity-20`}
       >
         <span className={value ? 'text-[#212121]' : 'text-[#757575]'}>
           {selectedLabel}
@@ -81,7 +81,7 @@ export default function CustomDropdown({
                 ease: [0.4, 0, 0.2, 1]
               }
             }}
-            className="absolute z-50 w-full mt-1 bg-white border-2 border-[#FFB3BA] rounded-xl sm:rounded-2xl shadow-lg max-h-60 overflow-hidden"
+            className="absolute z-50 w-full mt-1 bg-white border-2 border-[#90CAF9] rounded-xl sm:rounded-2xl shadow-lg max-h-60 overflow-hidden"
           >
             <div className="overflow-y-auto max-h-60">
               {options.map((option, index) => (
@@ -98,10 +98,10 @@ export default function CustomDropdown({
                       duration: 0.15
                     }
                   }}
-                  whileHover={{ backgroundColor: value === option.value ? '#D32F2F' : '#FFF0F0' }}
+                  whileHover={{ backgroundColor: value === option.value ? '#1565C0' : '#F0F8FF' }}
                   className={`w-full px-4 py-2.5 sm:py-3 text-left text-sm sm:text-base transition-colors ${
                     value === option.value
-                      ? 'bg-[#FF1744] text-white'
+                      ? 'bg-[#1877F2] text-white'
                       : 'text-[#212121]'
                   } ${
                     option.value === options[0]?.value ? 'rounded-t-xl sm:rounded-t-2xl' : ''

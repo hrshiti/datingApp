@@ -4,15 +4,15 @@
    THEME CSS VARIABLES - Centralized Theme Management
    ============================================ */
 :root {
-  /* Primary Colors - Baby Pink Shades */
-  --color-baby-pink: #FFE5E5;
-  --color-baby-pink-light: #FFF0F0;
-  --color-baby-pink-lighter: #FFF5F5;
+  /* Primary Colors - Meta Blue Shades */
+  --color-baby-pink: #E7F3FF;
+  --color-baby-pink-light: #F0F8FF;
+  --color-baby-pink-lighter: #F5FAFF;
   
-  /* Accent Colors - Dark Pink/Red */
-  --color-dark-pink: #FF1744;
-  --color-dark-pink-hover: #D32F2F;
-  --color-light-pink-border: #FFB3BA;
+  /* Accent Colors - Meta Blue */
+  --color-dark-pink: #1877F2;
+  --color-dark-pink-hover: #1565C0;
+  --color-light-pink-border: #90CAF9;
   
   /* Neutral Colors */
   --color-grey: #757575;
@@ -22,10 +22,10 @@
   --color-white: #FFFFFF;
   
   /* Semantic Colors */
-  --color-error: #FF1744;
+  --color-error: #E53935;
   --color-success: #4CAF50;
   --color-warning: #FF9800;
-  --color-info: #2196F3;
+  --color-info: #1877F2;
   
   /* Border Radius */
   --border-radius-sm: 0.75rem;   /* 12px */
@@ -59,9 +59,9 @@ html, body {
   scroll-behavior: smooth;
 }
 
-/* Heart-themed background for dating app */
+/* Meta Blue-themed background for dating app */
 .heart-background {
-  background: linear-gradient(135deg, #FFE5E5 0%, #FFF0F0 30%, #FFE5E5 60%, #FFF5F5 100%);
+  background: linear-gradient(135deg, #E7F3FF 0%, #F0F8FF 30%, #E7F3FF 60%, #F5FAFF 100%);
   position: relative;
   overflow: hidden;
 }
@@ -74,7 +74,7 @@ html, body {
   left: -10%;
   width: 300px;
   height: 300px;
-  background: radial-gradient(circle, rgba(255, 182, 193, 0.25) 0%, rgba(255, 182, 193, 0.1) 50%, transparent 70%);
+  background: radial-gradient(circle, rgba(24, 119, 242, 0.25) 0%, rgba(24, 119, 242, 0.1) 50%, transparent 70%);
   border-radius: 50%;
   animation: floatOrb 20s ease-in-out infinite;
   z-index: -1;
@@ -87,7 +87,7 @@ html, body {
   right: -10%;
   width: 350px;
   height: 350px;
-  background: radial-gradient(circle, rgba(255, 105, 180, 0.2) 0%, rgba(255, 105, 180, 0.05) 50%, transparent 70%);
+  background: radial-gradient(circle, rgba(21, 101, 192, 0.2) 0%, rgba(21, 101, 192, 0.05) 50%, transparent 70%);
   border-radius: 50%;
   animation: floatOrb 25s ease-in-out infinite reverse;
   z-index: -1;
@@ -183,7 +183,7 @@ html, body {
 .heart-background .decoration-circle {
   position: absolute;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 192, 203, 0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(144, 202, 249, 0.1) 0%, transparent 70%);
   z-index: -1;
   pointer-events: none;
   animation: pulseCircle 15s ease-in-out infinite;

@@ -452,7 +452,7 @@ export default function OnboardingPage() {
               initial={{ width: 0 }}
               animate={{ width: `${progressPercentage}%` }}
               transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-              className="bg-[#FF1744] h-1.5 sm:h-2 rounded-full"
+              className="bg-[#1877F2] h-1.5 sm:h-2 rounded-full"
             ></motion.div>
           </div>
           <div className="text-xs text-[#757575] mt-1.5 sm:mt-2">
@@ -475,7 +475,7 @@ export default function OnboardingPage() {
               {/* Date of Birth */}
               <div className="mb-3 sm:mb-4">
                 <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5 sm:mb-2">
-                  Age / Date of Birth <span className="text-[#FF1744]">*</span>
+                  Age / Date of Birth <span className="text-[#1877F2]">*</span>
                 </label>
                 <CustomDatePicker
                   value={formData.dob}
@@ -494,7 +494,7 @@ export default function OnboardingPage() {
               {/* Gender Identity */}
               <div className="mb-3 sm:mb-4">
                 <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5 sm:mb-2">
-                  Gender Identity <span className="text-[#FF1744]">*</span>
+                  Gender Identity <span className="text-[#1877F2]">*</span>
                 </label>
                 <CustomDropdown
                   options={[
@@ -529,8 +529,8 @@ export default function OnboardingPage() {
                       className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 rounded-xl text-sm ${
                         errors.customGender
                           ? 'border-red-500 focus:border-red-600'
-                          : 'border-[#FFB3BA] focus:border-[#FF1744]'
-                      } bg-white text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#FF1744] focus:ring-opacity-20 transition-colors`}
+                          : 'border-[#90CAF9] focus:border-[#1877F2]'
+                      } bg-white text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-opacity-20 transition-colors`}
                     />
                     {errors.customGender && (
                       <p className="text-xs text-red-600 mt-1">{errors.customGender}</p>
@@ -542,7 +542,7 @@ export default function OnboardingPage() {
               {/* Sexual Orientation */}
               <div className="mb-3 sm:mb-4">
                 <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5 sm:mb-2">
-                  Sexual Orientation <span className="text-[#FF1744]">*</span>
+                  Sexual Orientation <span className="text-[#1877F2]">*</span>
                 </label>
                 <CustomDropdown
                   options={[
@@ -578,8 +578,8 @@ export default function OnboardingPage() {
                       className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 rounded-xl text-sm ${
                         errors.customOrientation
                           ? 'border-red-500 focus:border-red-600'
-                          : 'border-[#FFB3BA] focus:border-[#FF1744]'
-                      } bg-white text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#FF1744] focus:ring-opacity-20 transition-colors`}
+                          : 'border-[#90CAF9] focus:border-[#1877F2]'
+                      } bg-white text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-opacity-20 transition-colors`}
                     />
                     {errors.customOrientation && (
                       <p className="text-xs text-red-600 mt-1">{errors.customOrientation}</p>
@@ -591,7 +591,7 @@ export default function OnboardingPage() {
               {/* Looking For */}
               <div className="mb-4 sm:mb-6">
                 <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2 sm:mb-3">
-                  Looking For <span className="text-[#FF1744]">*</span>
+                  Looking For <span className="text-[#1877F2]">*</span>
                 </label>
                 <div className="space-y-1.5 sm:space-y-2">
                   {['casual', 'relationship', 'marriage', 'friends'].map((option) => (
@@ -602,8 +602,8 @@ export default function OnboardingPage() {
                       whileTap={{ scale: 0.98 }}
                       className={`w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 transition-all ${
                         formData.lookingFor.includes(option)
-                          ? 'bg-[#FF1744] text-white border-[#FF1744]'
-                          : 'bg-white text-[#212121] border-[#FFB3BA] hover:border-[#FF1744]'
+                          ? 'bg-[#1877F2] text-white border-[#1877F2]'
+                          : 'bg-white text-[#212121] border-[#90CAF9] hover:border-[#1877F2]'
                       } ${errors.lookingFor ? 'border-red-500' : ''}`}
                     >
                       <div className="flex items-center justify-between">
@@ -636,7 +636,7 @@ export default function OnboardingPage() {
                   disabled={!formData.dob || !formData.gender || !formData.orientation || formData.lookingFor.length === 0}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-[#FF1744] hover:bg-[#D32F2F] disabled:bg-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm"
+                  className="flex-1 bg-[#1877F2] hover:bg-[#1565C0] disabled:bg-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm"
                 >
                   Next →
                 </motion.button>
@@ -659,7 +659,7 @@ export default function OnboardingPage() {
               {/* City */}
               <div className="mb-3 sm:mb-4">
                 <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5 sm:mb-2">
-                  City <span className="text-[#FF1744]">*</span>
+                  City <span className="text-[#1877F2]">*</span>
                 </label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#757575] w-4 h-4 pointer-events-none" />
@@ -671,8 +671,8 @@ export default function OnboardingPage() {
                     className={`w-full pl-10 pr-3 py-2.5 sm:py-3 border-2 rounded-xl text-sm ${
                       errors.city
                         ? 'border-red-500 focus:border-red-600'
-                        : 'border-[#FFB3BA] focus:border-[#FF1744]'
-                    } bg-white text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#FF1744] focus:ring-opacity-20 transition-colors`}
+                        : 'border-[#90CAF9] focus:border-[#1877F2]'
+                    } bg-white text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-opacity-20 transition-colors`}
                   />
                 </div>
                 {errors.city && (
@@ -712,7 +712,7 @@ export default function OnboardingPage() {
                         handleChange('ageRange', { ...formData.ageRange, min: clampedVal });
                       }}
                       placeholder="18"
-                      className="w-full px-3 py-2.5 border-2 border-[#FFB3BA] rounded-xl text-sm text-[#212121] focus:border-[#FF1744] focus:outline-none focus:ring-2 focus:ring-[#FF1744] focus:ring-opacity-20 transition-colors"
+                      className="w-full px-3 py-2.5 border-2 border-[#90CAF9] rounded-xl text-sm text-[#212121] focus:border-[#1877F2] focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-opacity-20 transition-colors"
                     />
                   </div>
                   <span className="text-[#757575] mt-5">-</span>
@@ -749,7 +749,7 @@ export default function OnboardingPage() {
                         // If empty, keep it empty - user can fill later
                       }}
                       placeholder="Enter max age"
-                      className="w-full px-3 py-2.5 border-2 border-[#FFB3BA] rounded-xl text-sm text-[#212121] focus:border-[#FF1744] focus:outline-none focus:ring-2 focus:ring-[#FF1744] focus:ring-opacity-20 transition-colors"
+                      className="w-full px-3 py-2.5 border-2 border-[#90CAF9] rounded-xl text-sm text-[#212121] focus:border-[#1877F2] focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-opacity-20 transition-colors"
                     />
                   </div>
                 </div>
@@ -770,11 +770,11 @@ export default function OnboardingPage() {
                   step="5"
                   value={formData.distancePref}
                   onChange={(e) => handleChange('distancePref', parseInt(e.target.value))}
-                  className="w-full h-2 bg-[#E0E0E0] rounded-lg appearance-none cursor-pointer accent-[#FF1744]"
+                  className="w-full h-2 bg-[#E0E0E0] rounded-lg appearance-none cursor-pointer accent-[#1877F2]"
                 />
                 <div className="flex justify-between text-xs text-[#757575] mt-1">
                   <span>5 km</span>
-                  <span className="font-semibold text-[#FF1744]">{formData.distancePref} km</span>
+                  <span className="font-semibold text-[#1877F2]">{formData.distancePref} km</span>
                   <span>100 km</span>
                 </div>
               </div>
@@ -795,7 +795,7 @@ export default function OnboardingPage() {
                   disabled={!formData.city || formData.city.trim() === '' || (formData.ageRange.max !== '' && formData.ageRange.min >= formData.ageRange.max)}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-[#FF1744] hover:bg-[#D32F2F] disabled:bg-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm"
+                  className="flex-1 bg-[#1877F2] hover:bg-[#1565C0] disabled:bg-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm"
                 >
                   Next →
                 </motion.button>
@@ -847,8 +847,8 @@ export default function OnboardingPage() {
                         whileTap={{ scale: 0.95 }}
                         className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
                           formData.interests.includes(interest)
-                            ? 'bg-[#FF1744] text-white border-2 border-[#FF1744] shadow-md'
-                            : 'bg-white text-[#212121] border-2 border-[#FFB3BA] hover:border-[#FF1744]'
+                            ? 'bg-[#1877F2] text-white border-2 border-[#1877F2] shadow-md'
+                            : 'bg-white text-[#212121] border-2 border-[#90CAF9] hover:border-[#1877F2]'
                         }`}
                       >
                         {interest}
@@ -884,8 +884,8 @@ export default function OnboardingPage() {
                         whileTap={{ scale: 0.95 }}
                         className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
                           formData.interests.includes(interest)
-                            ? 'bg-[#FF1744] text-white border-2 border-[#FF1744] shadow-md'
-                            : 'bg-white text-[#212121] border-2 border-[#FFB3BA] hover:border-[#FF1744]'
+                            ? 'bg-[#1877F2] text-white border-2 border-[#1877F2] shadow-md'
+                            : 'bg-white text-[#212121] border-2 border-[#90CAF9] hover:border-[#1877F2]'
                         }`}
                       >
                         {interest}
@@ -921,8 +921,8 @@ export default function OnboardingPage() {
                         whileTap={{ scale: 0.95 }}
                         className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
                           formData.interests.includes(interest)
-                            ? 'bg-[#FF1744] text-white border-2 border-[#FF1744] shadow-md'
-                            : 'bg-white text-[#212121] border-2 border-[#FFB3BA] hover:border-[#FF1744]'
+                            ? 'bg-[#1877F2] text-white border-2 border-[#1877F2] shadow-md'
+                            : 'bg-white text-[#212121] border-2 border-[#90CAF9] hover:border-[#1877F2]'
                         }`}
                       >
                         {interest}
@@ -958,8 +958,8 @@ export default function OnboardingPage() {
                         whileTap={{ scale: 0.95 }}
                         className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
                           formData.interests.includes(interest)
-                            ? 'bg-[#FF1744] text-white border-2 border-[#FF1744] shadow-md'
-                            : 'bg-white text-[#212121] border-2 border-[#FFB3BA] hover:border-[#FF1744]'
+                            ? 'bg-[#1877F2] text-white border-2 border-[#1877F2] shadow-md'
+                            : 'bg-white text-[#212121] border-2 border-[#90CAF9] hover:border-[#1877F2]'
                         }`}
                       >
                         {interest}
@@ -995,8 +995,8 @@ export default function OnboardingPage() {
                         whileTap={{ scale: 0.95 }}
                         className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
                           formData.interests.includes(interest)
-                            ? 'bg-[#FF1744] text-white border-2 border-[#FF1744] shadow-md'
-                            : 'bg-white text-[#212121] border-2 border-[#FFB3BA] hover:border-[#FF1744]'
+                            ? 'bg-[#1877F2] text-white border-2 border-[#1877F2] shadow-md'
+                            : 'bg-white text-[#212121] border-2 border-[#90CAF9] hover:border-[#1877F2]'
                         }`}
                       >
                         {interest}
@@ -1032,8 +1032,8 @@ export default function OnboardingPage() {
                         whileTap={{ scale: 0.95 }}
                         className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
                           formData.interests.includes(interest)
-                            ? 'bg-[#FF1744] text-white border-2 border-[#FF1744] shadow-md'
-                            : 'bg-white text-[#212121] border-2 border-[#FFB3BA] hover:border-[#FF1744]'
+                            ? 'bg-[#1877F2] text-white border-2 border-[#1877F2] shadow-md'
+                            : 'bg-white text-[#212121] border-2 border-[#90CAF9] hover:border-[#1877F2]'
                         }`}
                       >
                         {interest}
@@ -1050,7 +1050,7 @@ export default function OnboardingPage() {
                 className="mt-4 sm:mt-5 text-center"
               >
                 <p className="text-xs sm:text-sm text-[#757575]">
-                  <span className="font-semibold text-[#FF1744]">{formData.interests.length}</span> interests selected
+                  <span className="font-semibold text-[#1877F2]">{formData.interests.length}</span> interests selected
                   {formData.interests.length < 3 && (
                     <span className="text-red-600"> (Select at least 3)</span>
                   )}
@@ -1083,7 +1083,7 @@ export default function OnboardingPage() {
                   disabled={formData.interests.length < 3}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-[#FF1744] hover:bg-[#D32F2F] disabled:bg-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm"
+                  className="flex-1 bg-[#1877F2] hover:bg-[#1565C0] disabled:bg-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm"
                 >
                   Next →
                 </motion.button>
@@ -1116,7 +1116,7 @@ export default function OnboardingPage() {
                   className="mb-3 sm:mb-4"
                 >
                   <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                    Social Style <span className="text-[#FF1744]">*</span>
+                    Social Style <span className="text-[#1877F2]">*</span>
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
@@ -1131,8 +1131,8 @@ export default function OnboardingPage() {
                         whileTap={{ scale: 0.98 }}
                         className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
                           formData.personality.social === option.value
-                            ? 'bg-[#FF1744] text-white border-[#FF1744] shadow-md'
-                            : 'bg-white text-[#212121] border-[#FFB3BA] hover:border-[#FF1744]'
+                            ? 'bg-[#1877F2] text-white border-[#1877F2] shadow-md'
+                            : 'bg-white text-[#212121] border-[#90CAF9] hover:border-[#1877F2]'
                         } ${errors.social ? 'border-red-500' : ''}`}
                       >
                         {option.label}
@@ -1152,7 +1152,7 @@ export default function OnboardingPage() {
                   className="mb-3 sm:mb-4"
                 >
                   <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                    Planning Style <span className="text-[#FF1744]">*</span>
+                    Planning Style <span className="text-[#1877F2]">*</span>
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
@@ -1167,8 +1167,8 @@ export default function OnboardingPage() {
                         whileTap={{ scale: 0.98 }}
                         className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
                           formData.personality.planning === option.value
-                            ? 'bg-[#FF1744] text-white border-[#FF1744] shadow-md'
-                            : 'bg-white text-[#212121] border-[#FFB3BA] hover:border-[#FF1744]'
+                            ? 'bg-[#1877F2] text-white border-[#1877F2] shadow-md'
+                            : 'bg-white text-[#212121] border-[#90CAF9] hover:border-[#1877F2]'
                         } ${errors.planning ? 'border-red-500' : ''}`}
                       >
                         {option.label}
@@ -1188,7 +1188,7 @@ export default function OnboardingPage() {
                   className="mb-3 sm:mb-4"
                 >
                   <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                    Approach <span className="text-[#FF1744]">*</span>
+                    Approach <span className="text-[#1877F2]">*</span>
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
@@ -1203,8 +1203,8 @@ export default function OnboardingPage() {
                         whileTap={{ scale: 0.98 }}
                         className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
                           formData.personality.romantic === option.value
-                            ? 'bg-[#FF1744] text-white border-[#FF1744] shadow-md'
-                            : 'bg-white text-[#212121] border-[#FFB3BA] hover:border-[#FF1744]'
+                            ? 'bg-[#1877F2] text-white border-[#1877F2] shadow-md'
+                            : 'bg-white text-[#212121] border-[#90CAF9] hover:border-[#1877F2]'
                         } ${errors.romantic ? 'border-red-500' : ''}`}
                       >
                         {option.label}
@@ -1224,7 +1224,7 @@ export default function OnboardingPage() {
                   className="mb-3 sm:mb-4"
                 >
                   <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                    Energy Time <span className="text-[#FF1744]">*</span>
+                    Energy Time <span className="text-[#1877F2]">*</span>
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
@@ -1239,8 +1239,8 @@ export default function OnboardingPage() {
                         whileTap={{ scale: 0.98 }}
                         className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
                           formData.personality.morning === option.value
-                            ? 'bg-[#FF1744] text-white border-[#FF1744] shadow-md'
-                            : 'bg-white text-[#212121] border-[#FFB3BA] hover:border-[#FF1744]'
+                            ? 'bg-[#1877F2] text-white border-[#1877F2] shadow-md'
+                            : 'bg-white text-[#212121] border-[#90CAF9] hover:border-[#1877F2]'
                         } ${errors.morning ? 'border-red-500' : ''}`}
                       >
                         {option.label}
@@ -1260,7 +1260,7 @@ export default function OnboardingPage() {
                   className="mb-3 sm:mb-4"
                 >
                   <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                    Lifestyle <span className="text-[#FF1744]">*</span>
+                    Lifestyle <span className="text-[#1877F2]">*</span>
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
@@ -1275,8 +1275,8 @@ export default function OnboardingPage() {
                         whileTap={{ scale: 0.98 }}
                         className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
                           formData.personality.homebody === option.value
-                            ? 'bg-[#FF1744] text-white border-[#FF1744] shadow-md'
-                            : 'bg-white text-[#212121] border-[#FFB3BA] hover:border-[#FF1744]'
+                            ? 'bg-[#1877F2] text-white border-[#1877F2] shadow-md'
+                            : 'bg-white text-[#212121] border-[#90CAF9] hover:border-[#1877F2]'
                         } ${errors.homebody ? 'border-red-500' : ''}`}
                       >
                         {option.label}
@@ -1296,7 +1296,7 @@ export default function OnboardingPage() {
                   className="mb-3 sm:mb-4"
                 >
                   <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                    Personality <span className="text-[#FF1744]">*</span>
+                    Personality <span className="text-[#1877F2]">*</span>
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
@@ -1311,8 +1311,8 @@ export default function OnboardingPage() {
                         whileTap={{ scale: 0.98 }}
                         className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
                           formData.personality.serious === option.value
-                            ? 'bg-[#FF1744] text-white border-[#FF1744] shadow-md'
-                            : 'bg-white text-[#212121] border-[#FFB3BA] hover:border-[#FF1744]'
+                            ? 'bg-[#1877F2] text-white border-[#1877F2] shadow-md'
+                            : 'bg-white text-[#212121] border-[#90CAF9] hover:border-[#1877F2]'
                         } ${errors.serious ? 'border-red-500' : ''}`}
                       >
                         {option.label}
@@ -1332,7 +1332,7 @@ export default function OnboardingPage() {
                   className="mb-3 sm:mb-4"
                 >
                   <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                    Decision Making <span className="text-[#FF1744]">*</span>
+                    Decision Making <span className="text-[#1877F2]">*</span>
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
@@ -1347,8 +1347,8 @@ export default function OnboardingPage() {
                         whileTap={{ scale: 0.98 }}
                         className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
                           formData.personality.decision === option.value
-                            ? 'bg-[#FF1744] text-white border-[#FF1744] shadow-md'
-                            : 'bg-white text-[#212121] border-[#FFB3BA] hover:border-[#FF1744]'
+                            ? 'bg-[#1877F2] text-white border-[#1877F2] shadow-md'
+                            : 'bg-white text-[#212121] border-[#90CAF9] hover:border-[#1877F2]'
                         } ${errors.decision ? 'border-red-500' : ''}`}
                       >
                         {option.label}
@@ -1368,7 +1368,7 @@ export default function OnboardingPage() {
                   className="mb-3 sm:mb-4"
                 >
                   <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                    Communication Style <span className="text-[#FF1744]">*</span>
+                    Communication Style <span className="text-[#1877F2]">*</span>
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
@@ -1383,8 +1383,8 @@ export default function OnboardingPage() {
                         whileTap={{ scale: 0.98 }}
                         className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
                           formData.personality.communication === option.value
-                            ? 'bg-[#FF1744] text-white border-[#FF1744] shadow-md'
-                            : 'bg-white text-[#212121] border-[#FFB3BA] hover:border-[#FF1744]'
+                            ? 'bg-[#1877F2] text-white border-[#1877F2] shadow-md'
+                            : 'bg-white text-[#212121] border-[#90CAF9] hover:border-[#1877F2]'
                         } ${errors.communication ? 'border-red-500' : ''}`}
                       >
                         {option.label}
@@ -1424,7 +1424,7 @@ export default function OnboardingPage() {
                   disabled={Object.values(formData.personality).some(v => v === '')}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-[#FF1744] hover:bg-[#D32F2F] disabled:bg-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm"
+                  className="flex-1 bg-[#1877F2] hover:bg-[#1565C0] disabled:bg-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm"
                 >
                   Next →
                 </motion.button>
@@ -1457,7 +1457,7 @@ export default function OnboardingPage() {
                   className="mb-3 sm:mb-4"
                 >
                   <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                    Kids <span className="text-[#FF1744]">*</span>
+                    Kids <span className="text-[#1877F2]">*</span>
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
@@ -1474,8 +1474,8 @@ export default function OnboardingPage() {
                         whileTap={{ scale: 0.98 }}
                         className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
                           formData.dealbreakers.kids === option.value
-                            ? 'bg-[#FF1744] text-white border-[#FF1744] shadow-md'
-                            : 'bg-white text-[#212121] border-[#FFB3BA] hover:border-[#FF1744]'
+                            ? 'bg-[#1877F2] text-white border-[#1877F2] shadow-md'
+                            : 'bg-white text-[#212121] border-[#90CAF9] hover:border-[#1877F2]'
                         } ${errors.kids ? 'border-red-500' : ''}`}
                       >
                         {option.label}
@@ -1495,7 +1495,7 @@ export default function OnboardingPage() {
                   className="mb-3 sm:mb-4"
                 >
                   <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                    Smoking <span className="text-[#FF1744]">*</span>
+                    Smoking <span className="text-[#1877F2]">*</span>
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
@@ -1512,8 +1512,8 @@ export default function OnboardingPage() {
                         whileTap={{ scale: 0.98 }}
                         className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
                           formData.dealbreakers.smoking === option.value
-                            ? 'bg-[#FF1744] text-white border-[#FF1744] shadow-md'
-                            : 'bg-white text-[#212121] border-[#FFB3BA] hover:border-[#FF1744]'
+                            ? 'bg-[#1877F2] text-white border-[#1877F2] shadow-md'
+                            : 'bg-white text-[#212121] border-[#90CAF9] hover:border-[#1877F2]'
                         } ${errors.smoking ? 'border-red-500' : ''}`}
                       >
                         {option.label}
@@ -1533,7 +1533,7 @@ export default function OnboardingPage() {
                   className="mb-3 sm:mb-4"
                 >
                   <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                    Pets <span className="text-[#FF1744]">*</span>
+                    Pets <span className="text-[#1877F2]">*</span>
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
@@ -1550,8 +1550,8 @@ export default function OnboardingPage() {
                         whileTap={{ scale: 0.98 }}
                         className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
                           formData.dealbreakers.pets === option.value
-                            ? 'bg-[#FF1744] text-white border-[#FF1744] shadow-md'
-                            : 'bg-white text-[#212121] border-[#FFB3BA] hover:border-[#FF1744]'
+                            ? 'bg-[#1877F2] text-white border-[#1877F2] shadow-md'
+                            : 'bg-white text-[#212121] border-[#90CAF9] hover:border-[#1877F2]'
                         } ${errors.pets ? 'border-red-500' : ''}`}
                       >
                         {option.label}
@@ -1571,7 +1571,7 @@ export default function OnboardingPage() {
                   className="mb-3 sm:mb-4"
                 >
                   <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                    Drinking <span className="text-[#FF1744]">*</span>
+                    Drinking <span className="text-[#1877F2]">*</span>
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
@@ -1588,8 +1588,8 @@ export default function OnboardingPage() {
                         whileTap={{ scale: 0.98 }}
                         className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
                           formData.dealbreakers.drinking === option.value
-                            ? 'bg-[#FF1744] text-white border-[#FF1744] shadow-md'
-                            : 'bg-white text-[#212121] border-[#FFB3BA] hover:border-[#FF1744]'
+                            ? 'bg-[#1877F2] text-white border-[#1877F2] shadow-md'
+                            : 'bg-white text-[#212121] border-[#90CAF9] hover:border-[#1877F2]'
                         } ${errors.drinking ? 'border-red-500' : ''}`}
                       >
                         {option.label}
@@ -1647,7 +1647,7 @@ export default function OnboardingPage() {
                   disabled={!formData.dealbreakers.kids || !formData.dealbreakers.smoking || !formData.dealbreakers.pets || !formData.dealbreakers.drinking}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-[#FF1744] hover:bg-[#D32F2F] disabled:bg-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm"
+                  className="flex-1 bg-[#1877F2] hover:bg-[#1565C0] disabled:bg-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm"
                 >
                   Next →
                 </motion.button>
@@ -1716,7 +1716,7 @@ export default function OnboardingPage() {
                     value={formData.optional.profession}
                     onChange={(e) => handleChange('optional', { ...formData.optional, profession: e.target.value })}
                     placeholder="e.g., Software Engineer, Doctor, Teacher"
-                    className="w-full px-4 py-2.5 sm:py-3 border-2 border-[#FFB3BA] rounded-xl sm:rounded-2xl text-sm sm:text-base text-[#212121] bg-white focus:outline-none focus:ring-2 focus:ring-[#FF1744] focus:ring-opacity-20 focus:border-[#FF1744] transition-all"
+                    className="w-full px-4 py-2.5 sm:py-3 border-2 border-[#90CAF9] rounded-xl sm:rounded-2xl text-sm sm:text-base text-[#212121] bg-white focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-opacity-20 focus:border-[#1877F2] transition-all"
                   />
                 </motion.div>
 
@@ -1751,8 +1751,8 @@ export default function OnboardingPage() {
                         whileTap={{ scale: 0.95 }}
                         className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
                           formData.optional.languages.includes(language)
-                            ? 'bg-[#FF1744] text-white border-2 border-[#FF1744] shadow-md'
-                            : 'bg-white text-[#212121] border-2 border-[#FFB3BA] hover:border-[#FF1744]'
+                            ? 'bg-[#1877F2] text-white border-2 border-[#1877F2] shadow-md'
+                            : 'bg-white text-[#212121] border-2 border-[#90CAF9] hover:border-[#1877F2]'
                         }`}
                       >
                         {language}
@@ -1820,7 +1820,7 @@ export default function OnboardingPage() {
                   onClick={handleNext}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-[#FF1744] hover:bg-[#D32F2F] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all text-sm"
+                  className="flex-1 bg-[#1877F2] hover:bg-[#1565C0] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all text-sm"
                 >
                   Next →
                 </motion.button>
@@ -1850,7 +1850,7 @@ export default function OnboardingPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="border-2 border-[#FFB3BA] rounded-xl sm:rounded-2xl p-3 sm:p-4"
+                  className="border-2 border-[#90CAF9] rounded-xl sm:rounded-2xl p-3 sm:p-4"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-sm sm:text-base font-semibold text-[#212121]">Basic Information</h3>
@@ -1858,7 +1858,7 @@ export default function OnboardingPage() {
                       onClick={() => setCurrentStep(1)}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
-                      className="text-[#FF1744] hover:text-[#D32F2F] transition-colors"
+                      className="text-[#1877F2] hover:text-[#1565C0] transition-colors"
                     >
                       <Edit2 className="w-4 h-4" />
                     </motion.button>
@@ -1878,7 +1878,7 @@ export default function OnboardingPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 }}
-                  className="border-2 border-[#FFB3BA] rounded-xl sm:rounded-2xl p-3 sm:p-4"
+                  className="border-2 border-[#90CAF9] rounded-xl sm:rounded-2xl p-3 sm:p-4"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-sm sm:text-base font-semibold text-[#212121]">Location & Preferences</h3>
@@ -1886,7 +1886,7 @@ export default function OnboardingPage() {
                       onClick={() => setCurrentStep(2)}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
-                      className="text-[#FF1744] hover:text-[#D32F2F] transition-colors"
+                      className="text-[#1877F2] hover:text-[#1565C0] transition-colors"
                     >
                       <Edit2 className="w-4 h-4" />
                     </motion.button>
@@ -1903,7 +1903,7 @@ export default function OnboardingPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="border-2 border-[#FFB3BA] rounded-xl sm:rounded-2xl p-3 sm:p-4"
+                  className="border-2 border-[#90CAF9] rounded-xl sm:rounded-2xl p-3 sm:p-4"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-sm sm:text-base font-semibold text-[#212121]">Interests & Hobbies</h3>
@@ -1911,7 +1911,7 @@ export default function OnboardingPage() {
                       onClick={() => setCurrentStep(3)}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
-                      className="text-[#FF1744] hover:text-[#D32F2F] transition-colors"
+                      className="text-[#1877F2] hover:text-[#1565C0] transition-colors"
                     >
                       <Edit2 className="w-4 h-4" />
                     </motion.button>
@@ -1921,7 +1921,7 @@ export default function OnboardingPage() {
                       formData.interests.map((interest) => (
                         <span
                           key={interest}
-                          className="px-2 sm:px-3 py-1 bg-[#FFE5E5] text-[#FF1744] rounded-lg text-xs sm:text-sm font-medium"
+                          className="px-2 sm:px-3 py-1 bg-[#E7F3FF] text-[#1877F2] rounded-lg text-xs sm:text-sm font-medium"
                         >
                           {interest}
                         </span>
@@ -1937,7 +1937,7 @@ export default function OnboardingPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.25 }}
-                  className="border-2 border-[#FFB3BA] rounded-xl sm:rounded-2xl p-3 sm:p-4"
+                  className="border-2 border-[#90CAF9] rounded-xl sm:rounded-2xl p-3 sm:p-4"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-sm sm:text-base font-semibold text-[#212121]">Personality Traits</h3>
@@ -1945,7 +1945,7 @@ export default function OnboardingPage() {
                       onClick={() => setCurrentStep(4)}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
-                      className="text-[#FF1744] hover:text-[#D32F2F] transition-colors"
+                      className="text-[#1877F2] hover:text-[#1565C0] transition-colors"
                     >
                       <Edit2 className="w-4 h-4" />
                     </motion.button>
@@ -1963,7 +1963,7 @@ export default function OnboardingPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="border-2 border-[#FFB3BA] rounded-xl sm:rounded-2xl p-3 sm:p-4"
+                  className="border-2 border-[#90CAF9] rounded-xl sm:rounded-2xl p-3 sm:p-4"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-sm sm:text-base font-semibold text-[#212121]">Lifestyle</h3>
@@ -1971,7 +1971,7 @@ export default function OnboardingPage() {
                       onClick={() => setCurrentStep(5)}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
-                      className="text-[#FF1744] hover:text-[#D32F2F] transition-colors"
+                      className="text-[#1877F2] hover:text-[#1565C0] transition-colors"
                     >
                       <Edit2 className="w-4 h-4" />
                     </motion.button>
@@ -1993,7 +1993,7 @@ export default function OnboardingPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.35 }}
-                    className="border-2 border-[#FFB3BA] rounded-xl sm:rounded-2xl p-3 sm:p-4"
+                    className="border-2 border-[#90CAF9] rounded-xl sm:rounded-2xl p-3 sm:p-4"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-sm sm:text-base font-semibold text-[#212121]">Additional Details</h3>
@@ -2001,7 +2001,7 @@ export default function OnboardingPage() {
                         onClick={() => setCurrentStep(6)}
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
-                        className="text-[#FF1744] hover:text-[#D32F2F] transition-colors"
+                        className="text-[#1877F2] hover:text-[#1565C0] transition-colors"
                       >
                         <Edit2 className="w-4 h-4" />
                       </motion.button>
@@ -2030,7 +2030,7 @@ export default function OnboardingPage() {
                   onClick={handleNext}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full bg-[#FF1744] hover:bg-[#D32F2F] text-white font-semibold py-3 sm:py-4 rounded-xl sm:rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg"
+                  className="w-full bg-[#1877F2] hover:bg-[#1565C0] text-white font-semibold py-3 sm:py-4 rounded-xl sm:rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg"
                 >
                   <Check className="w-5 h-5" />
                   <span className="text-sm sm:text-base">Complete Profile</span>

@@ -3,15 +3,15 @@
 
 export const theme = {
   colors: {
-    // Primary Colors - Baby Pink Shades
-    babyPink: '#FFE5E5',
-    babyPinkLight: '#FFF0F0',
-    babyPinkLighter: '#FFF5F5',
+    // Primary Colors - Meta Blue Shades
+    babyPink: '#E7F3FF',
+    babyPinkLight: '#F0F8FF',
+    babyPinkLighter: '#F5FAFF',
     
-    // Accent Colors - Dark Pink/Red
-    darkPink: '#FF1744',
-    darkPinkHover: '#D32F2F',
-    lightPinkBorder: '#FFB3BA',
+    // Accent Colors - Meta Blue
+    darkPink: '#1877F2',  // Meta Blue
+    darkPinkHover: '#1565C0',  // Darker Blue
+    lightPinkBorder: '#90CAF9',  // Light Blue Border
     
     // Neutral Colors
     grey: '#757575',
@@ -21,10 +21,10 @@ export const theme = {
     white: '#FFFFFF',
     
     // Semantic Colors
-    error: '#FF1744',
+    error: '#E53935',
     success: '#4CAF50',
     warning: '#FF9800',
-    info: '#2196F3',
+    info: '#1877F2',
   },
   
   borderRadius: {

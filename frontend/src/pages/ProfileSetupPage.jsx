@@ -182,7 +182,7 @@ export default function ProfileSetupPage() {
               transition={{ delay: 0.1 }}
             >
               <label className="block text-sm sm:text-base font-semibold text-[#212121] mb-3">
-                Photos <span className="text-[#FF1744]">*</span>
+                Photos <span className="text-[#1877F2]">*</span>
               </label>
               <PhotoUpload
                 photos={photos}
@@ -194,7 +194,7 @@ export default function ProfileSetupPage() {
                 <motion.p
                   initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-[#FF1744] mt-2"
+                  className="text-xs text-[#1877F2] mt-2"
                 >
                   {errors.photos}
                 </motion.p>
@@ -219,7 +219,7 @@ export default function ProfileSetupPage() {
                 }}
                 placeholder="Tell others about yourself..."
                 rows={4}
-                className="w-full px-4 py-3 border-2 border-[#FFB3BA] rounded-xl sm:rounded-2xl text-sm sm:text-base text-[#212121] bg-white focus:outline-none focus:ring-2 focus:ring-[#FF1744] focus:ring-opacity-20 focus:border-[#FF1744] transition-all resize-none"
+                className="w-full px-4 py-3 border-2 border-[#90CAF9] rounded-xl sm:rounded-2xl text-sm sm:text-base text-[#212121] bg-white focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-opacity-20 focus:border-[#1877F2] transition-all resize-none"
               />
               <div className="flex justify-between items-center mt-2">
                 <p className="text-xs text-[#757575]">
@@ -242,13 +242,13 @@ export default function ProfileSetupPage() {
                   {interests.slice(0, 8).map((interest) => (
                     <span
                       key={interest}
-                      className="px-3 py-1.5 bg-[#FFE5E5] text-[#FF1744] rounded-lg text-xs sm:text-sm font-medium"
+                      className="px-3 py-1.5 bg-[#E7F3FF] text-[#1877F2] rounded-lg text-xs sm:text-sm font-medium"
                     >
                       {interest}
                     </span>
                   ))}
                   {interests.length > 8 && (
-                    <span className="px-3 py-1.5 bg-[#FFE5E5] text-[#FF1744] rounded-lg text-xs sm:text-sm font-medium">
+                    <span className="px-3 py-1.5 bg-[#E7F3FF] text-[#1877F2] rounded-lg text-xs sm:text-sm font-medium">
                       +{interests.length - 8} more
                     </span>
                   )}
@@ -261,12 +261,12 @@ export default function ProfileSetupPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="border-2 border-[#FFB3BA] rounded-xl sm:rounded-2xl p-4"
+              className="border-2 border-[#90CAF9] rounded-xl sm:rounded-2xl p-4"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center mb-2">
-                    <Camera className="w-5 h-5 text-[#FF1744] mr-2" />
+                    <Camera className="w-5 h-5 text-[#1877F2] mr-2" />
                     <h3 className="text-sm sm:text-base font-semibold text-[#212121]">
                       Photo Verification
                     </h3>
@@ -292,7 +292,7 @@ export default function ProfileSetupPage() {
                   className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
                     showVerification
                       ? 'bg-[#4CAF50] text-white'
-                      : 'bg-[#FFE5E5] text-[#FF1744] hover:bg-[#FF1744] hover:text-white'
+                      : 'bg-[#E7F3FF] text-[#1877F2] hover:bg-[#1877F2] hover:text-white'
                   }`}
                 >
                   {showVerification ? 'Verified' : 'Verify Later'}
@@ -302,19 +302,19 @@ export default function ProfileSetupPage() {
           </div>
 
           {/* Complete Button */}
-          <div className="pt-4 sm:pt-6 mt-4 sm:mt-6 border-t border-[#FFB3BA]">
+          <div className="pt-4 sm:pt-6 mt-4 sm:mt-6 border-t border-[#90CAF9]">
             <motion.button
               onClick={handleComplete}
               disabled={photos.length < minPhotos}
               whileHover={{ scale: photos.length >= minPhotos ? 1.02 : 1 }}
               whileTap={{ scale: photos.length >= minPhotos ? 0.98 : 1 }}
-              className="w-full bg-[#FF1744] hover:bg-[#D32F2F] disabled:bg-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-3 sm:py-4 rounded-xl sm:rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg disabled:transform-none"
+              className="w-full bg-[#1877F2] hover:bg-[#1565C0] disabled:bg-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-3 sm:py-4 rounded-xl sm:rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg disabled:transform-none"
             >
               <Check className="w-5 h-5" />
               <span className="text-sm sm:text-base">Complete Profile</span>
             </motion.button>
             {photos.length < minPhotos && (
-              <p className="text-xs text-[#FF1744] mt-2 text-center">
+              <p className="text-xs text-[#1877F2] mt-2 text-center">
                 Please upload at least {minPhotos} photo{minPhotos > 1 ? 's' : ''} to continue
               </p>
             )}

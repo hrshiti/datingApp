@@ -88,12 +88,12 @@ export default function PhotoUpload({ photos = [], onChange, maxPhotos = 6, minP
                   onClick={() => removePhoto(photo.id)}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  className="absolute top-2 right-2 bg-[#FF1744] text-white rounded-full p-1.5 sm:p-2 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute top-2 right-2 bg-[#1877F2] text-white rounded-full p-1.5 sm:p-2 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <X className="w-3 h-3 sm:w-4 sm:h-4" />
                 </motion.button>
                 {index === 0 && (
-                  <div className="absolute bottom-2 left-2 bg-[#FF1744] text-white text-xs px-2 py-1 rounded-lg font-medium">
+                  <div className="absolute bottom-2 left-2 bg-[#1877F2] text-white text-xs px-2 py-1 rounded-lg font-medium">
                     Main
                   </div>
                 )}
@@ -116,8 +116,8 @@ export default function PhotoUpload({ photos = [], onChange, maxPhotos = 6, minP
             border-2 border-dashed rounded-xl sm:rounded-2xl p-6 sm:p-8
             cursor-pointer transition-all
             ${dragActive 
-              ? 'border-[#FF1744] bg-[#FFF0F0]' 
-              : 'border-[#FFB3BA] hover:border-[#FF1744] bg-white'
+              ? 'border-[#1877F2] bg-[#F0F8FF]' 
+              : 'border-[#90CAF9] hover:border-[#1877F2] bg-white'
             }
           `}
         >
@@ -136,9 +136,9 @@ export default function PhotoUpload({ photos = [], onChange, maxPhotos = 6, minP
               transition={{ duration: 0.2 }}
             >
               {photos.length === 0 ? (
-                <ImageIcon className="w-12 h-12 sm:w-16 sm:h-16 text-[#FF1744] mb-3 sm:mb-4" />
+                <ImageIcon className="w-12 h-12 sm:w-16 sm:h-16 text-[#1877F2] mb-3 sm:mb-4" />
               ) : (
-                <Upload className="w-8 h-8 sm:w-12 sm:h-12 text-[#FF1744] mb-3 sm:mb-4" />
+                <Upload className="w-8 h-8 sm:w-12 sm:h-12 text-[#1877F2] mb-3 sm:mb-4" />
               )}
             </motion.div>
             
@@ -167,7 +167,7 @@ export default function PhotoUpload({ photos = [], onChange, maxPhotos = 6, minP
         >
           {photos.length} photo{photos.length > 1 ? 's' : ''} uploaded
           {photos.length < minPhotos && (
-            <span className="text-[#FF1744] ml-1">
+            <span className="text-[#1877F2] ml-1">
               (Add at least {minPhotos} photo{minPhotos > 1 ? 's' : ''})
             </span>
           )}

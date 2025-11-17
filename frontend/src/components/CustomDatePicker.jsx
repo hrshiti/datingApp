@@ -116,9 +116,9 @@ export default function CustomDatePicker({
           error
             ? 'border-red-500 focus:border-red-600'
             : isOpen
-            ? 'border-[#FF1744] bg-white'
-            : 'border-[#FFB3BA] hover:border-[#FF1744]'
-        } bg-white text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#FF1744] focus:ring-opacity-20`}
+            ? 'border-[#1877F2] bg-white'
+            : 'border-[#90CAF9] hover:border-[#1877F2]'
+        } bg-white text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-opacity-20`}
       >
         <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#757575] w-4 h-4 pointer-events-none" />
         <span className={value ? 'text-[#212121]' : 'text-[#757575]'}>
@@ -133,7 +133,7 @@ export default function CustomDatePicker({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-            className="absolute z-50 w-full mt-1 bg-white border-2 border-[#FFB3BA] rounded-xl shadow-lg p-3"
+            className="absolute z-50 w-full mt-1 bg-white border-2 border-[#90CAF9] rounded-xl shadow-lg p-3"
           >
             {/* Month Navigation */}
             <div className="flex items-center justify-between mb-3">
@@ -183,7 +183,7 @@ export default function CustomDatePicker({
                       disabled
                         ? 'text-[#E0E0E0] cursor-not-allowed'
                         : selected
-                        ? 'bg-[#FF1744] text-white'
+                        ? 'bg-[#1877F2] text-white'
                         : 'text-[#212121] hover:bg-[#FFF0F0]'
                     }`}
                   >
