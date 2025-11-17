@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, X, Heart, Star, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { calculateDistance } from '../data/mockProfiles';
@@ -14,22 +14,42 @@ export default function ProfileCard({
   swipeDirection = null 
 }) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [dragX, setDragX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const handleDragStart = (event, info) => {
-    setDragStart({ x: info.point.x, y: info.point.y });
+  // Reset drag state when swipe direction changes (card is being removed)
+  useEffect(() => {
+    if (swipeDirection) {
+      setDragX(0);
+      setIsDragging(false);
+    }
+  }, [swipeDirection]);
+
+  const handleDrag = (event, info) => {
+    setDragX(info.offset.x);
+  };
+
+  const handleDragStart = () => {
+    setIsDragging(true);
   };
 
   const handleDragEnd = (event, info) => {
-    const deltaX = info.point.x - dragStart.x;
+    setIsDragging(false);
     const threshold = 100;
+    const velocity = info.velocity.x;
 
-    if (Math.abs(deltaX) > threshold) {
-      if (deltaX > 0) {
+    // Check if dragged far enough or has enough velocity
+    if (Math.abs(info.offset.x) > threshold || Math.abs(velocity) > 500) {
+      if (info.offset.x > 0 || velocity > 0) {
+        // Swipe right = Like
         onLike();
       } else {
+        // Swipe left = Pass
         onPass();
       }
+    } else {
+      // Snap back to center with animation
+      setDragX(0);
     }
   };
 
@@ -42,13 +62,21 @@ export default function ProfileCard({
       )
     : null;
 
-  const nextPhoto = () => {
+  const nextPhoto = (e) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
     if (profile.photos && currentPhotoIndex < profile.photos.length - 1) {
       setCurrentPhotoIndex(currentPhotoIndex + 1);
     }
   };
 
-  const prevPhoto = () => {
+  const prevPhoto = (e) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
     if (currentPhotoIndex > 0) {
       setCurrentPhotoIndex(currentPhotoIndex - 1);
     }
@@ -59,6 +87,11 @@ export default function ProfileCard({
       return { x: 500, rotate: 30, opacity: 0 };
     } else if (swipeDirection === 'left') {
       return { x: -500, rotate: -30, opacity: 0 };
+    }
+    // During drag, use the actual drag position
+    if (isDragging) {
+      const rotate = dragX * 0.1; // Rotation based on drag distance
+      return { x: dragX, rotate, opacity: 1 };
     }
     return { x: 0, rotate: 0, opacity: 1 };
   };
@@ -112,19 +145,58 @@ export default function ProfileCard({
       <motion.div
         key={profile.id}
         drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
+        dragConstraints={{ left: -500, right: 500 }}
+        dragElastic={0.2}
+        onDrag={handleDrag}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={getSwipeStyle()}
         exit={getSwipeStyle()}
-        transition={{ duration: 0.3 }}
-        className="relative w-full max-w-2xl mx-auto h-full flex flex-col bg-white sm:rounded-2xl sm:shadow-xl overflow-hidden"
+        transition={isDragging ? { type: "spring", stiffness: 300, damping: 30 } : { duration: 0.3 }}
+        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+        className="relative w-full max-h-[90vh] sm:max-h-[85vh] flex flex-col bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-[#FFB6C1]/20 touch-none select-none"
       >
+        {/* Swipe Feedback Overlay */}
+        {isDragging && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: Math.min(Math.abs(dragX) / 150, 0.8) }}
+            className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none"
+          >
+            {dragX > 50 && (
+              <motion.div
+                initial={{ scale: 0.8, rotate: -10 }}
+                animate={{ scale: 1, rotate: 0 }}
+                className="px-8 py-4 bg-green-500 text-white rounded-2xl text-3xl font-bold shadow-2xl border-4 border-white"
+              >
+                LIKE
+              </motion.div>
+            )}
+            {dragX < -50 && (
+              <motion.div
+                initial={{ scale: 0.8, rotate: 10 }}
+                animate={{ scale: 1, rotate: 0 }}
+                className="px-8 py-4 bg-red-500 text-white rounded-2xl text-3xl font-bold shadow-2xl border-4 border-white"
+              >
+                PASS
+              </motion.div>
+            )}
+          </motion.div>
+        )}
+
         {/* Scrollable Container - Image scrolls first, then content */}
-        <div className="flex-1 overflow-y-auto scrollbar-hide pb-20 sm:pb-0 -mt-2">
+        <div 
+          className={`flex-1 overflow-y-auto scrollbar-hide pb-20 sm:pb-0 ${isDragging ? 'pointer-events-none' : ''}`}
+          onTouchStart={(e) => {
+            // Prevent scrolling when starting a drag
+            if (e.touches.length === 1) {
+              e.stopPropagation();
+            }
+          }}
+        >
           {/* Full Width Photo Carousel - Scrollable */}
-          <div className="relative w-full h-[70vh] bg-gradient-to-br from-[#FFE4E1] via-[#FFF0F5] to-[#FFE4E1]">
+          <div className="relative w-full h-[70vh] sm:h-[75vh] bg-gradient-to-br from-[#FFE4E1] via-[#FFF0F5] to-[#FFE4E1]">
           {profile.photos && profile.photos.length > 0 ? (
             <>
               <AnimatePresence mode="wait">

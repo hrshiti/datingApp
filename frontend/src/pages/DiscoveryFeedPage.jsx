@@ -335,17 +335,17 @@ export default function DiscoveryFeedPage() {
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="relative z-20 bg-white/95 backdrop-blur-md border-b-2 border-[#FFB6C1] shadow-sm"
+        className="relative z-20 bg-gradient-to-b from-white via-white/98 to-white/95 backdrop-blur-md border-b border-[#FFB6C1]/50 shadow-sm"
       >
-        <div className="max-w-md mx-auto px-4 py-2">
-          <div className="flex items-center justify-between mb-2">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#FF91A4] to-[#FF91A4] flex items-center justify-center shadow-lg">
-                <Sparkles className="w-4 h-4 text-white" />
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] flex items-center justify-center shadow-md">
+                <Sparkles className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-lg sm:text-xl font-bold text-[#212121]">Discover</h1>
-                <p className="text-[10px] text-[#757575]">{profiles.length} profiles available</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-[#212121]">Discover</h1>
+                <p className="text-xs text-[#757575]">{profiles.length} profiles available</p>
               </div>
             </div>
             
@@ -356,11 +356,11 @@ export default function DiscoveryFeedPage() {
                   onClick={() => setShowMatches(!showMatches)}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="relative p-2 bg-[#FFE4E1] rounded-lg hover:bg-[#FF91A4] hover:text-white transition-all"
+                  className="relative p-2.5 bg-[#FFE4E1] rounded-xl hover:bg-[#FF91A4] hover:text-white transition-all shadow-sm"
                 >
-                  <MessageCircle className="w-4 h-4 text-[#FF91A4]" />
+                  <MessageCircle className="w-5 h-5 text-[#FF91A4] hover:text-white transition-colors" />
                   {matches.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#FF91A4] text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#FF91A4] text-white text-[10px] rounded-full flex items-center justify-center font-bold shadow-md">
                       {matches.length}
                     </span>
                   )}
@@ -372,16 +372,16 @@ export default function DiscoveryFeedPage() {
                 onClick={() => navigate('/filters')}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="p-2 bg-[#FFE4E1] rounded-lg hover:bg-[#FF91A4] hover:text-white transition-all"
+                className="p-2.5 bg-[#FFE4E1] rounded-xl hover:bg-[#FF91A4] hover:text-white transition-all shadow-sm"
               >
-                <Filter className="w-4 h-4 text-[#FF91A4]" />
+                <Filter className="w-5 h-5 text-[#FF91A4] hover:text-white transition-colors" />
               </motion.button>
             </div>
           </div>
 
           {/* Daily Likes Progress Bar */}
-          <div className="flex items-center">
-            <div className="flex-1 bg-[#E0E0E0] rounded-full h-2 overflow-hidden">
+          <div className="flex items-center gap-2">
+            <div className="flex-1 bg-[#FFE4E1] rounded-full h-2.5 overflow-hidden shadow-inner">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ 
@@ -393,29 +393,32 @@ export default function DiscoveryFeedPage() {
                   isPremium
                     ? 'bg-gradient-to-r from-[#FFD700] to-[#FFA500]'
                     : remainingLikes <= 5
-                      ? 'bg-[#FF91A4]'
+                      ? 'bg-gradient-to-r from-[#FF91A4] to-[#FF69B4]'
                       : 'bg-gradient-to-r from-[#FF91A4] to-[#FF91A4]'
                 }`}
               />
             </div>
+            <span className="text-xs font-semibold text-[#FF91A4] min-w-[40px] text-right">
+              {remainingLikes} {isPremium ? '∞' : 'left'}
+            </span>
           </div>
         </div>
       </motion.div>
 
-      {/* Profile Cards Area - Full Width Bumble Style */}
-      <div className="flex-1 relative z-10 overflow-hidden pb-20 sm:pb-0 -mt-8">
-        <div className="h-full w-full">
+      {/* Profile Cards Area - Better Spacing */}
+      <div className="flex-1 relative z-10 overflow-hidden pb-20 sm:pb-0 pt-3 sm:pt-6">
+        <div className="h-full w-full max-w-2xl mx-auto px-3 sm:px-6 flex items-center justify-center">
           {currentProfile ? (
             <ProfileCard
-              profile={currentProfile}
-              currentUserLocation={currentUserLocation}
-              matchScore={currentProfile.matchScore}
-              reasons={currentProfile.reasons}
-              onLike={handleLike}
-              onPass={handlePass}
-              onSuperLike={handleSuperLike}
-              swipeDirection={swipeDirection}
-            />
+                profile={currentProfile}
+                currentUserLocation={currentUserLocation}
+                matchScore={currentProfile.matchScore}
+                reasons={currentProfile.reasons}
+                onLike={handleLike}
+                onPass={handlePass}
+                onSuperLike={handleSuperLike}
+                swipeDirection={swipeDirection}
+              />
           ) : (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}

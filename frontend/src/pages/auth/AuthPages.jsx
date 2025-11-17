@@ -115,7 +115,7 @@ export default function AuthPages() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter email or phone number"
-                    className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-2xl focus:border-blue-600 focus:outline-none transition-colors text-black"
+                    className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FF91A4] focus:outline-none transition-colors text-black"
                   />
                 </div>
               </div>
@@ -123,7 +123,7 @@ export default function AuthPages() {
               <button
                 onClick={() => handleSendOtp('login')}
                 disabled={!email || isLoading}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-2xl transition-all transform hover:scale-105 active:scale-95 disabled:transform-none"
+                className="w-full bg-[#FF91A4] hover:bg-[#FF69B4] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-2xl transition-all transform hover:scale-105 active:scale-95 disabled:transform-none"
               >
                 {isLoading ? 'Sending...' : 'Send OTP'}
               </button>
@@ -134,7 +134,7 @@ export default function AuthPages() {
                     setCurrentPage('signup');
                     navigate('/signup');
                   }}
-                  className="text-blue-600 hover:text-blue-700 font-medium"
+                  className="text-[#FF91A4] hover:text-[#FF69B4] font-medium"
                 >
                   Don't have an account? Sign up
                 </button>
@@ -176,7 +176,7 @@ export default function AuthPages() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Enter your full name"
-                  className="w-full px-4 py-4 border-2 border-gray-200 rounded-2xl focus:border-blue-600 focus:outline-none transition-colors text-black"
+                  className="w-full px-4 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FF91A4] focus:outline-none transition-colors text-black"
                 />
               </div>
 
@@ -191,7 +191,7 @@ export default function AuthPages() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email"
-                    className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-2xl focus:border-blue-600 focus:outline-none transition-colors text-black"
+                    className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FF91A4] focus:outline-none transition-colors text-black"
                   />
                 </div>
               </div>
@@ -207,7 +207,7 @@ export default function AuthPages() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="Enter your phone number"
-                    className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-2xl focus:border-blue-600 focus:outline-none transition-colors text-black"
+                    className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FF91A4] focus:outline-none transition-colors text-black"
                   />
                 </div>
               </div>
@@ -215,7 +215,7 @@ export default function AuthPages() {
               <button
                 onClick={() => handleSendOtp('signup')}
                 disabled={!name || !email || !phone || isLoading}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-2xl transition-all transform hover:scale-105 active:scale-95 disabled:transform-none"
+                className="w-full bg-[#FF91A4] hover:bg-[#FF69B4] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-2xl transition-all transform hover:scale-105 active:scale-95 disabled:transform-none"
               >
                 {isLoading ? 'Sending...' : 'Send OTP'}
               </button>
@@ -226,7 +226,7 @@ export default function AuthPages() {
                     setCurrentPage('login');
                     navigate('/login');
                   }}
-                  className="text-blue-600 hover:text-blue-700 font-medium"
+                  className="text-[#FF91A4] hover:text-[#FF69B4] font-medium"
                 >
                   Already have an account? Login
                 </button>
@@ -264,8 +264,8 @@ export default function AuthPages() {
           </button>
 
           <div className="text-center mb-4 sm:mb-8">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-full mx-auto mb-3 sm:mb-4 flex items-center justify-center">
-              <Mail className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#FFE4E1] rounded-full mx-auto mb-3 sm:mb-4 flex items-center justify-center">
+              <Mail className="w-6 h-6 sm:w-8 sm:h-8 text-[#FF91A4]" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-black mb-2">Verify OTP</h1>
             <p className="text-sm sm:text-base text-gray-600">
@@ -291,7 +291,7 @@ export default function AuthPages() {
                       value={digit}
                       onChange={(e) => handleOtpChange(index, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                      className="flex-1 max-w-[45px] sm:max-w-[50px] h-12 sm:h-14 text-center text-xl sm:text-2xl font-bold border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:outline-none transition-colors text-black"
+                      className="flex-1 max-w-[45px] sm:max-w-[50px] h-12 sm:h-14 text-center text-xl sm:text-2xl font-bold border-2 border-gray-200 rounded-xl focus:border-[#FF91A4] focus:outline-none transition-colors text-black"
                     />
                   ))}
                 </div>
@@ -300,14 +300,14 @@ export default function AuthPages() {
               <button
                 onClick={handleVerifyOtp}
                 disabled={otp.some(d => !d) || isLoading}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-2xl transition-all transform hover:scale-105 active:scale-95 disabled:transform-none"
+                className="w-full bg-[#FF91A4] hover:bg-[#FF69B4] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-2xl transition-all transform hover:scale-105 active:scale-95 disabled:transform-none"
               >
                 {isLoading ? 'Verifying...' : 'Verify OTP'}
               </button>
 
               <div className="text-center">
                 <button className="text-gray-600 hover:text-black font-medium text-sm">
-                  Didn't receive code? <span className="text-blue-600">Resend</span>
+                  Didn't receive code? <span className="text-[#FF91A4]">Resend</span>
                 </button>
               </div>
             </div>
@@ -392,7 +392,7 @@ export default function AuthPages() {
           </p>
           <button
             onClick={handleContinue}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-8 rounded-2xl transition-all transform hover:scale-105 active:scale-95"
+            className="bg-[#FF91A4] hover:bg-[#FF69B4] text-white font-semibold py-4 px-8 rounded-2xl transition-all transform hover:scale-105 active:scale-95"
           >
             Continue
           </button>
