@@ -11,6 +11,7 @@ import ChatDetailPage from './pages/ChatDetailPage';
 import SettingsPage from './pages/SettingsPage';
 import SafetyCenterPage from './pages/SafetyCenterPage';
 import PremiumPage from './pages/PremiumPage';
+import LikedYouPage from './pages/LikedYouPage';
 import './App.css';
 
 function Home() {
@@ -47,6 +48,7 @@ function App() {
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/safety" element={<SafetyCenterPage />} />
         <Route path="/premium" element={<PremiumPage />} />
+        <Route path="/liked-you" element={<LikedYouPage />} />
         <Route path="/home" element={<Home />} />
         <Route path="*" element={<Navigate to="/signup" replace />} />
       </Routes>

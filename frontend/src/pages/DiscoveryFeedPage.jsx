@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Filter, Crown, Sparkles, MessageCircle, User, Heart, Users, UserCircle } from 'lucide-react';
+import { Filter, Crown, Sparkles, MessageCircle, User, Heart, Users, UserCircle, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProfileCard from '../components/ProfileCard';
 import { mockProfiles, calculateMatchScore, calculateDistance } from '../data/mockProfiles';
@@ -363,6 +363,25 @@ export default function DiscoveryFeedPage() {
             </div>
             
             <div className="flex items-center gap-2">
+              {/* Who Liked You Button */}
+              <motion.button
+                onClick={() => navigate('/liked-you')}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`relative p-2.5 rounded-xl transition-all shadow-sm ${
+                  isPremium
+                    ? 'bg-gradient-to-br from-[#FFD700] to-[#FFA500] hover:from-[#FFA500] hover:to-[#FFD700]'
+                    : 'bg-[#FFE4E1] hover:bg-[#FF91A4]'
+                }`}
+              >
+                <Eye className={`w-5 h-5 transition-colors ${
+                  isPremium ? 'text-white' : 'text-[#FF91A4] hover:text-white'
+                }`} />
+                {isPremium && (
+                  <Crown className="absolute -top-1 -right-1 w-3 h-3 text-white" />
+                )}
+              </motion.button>
+
               {/* Matches Button */}
               {matches.length > 0 && (
                 <motion.button
