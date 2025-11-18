@@ -152,8 +152,8 @@ export default function AuthPages() {
         localStorage.setItem('onboardingData', JSON.stringify(freshOnboardingData));
         navigate('/onboarding');
       } else {
-        // Login flow → Go directly to discover/home page (skip onboarding)
-        navigate('/discover');
+        // Login flow → Go directly to people (swiping feed) (skip onboarding)
+        navigate('/people');
       }
     }, 1500);
   };

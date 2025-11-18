@@ -40,9 +40,9 @@ export default function ProfileSetupPage() {
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
-        // If profile has photos, redirect to discover
+        // If profile has photos, redirect to people (swiping feed)
         if (parsed.photos && parsed.photos.length > 0) {
-          navigate('/discover');
+          navigate('/people');
           return;
         }
         setPhotos(parsed.photos || []);

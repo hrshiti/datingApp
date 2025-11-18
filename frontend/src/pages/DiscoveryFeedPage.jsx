@@ -389,27 +389,6 @@ export default function DiscoveryFeedPage() {
                 )}
               </motion.button>
 
-              {/* Matches Button */}
-              {matches.length > 0 && (
-                <motion.button
-                  onClick={() => setShowMatches(!showMatches)}
-                  whileHover={{ scale: 1.08, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="relative p-3 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] rounded-2xl hover:from-[#FF91A4] hover:to-[#FF69B4] transition-all shadow-md hover:shadow-xl border border-[#FFB6C1]/30"
-                >
-                  <MessageCircle className="w-5 h-5 text-[#FF91A4] transition-colors" />
-                  {matches.length > 0 && (
-                    <motion.span 
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white text-[10px] rounded-full flex items-center justify-center font-bold shadow-lg border-2 border-white"
-                    >
-                      {matches.length}
-                    </motion.span>
-                  )}
-                </motion.button>
-              )}
-
               {/* Filter Button */}
               <motion.button
                 onClick={() => navigate('/filters')}
@@ -646,36 +625,32 @@ export default function DiscoveryFeedPage() {
           {/* People */}
           <motion.button
             onClick={() => {
-              // Navigate to discovery feed page
-              navigate('/discover');
+              // Navigate to people/swiping page
+              navigate('/people');
               setShowMatches(false);
             }}
             whileTap={{ scale: 0.9 }}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative"
           >
-            <Users className={`w-5 h-5 ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
-            <span className={`text-xs font-medium ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+            <Users className={`w-5 h-5 ${location.pathname === '/people' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            <span className={`text-xs font-medium ${location.pathname === '/people' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
               People
             </span>
           </motion.button>
 
           {/* Liked You */}
           <motion.button
-            onClick={() => {
-              // Navigate to liked you page
-              // For now, just show matches
-              setShowMatches(true);
-            }}
+            onClick={() => navigate('/liked-you')}
             whileTap={{ scale: 0.9 }}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative"
           >
-            <Heart className="w-5 h-5 text-[#212121]" />
+            <Heart className={`w-5 h-5 ${location.pathname === '/liked-you' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
             {likes.length > 0 && (
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#FF91A4] text-white text-[10px] rounded-full flex items-center justify-center font-bold">
                 {likes.length}
               </span>
             )}
-            <span className="text-xs font-medium text-[#212121]">
+            <span className={`text-xs font-medium ${location.pathname === '/liked-you' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
               Liked You
             </span>
           </motion.button>

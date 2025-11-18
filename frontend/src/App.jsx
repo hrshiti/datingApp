@@ -6,6 +6,7 @@ import PhotoVerificationPage from './pages/PhotoVerificationPage';
 import ProfilePage from './pages/ProfilePage';
 import EditProfilePage from './pages/EditProfilePage';
 import DiscoveryFeedPage from './pages/DiscoveryFeedPage';
+import DiscoverPage from './pages/DiscoverPage';
 import FilterPage from './pages/FilterPage';
 import ChatsPage from './pages/ChatsPage';
 import ChatDetailPage from './pages/ChatDetailPage';
@@ -42,7 +43,8 @@ function App() {
         <Route path="/photo-verification" element={<PhotoVerificationPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/edit-profile" element={<EditProfilePage />} />
-        <Route path="/discover" element={<DiscoveryFeedPage />} />
+        <Route path="/discover" element={<DiscoverPage />} />
+        <Route path="/people" element={<DiscoveryFeedPage />} />
         <Route path="/filters" element={<FilterPage />} />
         <Route path="/chats" element={<ChatsPage />} />
         <Route path="/chat/:userId" element={<ChatDetailPage />} />

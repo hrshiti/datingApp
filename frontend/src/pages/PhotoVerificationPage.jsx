@@ -22,9 +22,9 @@ export default function PhotoVerificationPage() {
     
     try {
       const parsed = JSON.parse(profileSetup);
-      // If already verified, go to discover
+      // If already verified, go to people (swiping feed)
       if (parsed.verified && parsed.verificationPhoto) {
-        navigate('/discover');
+        navigate('/people');
         return;
       }
       // Load existing verification photo if any
@@ -95,9 +95,9 @@ export default function PhotoVerificationPage() {
         }
       }
 
-      // Navigate to discover after 2 seconds
+      // Navigate to people (swiping feed) after 2 seconds
       setTimeout(() => {
-        navigate('/discover');
+        navigate('/people');
       }, 2000);
     }, 2000);
   };
@@ -114,7 +114,7 @@ export default function PhotoVerificationPage() {
         console.error('Error saving skip:', e);
       }
     }
-    navigate('/discover');
+    navigate('/people');
   };
 
   return (

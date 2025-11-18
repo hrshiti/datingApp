@@ -112,9 +112,9 @@ export default function OnboardingPage() {
           if (profileSetup) {
             try {
               const profileData = JSON.parse(profileSetup);
-              // If profile has photos, redirect to discover
+              // If profile has photos, redirect to people (swiping feed)
               if (profileData.photos && profileData.photos.length > 0) {
-                navigate('/discover');
+                navigate('/people');
                 return;
               }
             } catch (e) {
