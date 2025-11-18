@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import AuthPages from './pages/auth/AuthPages';
 import OnboardingPage from './pages/OnboardingPage';
 import ProfileSetupPage from './pages/ProfileSetupPage';
+import PhotoVerificationPage from './pages/PhotoVerificationPage';
 import ProfilePage from './pages/ProfilePage';
 import EditProfilePage from './pages/EditProfilePage';
 import DiscoveryFeedPage from './pages/DiscoveryFeedPage';
@@ -32,13 +33,13 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Navigate to="/signup" replace />} />
-        <Route path="/login" element={<AuthPages />} />
-        <Route path="/signup" element={<AuthPages />} />
+        <Route path="/" element={<Navigate to="/welcome" replace />} />
+        <Route path="/welcome" element={<AuthPages />} />
+        <Route path="/phone" element={<AuthPages />} />
         <Route path="/verify-otp" element={<AuthPages />} />
-        <Route path="/success" element={<AuthPages />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/profile-setup" element={<ProfileSetupPage />} />
+        <Route path="/photo-verification" element={<PhotoVerificationPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/edit-profile" element={<EditProfilePage />} />
         <Route path="/discover" element={<DiscoveryFeedPage />} />
@@ -50,7 +51,7 @@ function App() {
         <Route path="/premium" element={<PremiumPage />} />
         <Route path="/liked-you" element={<LikedYouPage />} />
         <Route path="/home" element={<Home />} />
-        <Route path="*" element={<Navigate to="/signup" replace />} />
+        <Route path="*" element={<Navigate to="/welcome" replace />} />
       </Routes>
     </Router>
   );

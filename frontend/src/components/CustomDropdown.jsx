@@ -11,12 +11,42 @@ export default function CustomDropdown({
   className = ''
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
   const dropdownRef = useRef(null);
+  const buttonRef = useRef(null);
+
+  // Calculate dropdown position when opening - always below button
+  useEffect(() => {
+    const updatePosition = () => {
+      if (isOpen && buttonRef.current) {
+        const rect = buttonRef.current.getBoundingClientRect();
+        // Always position below the button, fixed to viewport
+        setDropdownPosition({
+          top: rect.bottom + 4, // 4px gap below button
+          left: rect.left,
+          width: rect.width
+        });
+      }
+    };
+
+    updatePosition();
+
+    // Update position on scroll or resize to keep it aligned
+    if (isOpen) {
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
+      return () => {
+        window.removeEventListener('scroll', updatePosition, true);
+        window.removeEventListener('resize', updatePosition);
+      };
+    }
+  }, [isOpen]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target) && 
+          buttonRef.current && !buttonRef.current.contains(event.target)) {
         setIsOpen(false);
       }
     };
@@ -35,10 +65,15 @@ export default function CustomDropdown({
   const selectedLabel = options.find(opt => opt.value === value)?.label || placeholder;
 
   return (
-    <div className={`relative ${className}`} ref={dropdownRef}>
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
+    <>
+      <div className={`relative ${className}`} ref={buttonRef} style={{ zIndex: isOpen ? 99999 : 1 }}>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsOpen(!isOpen);
+          }}
         className={`w-full px-4 py-2.5 sm:py-3 border-2 rounded-xl sm:rounded-2xl text-sm sm:text-base text-left flex items-center justify-between transition-colors ${
           error
             ? 'border-red-500 focus:border-red-600'
@@ -56,12 +91,14 @@ export default function CustomDropdown({
         >
           <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-[#757575]" />
         </motion.div>
-      </button>
+        </button>
+      </div>
 
       <AnimatePresence mode="wait">
         {isOpen && (
           <motion.div
             key="dropdown-menu"
+            ref={dropdownRef}
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ 
               opacity: 1, 
@@ -81,14 +118,25 @@ export default function CustomDropdown({
                 ease: [0.4, 0, 0.2, 1]
               }
             }}
-            className="absolute z-50 w-full mt-1 bg-white border-2 border-[#FFB6C1] rounded-xl sm:rounded-2xl shadow-lg max-h-60 overflow-hidden"
+            className="fixed bg-white border-2 border-[#FFB6C1] rounded-xl sm:rounded-2xl shadow-2xl max-h-60 overflow-hidden"
+            style={{ 
+              position: 'fixed',
+              top: `${dropdownPosition.top}px`,
+              left: `${dropdownPosition.left}px`,
+              width: `${dropdownPosition.width}px`,
+              zIndex: 99999
+            }}
           >
             <div className="overflow-y-auto max-h-60">
               {options.map((option, index) => (
                 <motion.button
                   key={option.value}
                   type="button"
-                  onClick={() => handleSelect(option.value)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSelect(option.value);
+                  }}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ 
                     opacity: 1, 
@@ -116,7 +164,7 @@ export default function CustomDropdown({
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </>
   );
 }
 

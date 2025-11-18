@@ -15,12 +15,13 @@ export default function OnboardingPage() {
   // Form state for all steps
   const [formData, setFormData] = useState({
     // Step 1
+    name: '',
     dob: '',
     gender: '',
     customGender: '',
     orientation: '',
     customOrientation: '',
-    lookingFor: [],
+    lookingFor: '',
     // Step 2
     city: '',
     ageRange: { min: 18, max: '' },
@@ -74,15 +75,24 @@ export default function OnboardingPage() {
           // Allow editing, don't redirect
           // Load all saved data for editing
           // Start from step 1 so user can go through all steps
-          setFormData(prev => ({ 
-            ...prev, 
-            ...parsed.step1, 
-            ...parsed.step2,
-            ...parsed.step3,
-            personality: parsed.step4?.personality || prev.personality,
-            dealbreakers: parsed.step5?.dealbreakers || prev.dealbreakers,
-            optional: parsed.step6?.optional || prev.optional
-          }));
+          setFormData(prev => {
+            // Handle backward compatibility: if lookingFor is an array, take first item
+            let lookingFor = parsed.step1?.lookingFor || '';
+            if (Array.isArray(lookingFor) && lookingFor.length > 0) {
+              lookingFor = lookingFor[0];
+            }
+            
+            return {
+              ...prev, 
+              ...parsed.step1,
+              lookingFor: lookingFor,
+              ...parsed.step2,
+              ...parsed.step3,
+              personality: parsed.step4?.personality || prev.personality,
+              dealbreakers: parsed.step5?.dealbreakers || prev.dealbreakers,
+              optional: parsed.step6?.optional || prev.optional
+            };
+          });
           setCurrentStep(1); // Always start from step 1 when editing
           if (parsed.step1?.gender === 'other') {
             setShowCustomGender(true);
@@ -95,13 +105,9 @@ export default function OnboardingPage() {
           return;
         }
         
-        // If onboarding is already completed, check if user is coming from profile-setup (back button)
-        // Allow user to review their answers even if completed
-        if (parsed.completed && parsed.currentStep === 7) {
-          // User is on review page, allow them to stay and review
-          // Don't redirect if they're on step 7 (review page)
-        } else if (parsed.completed) {
-          // Onboarding completed and not on review page, check profile setup status
+        // If onboarding is already completed, redirect existing users
+        if (parsed.completed) {
+          // Onboarding completed - check profile setup status
           const profileSetup = localStorage.getItem('profileSetup');
           if (profileSetup) {
             try {
@@ -119,19 +125,30 @@ export default function OnboardingPage() {
           navigate('/profile-setup');
           return;
         }
+        
+        // Onboarding not completed - load saved progress
         // Clamp currentStep to valid range (1-7)
         const step = parsed.currentStep || 1;
         const validStep = Math.min(Math.max(step, 1), 7);
         
-        setFormData(prev => ({ 
-          ...prev, 
-          ...parsed.step1, 
-          ...parsed.step2,
-          ...parsed.step3,
-          personality: parsed.step4?.personality || prev.personality,
-          dealbreakers: parsed.step5?.dealbreakers || prev.dealbreakers,
-          optional: parsed.step6?.optional || prev.optional
-        }));
+        setFormData(prev => {
+          // Handle backward compatibility: if lookingFor is an array, take first item
+          let lookingFor = parsed.step1?.lookingFor || '';
+          if (Array.isArray(lookingFor) && lookingFor.length > 0) {
+            lookingFor = lookingFor[0];
+          }
+          
+          return {
+            ...prev, 
+            ...parsed.step1,
+            lookingFor: lookingFor,
+            ...parsed.step2,
+            ...parsed.step3,
+            personality: parsed.step4?.personality || prev.personality,
+            dealbreakers: parsed.step5?.dealbreakers || prev.dealbreakers,
+            optional: parsed.step6?.optional || prev.optional
+          };
+        });
         setCurrentStep(validStep);
         if (parsed.step1?.gender === 'other') {
           setShowCustomGender(true);
@@ -141,7 +158,12 @@ export default function OnboardingPage() {
         }
       } catch (e) {
         console.error('Error loading saved data:', e);
+        // If error, start fresh from step 1
+        setCurrentStep(1);
       }
+    } else {
+      // No saved data - new user starting onboarding from step 1
+      setCurrentStep(1);
     }
   }, [navigate]);
 
@@ -161,6 +183,12 @@ export default function OnboardingPage() {
   // Validate Step 1
   const validateStep1 = () => {
     const newErrors = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = 'Name must be at least 2 characters';
+    }
 
     if (!formData.dob) {
       newErrors.dob = 'Date of birth is required';
@@ -183,8 +211,8 @@ export default function OnboardingPage() {
       newErrors.customOrientation = 'Please specify your orientation';
     }
 
-    if (formData.lookingFor.length === 0) {
-      newErrors.lookingFor = 'Please select at least one option';
+    if (!formData.lookingFor) {
+      newErrors.lookingFor = 'Please select an option';
     }
 
     setErrors(newErrors);
@@ -292,20 +320,16 @@ export default function OnboardingPage() {
     }
   };
 
-  // Handle looking for selection
+  // Handle looking for selection (single selection)
   const handleLookingForChange = (value) => {
-    const current = formData.lookingFor;
-    if (current.includes(value)) {
-      handleChange('lookingFor', current.filter(item => item !== value));
-    } else {
-      handleChange('lookingFor', [...current, value]);
-    }
+    handleChange('lookingFor', value);
   };
 
   // Save progress to localStorage
   const saveProgress = () => {
     const savedData = {
       step1: {
+        name: formData.name,
         dob: formData.dob,
         gender: formData.gender,
         customGender: formData.customGender,
@@ -435,28 +459,31 @@ export default function OnboardingPage() {
       <div className="decoration-circle"></div>
       
       <div className="w-full max-w-md relative z-10">
-        {/* Progress Bar */}
+        {/* Enhanced Progress Bar */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="bg-white rounded-2xl sm:rounded-3xl shadow-lg p-3 sm:p-4 mb-3 sm:mb-4"
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-5 mb-4 sm:mb-5 border border-[#FFB6C1]/20 relative overflow-hidden"
         >
-          <div className="flex justify-between items-center mb-1.5 sm:mb-2">
-            <span className="text-xs sm:text-sm font-medium text-[#212121]">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent"></div>
+          <div className="flex justify-between items-center mb-2 sm:mb-3 relative z-10">
+            <span className="text-sm sm:text-base font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent">
               {progressPercentage}% Complete
             </span>
+            <span className="text-xs sm:text-sm font-semibold text-[#757575]">
+              Step {currentStep} of {totalSteps}
+            </span>
           </div>
-          <div className="w-full bg-[#E0E0E0] rounded-full h-1.5 sm:h-2">
+          <div className="w-full bg-gradient-to-r from-[#FFE4E1] to-[#FFF0F5] rounded-full h-2.5 sm:h-3 overflow-hidden shadow-inner border border-[#FFB6C1]/20 relative z-10">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${progressPercentage}%` }}
-              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-              className="bg-[#FF91A4] h-1.5 sm:h-2 rounded-full"
-            ></motion.div>
-          </div>
-          <div className="text-xs text-[#757575] mt-1.5 sm:mt-2">
-            Step {currentStep} of {totalSteps}
+              transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+              className="h-full rounded-full bg-gradient-to-r from-[#FF91A4] via-[#FF69B4] to-[#FF91A4] relative overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
+            </motion.div>
           </div>
         </motion.div>
 
@@ -470,10 +497,37 @@ export default function OnboardingPage() {
               animate="animate"
               exit="exit"
               transition={pageTransition}
-              className="bg-white rounded-2xl sm:rounded-3xl shadow-lg p-4 sm:p-6 md:p-8"
+              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 border border-[#FFB6C1]/20 relative"
+              style={{ zIndex: 1 }}
             >
+              <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent pointer-events-none"></div>
+              <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-4 sm:mb-6 relative">
+                Basic Information
+              </h2>
+              
+              {/* Name */}
+              <div className="mb-3 sm:mb-4 relative">
+                <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5 sm:mb-2">
+                  Name <span className="text-[#FF91A4]">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => handleChange('name', e.target.value)}
+                  placeholder="Enter your full name"
+                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 rounded-xl text-sm ${
+                    errors.name
+                      ? 'border-red-500 focus:border-red-600 bg-red-50'
+                      : 'border-[#FFB6C1] focus:border-[#FF91A4] bg-white'
+                  } text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-all shadow-sm hover:shadow-md`}
+                />
+                {errors.name && (
+                  <p className="text-xs text-red-600 mt-1">{errors.name}</p>
+                )}
+              </div>
+
               {/* Date of Birth */}
-              <div className="mb-3 sm:mb-4">
+              <div className="mb-3 sm:mb-4 relative">
                 <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5 sm:mb-2">
                   Age / Date of Birth <span className="text-[#FF91A4]">*</span>
                 </label>
@@ -492,7 +546,7 @@ export default function OnboardingPage() {
               </div>
 
               {/* Gender Identity */}
-              <div className="mb-3 sm:mb-4">
+              <div className="mb-3 sm:mb-4 relative">
                 <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5 sm:mb-2">
                   Gender Identity <span className="text-[#FF91A4]">*</span>
                 </label>
@@ -528,9 +582,9 @@ export default function OnboardingPage() {
                       placeholder="Please specify your gender"
                       className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 rounded-xl text-sm ${
                         errors.customGender
-                          ? 'border-red-500 focus:border-red-600'
-                          : 'border-[#FFB6C1] focus:border-[#FF91A4]'
-                      } bg-white text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-colors`}
+                          ? 'border-red-500 focus:border-red-600 bg-red-50'
+                          : 'border-[#FFB6C1] focus:border-[#FF91A4] bg-white'
+                      } text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-all shadow-sm hover:shadow-md`}
                     />
                     {errors.customGender && (
                       <p className="text-xs text-red-600 mt-1">{errors.customGender}</p>
@@ -540,7 +594,7 @@ export default function OnboardingPage() {
               </div>
 
               {/* Sexual Orientation */}
-              <div className="mb-3 sm:mb-4">
+              <div className="mb-3 sm:mb-4 relative">
                 <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5 sm:mb-2">
                   Sexual Orientation <span className="text-[#FF91A4]">*</span>
                 </label>
@@ -577,9 +631,9 @@ export default function OnboardingPage() {
                       placeholder="Please specify your orientation"
                       className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 rounded-xl text-sm ${
                         errors.customOrientation
-                          ? 'border-red-500 focus:border-red-600'
-                          : 'border-[#FFB6C1] focus:border-[#FF91A4]'
-                      } bg-white text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-colors`}
+                          ? 'border-red-500 focus:border-red-600 bg-red-50'
+                          : 'border-[#FFB6C1] focus:border-[#FF91A4] bg-white'
+                      } text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-all shadow-sm hover:shadow-md`}
                     />
                     {errors.customOrientation && (
                       <p className="text-xs text-red-600 mt-1">{errors.customOrientation}</p>
@@ -589,54 +643,45 @@ export default function OnboardingPage() {
               </div>
 
               {/* Looking For */}
-              <div className="mb-4 sm:mb-6">
-                <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2 sm:mb-3">
+              <div className="mb-3 sm:mb-4 relative">
+                <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5 sm:mb-2">
                   Looking For <span className="text-[#FF91A4]">*</span>
                 </label>
-                <div className="space-y-1.5 sm:space-y-2">
-                  {['casual', 'relationship', 'marriage', 'friends'].map((option) => (
-                    <motion.button
-                      key={option}
-                      type="button"
-                      onClick={() => handleLookingForChange(option)}
-                      whileTap={{ scale: 0.98 }}
-                      className={`w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 transition-all ${
-                        formData.lookingFor.includes(option)
-                          ? 'bg-[#FF91A4] text-white border-[#FF91A4]'
-                          : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
-                      } ${errors.lookingFor ? 'border-red-500' : ''}`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium capitalize">{option}</span>
-                        {formData.lookingFor.includes(option) && (
-                          <span className="text-white text-base">✓</span>
-                        )}
-                      </div>
-                    </motion.button>
-                  ))}
-                </div>
+                <CustomDropdown
+                  options={[
+                    { value: '', label: 'Select what you are looking for' },
+                    { value: 'casual', label: 'Casual' },
+                    { value: 'relationship', label: 'Relationship' },
+                    { value: 'marriage', label: 'Marriage' },
+                    { value: 'friends', label: 'Friends' }
+                  ]}
+                  value={formData.lookingFor}
+                  onChange={handleLookingForChange}
+                  placeholder="Select what you are looking for"
+                  error={!!errors.lookingFor}
+                />
                 {errors.lookingFor && (
-                  <p className="text-xs text-red-600 mt-1.5 sm:mt-2">{errors.lookingFor}</p>
+                  <p className="text-xs text-red-600 mt-1">{errors.lookingFor}</p>
                 )}
               </div>
 
               {/* Navigation Buttons */}
-              <div className="flex gap-2 sm:gap-3 pt-2">
+              <div className="flex gap-2 sm:gap-3 pt-2 relative">
                 <motion.button
                   onClick={handleBack}
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-[#757575] hover:bg-[#616161] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all flex items-center justify-center"
+                  className="flex-1 bg-gradient-to-r from-[#757575] to-[#616161] hover:from-[#616161] hover:to-[#757575] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all flex items-center justify-center shadow-md hover:shadow-lg"
                 >
                   <ArrowLeft className="w-4 h-4 mr-1.5 sm:mr-2" />
                   <span className="text-sm">Back</span>
                 </motion.button>
                 <motion.button
                   onClick={handleNext}
-                  disabled={!formData.dob || !formData.gender || !formData.orientation || formData.lookingFor.length === 0}
-                  whileHover={{ scale: 1.02 }}
+                  disabled={!formData.name || !formData.dob || !formData.gender || !formData.orientation || !formData.lookingFor}
+                  whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-[#FF91A4] hover:bg-[#FF69B4] disabled:bg-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm"
+                  className="flex-1 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm shadow-lg hover:shadow-xl disabled:shadow-none"
                 >
                   Next →
                 </motion.button>
@@ -652,9 +697,13 @@ export default function OnboardingPage() {
               animate="animate"
               exit="exit"
               transition={pageTransition}
-              className="bg-white rounded-2xl sm:rounded-3xl shadow-lg p-4 sm:p-6 md:p-8"
+              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 border border-[#FFB6C1]/20 relative"
+              style={{ zIndex: 1 }}
             >
-              <h2 className="text-lg sm:text-xl font-bold text-[#212121] mb-4 sm:mb-6">Location & Preferences</h2>
+              <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent pointer-events-none"></div>
+              <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-4 sm:mb-6 relative">
+                Location & Preferences
+              </h2>
 
               {/* City */}
               <div className="mb-3 sm:mb-4">
@@ -670,9 +719,9 @@ export default function OnboardingPage() {
                     placeholder="Enter your city"
                     className={`w-full pl-10 pr-3 py-2.5 sm:py-3 border-2 rounded-xl text-sm ${
                       errors.city
-                        ? 'border-red-500 focus:border-red-600'
-                        : 'border-[#FFB6C1] focus:border-[#FF91A4]'
-                    } bg-white text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-colors`}
+                        ? 'border-red-500 focus:border-red-600 bg-red-50'
+                        : 'border-[#FFB6C1] focus:border-[#FF91A4] bg-white'
+                    } text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-all shadow-sm hover:shadow-md`}
                   />
                 </div>
                 {errors.city && (
@@ -783,9 +832,9 @@ export default function OnboardingPage() {
               <div className="flex gap-2 sm:gap-3 pt-2">
                 <motion.button
                   onClick={handleBack}
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-[#757575] hover:bg-[#616161] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all flex items-center justify-center"
+                  className="flex-1 bg-gradient-to-r from-[#757575] to-[#616161] hover:from-[#616161] hover:to-[#757575] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all flex items-center justify-center shadow-md hover:shadow-lg relative z-10"
                 >
                   <ArrowLeft className="w-4 h-4 mr-1.5 sm:mr-2" />
                   <span className="text-sm">Back</span>
@@ -793,9 +842,9 @@ export default function OnboardingPage() {
                 <motion.button
                   onClick={handleNext}
                   disabled={!formData.city || formData.city.trim() === '' || (formData.ageRange.max !== '' && formData.ageRange.min >= formData.ageRange.max)}
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-[#FF91A4] hover:bg-[#FF69B4] disabled:bg-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm"
+                  className="flex-1 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm shadow-lg hover:shadow-xl disabled:shadow-none relative z-10"
                 >
                   Next →
                 </motion.button>
@@ -811,9 +860,13 @@ export default function OnboardingPage() {
               animate="animate"
               exit="exit"
               transition={pageTransition}
-              className="bg-white rounded-2xl sm:rounded-3xl shadow-lg p-4 sm:p-6 md:p-8"
+              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 border border-[#FFB6C1]/20 relative"
+              style={{ zIndex: 1 }}
             >
-              <h2 className="text-lg sm:text-xl font-bold text-[#212121] mb-2 sm:mb-3">Interests & Hobbies</h2>
+              <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent pointer-events-none"></div>
+              <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-2 sm:mb-3 relative">
+                Interests & Hobbies
+              </h2>
               <p className="text-xs sm:text-sm text-[#757575] mb-4 sm:mb-6">
                 Select at least 3 interests that describe you
               </p>
@@ -1071,9 +1124,9 @@ export default function OnboardingPage() {
               <div className="flex gap-2 sm:gap-3 pt-4 sm:pt-6">
                 <motion.button
                   onClick={handleBack}
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-[#757575] hover:bg-[#616161] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all flex items-center justify-center"
+                  className="flex-1 bg-gradient-to-r from-[#757575] to-[#616161] hover:from-[#616161] hover:to-[#757575] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all flex items-center justify-center shadow-md hover:shadow-lg relative z-10"
                 >
                   <ArrowLeft className="w-4 h-4 mr-1.5 sm:mr-2" />
                   <span className="text-sm">Back</span>
@@ -1081,9 +1134,9 @@ export default function OnboardingPage() {
                 <motion.button
                   onClick={handleNext}
                   disabled={formData.interests.length < 3}
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-[#FF91A4] hover:bg-[#FF69B4] disabled:bg-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm"
+                  className="flex-1 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm shadow-lg hover:shadow-xl disabled:shadow-none relative z-10"
                 >
                   Next →
                 </motion.button>
@@ -1099,9 +1152,13 @@ export default function OnboardingPage() {
               animate="animate"
               exit="exit"
               transition={pageTransition}
-              className="bg-white rounded-2xl sm:rounded-3xl shadow-lg p-4 sm:p-6 md:p-8"
+              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 border border-[#FFB6C1]/20 relative"
+              style={{ zIndex: 1 }}
             >
-              <h2 className="text-lg sm:text-xl font-bold text-[#212121] mb-2 sm:mb-3">Personality Traits</h2>
+              <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent pointer-events-none"></div>
+              <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-2 sm:mb-3 relative">
+                Personality Traits
+              </h2>
               <p className="text-xs sm:text-sm text-[#757575] mb-4 sm:mb-6">
                 Choose the option that best describes you
               </p>
@@ -1412,9 +1469,9 @@ export default function OnboardingPage() {
               <div className="flex gap-2 sm:gap-3 pt-4 sm:pt-6">
                 <motion.button
                   onClick={handleBack}
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-[#757575] hover:bg-[#616161] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all flex items-center justify-center"
+                  className="flex-1 bg-gradient-to-r from-[#757575] to-[#616161] hover:from-[#616161] hover:to-[#757575] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all flex items-center justify-center shadow-md hover:shadow-lg relative z-10"
                 >
                   <ArrowLeft className="w-4 h-4 mr-1.5 sm:mr-2" />
                   <span className="text-sm">Back</span>
@@ -1422,9 +1479,9 @@ export default function OnboardingPage() {
                 <motion.button
                   onClick={handleNext}
                   disabled={Object.values(formData.personality).some(v => v === '')}
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-[#FF91A4] hover:bg-[#FF69B4] disabled:bg-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm"
+                  className="flex-1 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm shadow-lg hover:shadow-xl disabled:shadow-none relative z-10"
                 >
                   Next →
                 </motion.button>
@@ -1440,9 +1497,13 @@ export default function OnboardingPage() {
               animate="animate"
               exit="exit"
               transition={pageTransition}
-              className="bg-white rounded-2xl sm:rounded-3xl shadow-lg p-4 sm:p-6 md:p-8"
+              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 border border-[#FFB6C1]/20 relative"
+              style={{ zIndex: 1 }}
             >
-              <h2 className="text-lg sm:text-xl font-bold text-[#212121] mb-2 sm:mb-3">Dealbreakers & Lifestyle</h2>
+              <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent pointer-events-none"></div>
+              <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-2 sm:mb-3 relative">
+                Dealbreakers & Lifestyle
+              </h2>
               <p className="text-xs sm:text-sm text-[#757575] mb-4 sm:mb-6">
                 Tell us about your lifestyle preferences
               </p>
@@ -1635,9 +1696,9 @@ export default function OnboardingPage() {
               <div className="flex gap-2 sm:gap-3 pt-4 sm:pt-6">
                 <motion.button
                   onClick={handleBack}
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-[#757575] hover:bg-[#616161] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all flex items-center justify-center"
+                  className="flex-1 bg-gradient-to-r from-[#757575] to-[#616161] hover:from-[#616161] hover:to-[#757575] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all flex items-center justify-center shadow-md hover:shadow-lg relative z-10"
                 >
                   <ArrowLeft className="w-4 h-4 mr-1.5 sm:mr-2" />
                   <span className="text-sm">Back</span>
@@ -1645,9 +1706,9 @@ export default function OnboardingPage() {
                 <motion.button
                   onClick={handleNext}
                   disabled={!formData.dealbreakers.kids || !formData.dealbreakers.smoking || !formData.dealbreakers.pets || !formData.dealbreakers.drinking}
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-[#FF91A4] hover:bg-[#FF69B4] disabled:bg-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm"
+                  className="flex-1 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm shadow-lg hover:shadow-xl disabled:shadow-none relative z-10"
                 >
                   Next →
                 </motion.button>
@@ -1663,9 +1724,13 @@ export default function OnboardingPage() {
               animate="animate"
               exit="exit"
               transition={pageTransition}
-              className="bg-white rounded-2xl sm:rounded-3xl shadow-lg p-4 sm:p-6 md:p-8"
+              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 border border-[#FFB6C1]/20 relative"
+              style={{ zIndex: 1 }}
             >
-              <h2 className="text-lg sm:text-xl font-bold text-[#212121] mb-2 sm:mb-3">Optional Details</h2>
+              <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent pointer-events-none"></div>
+              <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-2 sm:mb-3 relative">
+                Optional Details
+              </h2>
               <p className="text-xs sm:text-sm text-[#757575] mb-4 sm:mb-6">
                 Share more about yourself (all fields are optional)
               </p>
@@ -1809,9 +1874,9 @@ export default function OnboardingPage() {
               <div className="flex gap-2 sm:gap-3 pt-4 sm:pt-6">
                 <motion.button
                   onClick={handleBack}
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-[#757575] hover:bg-[#616161] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all flex items-center justify-center"
+                  className="flex-1 bg-gradient-to-r from-[#757575] to-[#616161] hover:from-[#616161] hover:to-[#757575] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all flex items-center justify-center shadow-md hover:shadow-lg relative z-10"
                 >
                   <ArrowLeft className="w-4 h-4 mr-1.5 sm:mr-2" />
                   <span className="text-sm">Back</span>
@@ -1836,9 +1901,13 @@ export default function OnboardingPage() {
               animate="animate"
               exit="exit"
               transition={pageTransition}
-              className="bg-white rounded-2xl sm:rounded-3xl shadow-lg p-4 sm:p-6 md:p-8"
+              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 border border-[#FFB6C1]/20 relative"
+              style={{ zIndex: 1 }}
             >
-              <h2 className="text-lg sm:text-xl font-bold text-[#212121] mb-2 sm:mb-3">Review Your Profile</h2>
+              <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent pointer-events-none"></div>
+              <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-2 sm:mb-3 relative">
+                Review Your Profile
+              </h2>
               <p className="text-xs sm:text-sm text-[#757575] mb-4 sm:mb-6">
                 Please review your information before submitting
               </p>
@@ -1869,7 +1938,7 @@ export default function OnboardingPage() {
                     <p><span className="font-medium text-[#212121]">Age:</span> {age ? `${age} years` : 'Not provided'}</p>
                     <p><span className="font-medium text-[#212121]">Gender:</span> {formData.gender === 'other' ? formData.customGender || formData.gender : formData.gender || 'Not provided'}</p>
                     <p><span className="font-medium text-[#212121]">Orientation:</span> {formData.orientation === 'other' ? formData.customOrientation || formData.orientation : formData.orientation || 'Not provided'}</p>
-                    <p><span className="font-medium text-[#212121]">Looking For:</span> {formData.lookingFor.length > 0 ? formData.lookingFor.join(', ') : 'Not provided'}</p>
+                    <p><span className="font-medium text-[#212121]">Looking For:</span> {formData.lookingFor ? formData.lookingFor.charAt(0).toUpperCase() + formData.lookingFor.slice(1) : 'Not provided'}</p>
                   </div>
                 </motion.div>
 
@@ -2025,12 +2094,12 @@ export default function OnboardingPage() {
               </div>
 
               {/* Submit Button */}
-              <div className="pt-4 sm:pt-6">
+              <div className="pt-4 sm:pt-6 relative z-10">
                 <motion.button
                   onClick={handleNext}
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full bg-[#FF91A4] hover:bg-[#FF69B4] text-white font-semibold py-3 sm:py-4 rounded-xl sm:rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg"
+                  className="w-full bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] text-white font-semibold py-3 sm:py-4 rounded-xl sm:rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
                 >
                   <Check className="w-5 h-5" />
                   <span className="text-sm sm:text-base">Complete Profile</span>
@@ -2041,9 +2110,9 @@ export default function OnboardingPage() {
               <div className="flex gap-2 sm:gap-3 pt-3 sm:pt-4">
                 <motion.button
                   onClick={handleBack}
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-[#757575] hover:bg-[#616161] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all flex items-center justify-center"
+                  className="flex-1 bg-gradient-to-r from-[#757575] to-[#616161] hover:from-[#616161] hover:to-[#757575] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all flex items-center justify-center shadow-md hover:shadow-lg relative z-10"
                 >
                   <ArrowLeft className="w-4 h-4 mr-1.5 sm:mr-2" />
                   <span className="text-sm">Back</span>

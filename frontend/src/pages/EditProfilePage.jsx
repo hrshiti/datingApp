@@ -239,7 +239,21 @@ export default function EditProfilePage() {
                   <input
                     type="email"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, email: e.target.value });
+                      // Clear error when user starts typing
+                      if (errors.email) {
+                        setErrors(prev => ({ ...prev, email: '' }));
+                      }
+                    }}
+                    onBlur={() => {
+                      const emailValue = formData.email.trim();
+                      if (!emailValue) {
+                        setErrors(prev => ({ ...prev, email: 'Email is required' }));
+                      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) {
+                        setErrors(prev => ({ ...prev, email: 'Please enter a valid email address' }));
+                      }
+                    }}
                     placeholder="Enter your email address"
                     className={`w-full pl-12 pr-4 py-3 bg-[#FFE4E1] border-2 rounded-xl text-[#212121] placeholder-[#757575] focus:outline-none transition-all ${
                       errors.email ? 'border-[#FF91A4]' : 'border-[#FFB6C1]/30 focus:border-[#FF91A4]'
@@ -273,6 +287,18 @@ export default function EditProfilePage() {
                       const value = e.target.value.replace(/\D/g, '');
                       if (value.length <= 10) {
                         setFormData({ ...formData, phone: value });
+                        // Clear error when user starts typing
+                        if (errors.phone) {
+                          setErrors(prev => ({ ...prev, phone: '' }));
+                        }
+                      }
+                    }}
+                    onBlur={() => {
+                      const phoneValue = formData.phone.replace(/\D/g, '');
+                      if (!phoneValue) {
+                        setErrors(prev => ({ ...prev, phone: 'Phone number is required' }));
+                      } else if (phoneValue.length !== 10) {
+                        setErrors(prev => ({ ...prev, phone: 'Please enter a valid 10-digit phone number' }));
                       }
                     }}
                     placeholder="Enter your 10-digit phone number"
