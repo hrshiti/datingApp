@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   ArrowLeft, Heart, Eye, Crown, Sparkles, 
-  MessageCircle, X, Lock, Star
+  MessageCircle, X, Lock, Star, UserCircle, Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mockProfiles, calculateDistance } from '../data/mockProfiles';
 
 export default function LikedYouPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isPremium, setIsPremium] = useState(false);
   const [likedYouProfiles, setLikedYouProfiles] = useState([]);
   const [selectedProfile, setSelectedProfile] = useState(null);
@@ -145,13 +146,14 @@ export default function LikedYouPage() {
         <div className="decoration-circle"></div>
         <div className="decoration-circle"></div>
 
-        {/* Header */}
+        {/* Enhanced Header */}
         <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="relative z-20 bg-white/95 backdrop-blur-md border-b-2 border-[#FFB6C1] shadow-sm"
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="relative z-20 bg-gradient-to-b from-white via-white/98 to-white/95 backdrop-blur-lg border-b border-[#FFB6C1]/30 shadow-lg"
         >
-          <div className="max-w-2xl mx-auto px-4 py-3">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
             <div className="flex items-center gap-3">
               <motion.button
                 onClick={() => navigate(-1)}
@@ -161,12 +163,18 @@ export default function LikedYouPage() {
               >
                 <ArrowLeft className="w-5 h-5 text-[#212121]" />
               </motion.button>
-              <div className="w-10 h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-lg flex items-center justify-center shadow-md">
-                <Eye className="w-5 h-5 text-white" />
-              </div>
+              <motion.div 
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FF91A4] via-[#FF69B4] to-[#FF91A4] flex items-center justify-center shadow-lg relative overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
+                <Eye className="w-6 h-6 text-white relative z-10" />
+              </motion.div>
               <div>
-                <h1 className="text-xl font-bold text-[#212121]">Who Liked You</h1>
-                <p className="text-xs text-[#757575]">See who's interested in you</p>
+                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent">
+                  Who Liked You
+                </h1>
+                <p className="text-xs sm:text-sm text-[#757575] font-medium">See who's interested in you</p>
               </div>
             </div>
           </div>
@@ -237,13 +245,14 @@ export default function LikedYouPage() {
       <div className="decoration-circle"></div>
       <div className="decoration-circle"></div>
 
-      {/* Header */}
+      {/* Enhanced Header */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="relative z-20 bg-white/95 backdrop-blur-md border-b-2 border-[#FFB6C1] shadow-sm"
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="relative z-20 bg-gradient-to-b from-white via-white/98 to-white/95 backdrop-blur-lg border-b border-[#FFB6C1]/30 shadow-lg"
       >
-        <div className="max-w-2xl mx-auto px-4 py-3">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <motion.button
@@ -254,12 +263,18 @@ export default function LikedYouPage() {
               >
                 <ArrowLeft className="w-5 h-5 text-[#212121]" />
               </motion.button>
-              <div className="w-10 h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-lg flex items-center justify-center shadow-md">
-                <Eye className="w-5 h-5 text-white" />
-              </div>
+              <motion.div 
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FF91A4] via-[#FF69B4] to-[#FF91A4] flex items-center justify-center shadow-lg relative overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
+                <Eye className="w-6 h-6 text-white relative z-10" />
+              </motion.div>
               <div>
-                <h1 className="text-xl font-bold text-[#212121]">Who Liked You</h1>
-                <p className="text-xs text-[#757575]">
+                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent">
+                  Who Liked You
+                </h1>
+                <p className="text-xs sm:text-sm text-[#757575] font-medium">
                   {likedYouProfiles.length} {likedYouProfiles.length === 1 ? 'person' : 'people'} liked you
                 </p>
               </div>
@@ -267,9 +282,10 @@ export default function LikedYouPage() {
             <motion.div
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="w-8 h-8 bg-gradient-to-br from-[#FFD700] to-[#FFA500] rounded-full flex items-center justify-center shadow-md"
+              className="w-10 h-10 bg-gradient-to-br from-[#FFD700] via-[#FFA500] to-[#FFD700] rounded-full flex items-center justify-center shadow-lg relative overflow-hidden"
             >
-              <Crown className="w-4 h-4 text-white" />
+              <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
+              <Crown className="w-5 h-5 text-white relative z-10" />
             </motion.div>
           </div>
         </div>
@@ -464,6 +480,71 @@ export default function LikedYouPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Bottom Navigation Bar - Mobile Only */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-white via-white/98 to-white/95 backdrop-blur-lg border-t-2 border-[#FFB6C1]/30 shadow-2xl">
+        <div className="flex items-center justify-around px-2 py-2">
+          {/* Profile */}
+          <motion.button
+            onClick={() => navigate('/profile')}
+            whileTap={{ scale: 0.9 }}
+            className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors"
+          >
+            <UserCircle className={`w-5 h-5 ${location.pathname === '/profile' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            <span className={`text-xs font-medium ${location.pathname === '/profile' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+              Profile
+            </span>
+          </motion.button>
+
+          {/* Discover */}
+          <motion.button
+            onClick={() => navigate('/discover')}
+            whileTap={{ scale: 0.9 }}
+            className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors"
+          >
+            <Sparkles className={`w-5 h-5 ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            <span className={`text-xs font-medium ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+              Discover
+            </span>
+          </motion.button>
+
+          {/* People */}
+          <motion.button
+            onClick={() => navigate('/discover')}
+            whileTap={{ scale: 0.9 }}
+            className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative"
+          >
+            <Users className={`w-5 h-5 ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            <span className={`text-xs font-medium ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+              People
+            </span>
+          </motion.button>
+
+          {/* Liked You */}
+          <motion.button
+            onClick={() => navigate('/liked-you')}
+            whileTap={{ scale: 0.9 }}
+            className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative"
+          >
+            <Heart className={`w-5 h-5 ${location.pathname === '/liked-you' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            <span className={`text-xs font-medium ${location.pathname === '/liked-you' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+              Liked You
+            </span>
+          </motion.button>
+
+          {/* Chats */}
+          <motion.button
+            onClick={() => navigate('/chats')}
+            whileTap={{ scale: 0.9 }}
+            className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative"
+          >
+            <MessageCircle className={`w-5 h-5 ${location.pathname === '/chats' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            <span className={`text-xs font-medium ${location.pathname === '/chats' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+              Chats
+            </span>
+          </motion.button>
+        </div>
+      </div>
     </div>
   );
 }
