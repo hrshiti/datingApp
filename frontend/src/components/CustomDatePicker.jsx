@@ -12,7 +12,9 @@ export default function CustomDatePicker({
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showYearPicker, setShowYearPicker] = useState(false);
+  const [calendarPosition, setCalendarPosition] = useState({ top: 0, left: 0, width: 0 });
   const datePickerRef = useRef(null);
+  const buttonRef = useRef(null);
 
   useEffect(() => {
     if (value) {
@@ -20,10 +22,38 @@ export default function CustomDatePicker({
     }
   }, [value]);
 
+  // Calculate calendar position when opening - always below button
+  useEffect(() => {
+    const updatePosition = () => {
+      if (isOpen && buttonRef.current) {
+        const rect = buttonRef.current.getBoundingClientRect();
+        // Always position below the button, fixed to viewport
+        setCalendarPosition({
+          top: rect.bottom + 4, // 4px gap below button
+          left: rect.left,
+          width: rect.width
+        });
+      }
+    };
+
+    updatePosition();
+
+    // Update position on scroll or resize to keep it aligned
+    if (isOpen) {
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
+      return () => {
+        window.removeEventListener('scroll', updatePosition, true);
+        window.removeEventListener('resize', updatePosition);
+      };
+    }
+  }, [isOpen]);
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (datePickerRef.current && !datePickerRef.current.contains(event.target)) {
+      if (datePickerRef.current && !datePickerRef.current.contains(event.target) &&
+          buttonRef.current && !buttonRef.current.contains(event.target)) {
         setIsOpen(false);
         setShowYearPicker(false);
       }
@@ -150,10 +180,15 @@ export default function CustomDatePicker({
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
-    <div className={`relative ${className}`} ref={datePickerRef}>
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
+    <>
+      <div className={`relative ${className}`} ref={buttonRef} style={{ zIndex: isOpen ? 99999 : 1 }}>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsOpen(!isOpen);
+          }}
         className={`w-full px-4 py-2.5 sm:py-3 pl-10 pr-3 border-2 rounded-xl text-sm text-left flex items-center justify-between transition-colors ${
           error
             ? 'border-red-500 focus:border-red-600'
@@ -166,22 +201,35 @@ export default function CustomDatePicker({
         <span className={value ? 'text-[#212121]' : 'text-[#757575]'}>
           {formatDate(value)}
         </span>
-      </button>
+        </button>
+      </div>
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            ref={datePickerRef}
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-            className="absolute z-50 w-full mt-1 bg-white border-2 border-[#FFB6C1] rounded-xl shadow-lg p-3"
+            className="fixed bg-white border-2 border-[#FFB6C1] rounded-xl shadow-2xl p-3"
+            style={{ 
+              position: 'fixed',
+              top: `${calendarPosition.top}px`,
+              left: `${calendarPosition.left}px`,
+              width: `${calendarPosition.width}px`,
+              zIndex: 99999
+            }}
           >
             {/* Month & Year Navigation */}
             <div className="flex items-center justify-between mb-3">
               <button
                 type="button"
-                onClick={() => navigateMonth('prev')}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigateMonth('prev');
+                }}
                 className="p-1 hover:bg-[#FFF0F0] rounded transition-colors"
                 title="Previous month"
               >
@@ -191,7 +239,11 @@ export default function CustomDatePicker({
                 {/* Month Selector */}
                 <button
                   type="button"
-                  onClick={() => setShowYearPicker(false)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowYearPicker(false);
+                  }}
                   className="px-2 py-1 text-sm font-semibold text-[#212121] hover:bg-[#FFF0F0] rounded transition-colors"
                 >
                   {monthNames[currentMonth.getMonth()]}
@@ -200,7 +252,11 @@ export default function CustomDatePicker({
                 <div className="relative">
                   <button
                     type="button"
-                    onClick={() => setShowYearPicker(!showYearPicker)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setShowYearPicker(!showYearPicker);
+                    }}
                     className="px-2 py-1 text-sm font-semibold text-[#FF91A4] hover:bg-[#FFE4E1] rounded transition-colors flex items-center gap-1"
                   >
                     {currentMonth.getFullYear()}
@@ -217,13 +273,15 @@ export default function CustomDatePicker({
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -10, scale: 0.95 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute top-full left-0 mt-1 bg-white border-2 border-[#FFB6C1] rounded-xl shadow-lg p-2 z-50 max-h-48 overflow-y-auto"
-                        style={{ width: '120px' }}
+                        className="absolute top-full left-0 mt-1 bg-white border-2 border-[#FFB6C1] rounded-xl shadow-2xl p-2 max-h-48 overflow-y-auto"
+                        style={{ zIndex: 100000, width: '120px' }}
                       >
                         <div className="flex items-center justify-between mb-2 px-1">
                           <button
                             type="button"
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
                               const currentYear = currentMonth.getFullYear();
                               const newYear = Math.max(currentYear - 10, getYearList()[getYearList().length - 1]);
                               handleYearSelect(newYear);
@@ -236,7 +294,9 @@ export default function CustomDatePicker({
                           <span className="text-xs font-medium text-[#757575]">Year</span>
                           <button
                             type="button"
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
                               const currentYear = currentMonth.getFullYear();
                               const maxYear = maxDate ? new Date(maxDate).getFullYear() : new Date().getFullYear() - 18;
                               const newYear = Math.min(currentYear + 10, maxYear);
@@ -257,7 +317,11 @@ export default function CustomDatePicker({
                               <button
                                 key={year}
                                 type="button"
-                                onClick={() => !isDisabled && handleYearSelect(year)}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  if (!isDisabled) handleYearSelect(year);
+                                }}
                                 disabled={isDisabled}
                                 className={`px-2 py-1.5 text-xs rounded transition-all text-left ${
                                   isDisabled
@@ -279,7 +343,11 @@ export default function CustomDatePicker({
               </div>
               <button
                 type="button"
-                onClick={() => navigateMonth('next')}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigateMonth('next');
+                }}
                 className="p-1 hover:bg-[#FFF0F0] rounded transition-colors"
                 title="Next month"
               >
@@ -300,15 +368,21 @@ export default function CustomDatePicker({
             <div className="grid grid-cols-7 gap-1">
               {days.map((day, index) => {
                 if (day === null) {
-                  return <div key={index} className="aspect-square" />;
+                  return <div key={`empty-${index}`} className="aspect-square" />;
                 }
                 const disabled = isDateDisabled(day);
                 const selected = isDateSelected(day);
+                // Create unique key using month, year, and day
+                const uniqueKey = `${currentMonth.getFullYear()}-${currentMonth.getMonth()}-${day}-${index}`;
                 return (
                   <button
-                    key={day}
+                    key={uniqueKey}
                     type="button"
-                    onClick={() => !disabled && handleDateSelect(day)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (!disabled) handleDateSelect(day);
+                    }}
                     disabled={disabled}
                     className={`aspect-square text-sm rounded transition-all ${
                       disabled
@@ -326,7 +400,7 @@ export default function CustomDatePicker({
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </>
   );
 }
 

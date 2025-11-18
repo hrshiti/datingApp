@@ -348,34 +348,45 @@ export default function DiscoveryFeedPage() {
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="relative z-20 bg-gradient-to-b from-white via-white/98 to-white/95 backdrop-blur-md border-b border-[#FFB6C1]/50 shadow-sm"
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="relative z-20 bg-gradient-to-b from-white via-white/98 to-white/95 backdrop-blur-lg border-b border-[#FFB6C1]/30 shadow-lg"
       >
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
-          <div className="flex items-center justify-between mb-3">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] flex items-center justify-center shadow-md">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
+              <motion.div 
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FF91A4] via-[#FF69B4] to-[#FF91A4] flex items-center justify-center shadow-lg relative overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
+                <Sparkles className="w-6 h-6 text-white relative z-10" />
+              </motion.div>
               <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-[#212121]">Discover</h1>
-                <p className="text-xs text-[#757575]">{profiles.length} profiles available</p>
+                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent">
+                  Discover
+                </h1>
+                <p className="text-xs sm:text-sm text-[#757575] font-medium">{profiles.length} profiles available</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               {/* Matches Button */}
               {matches.length > 0 && (
                 <motion.button
                   onClick={() => setShowMatches(!showMatches)}
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.08, y: -2 }}
                   whileTap={{ scale: 0.95 }}
-                  className="relative p-2.5 bg-[#FFE4E1] rounded-xl hover:bg-[#FF91A4] hover:text-white transition-all shadow-sm"
+                  className="relative p-3 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] rounded-2xl hover:from-[#FF91A4] hover:to-[#FF69B4] transition-all shadow-md hover:shadow-xl border border-[#FFB6C1]/30"
                 >
-                  <MessageCircle className="w-5 h-5 text-[#FF91A4] hover:text-white transition-colors" />
+                  <MessageCircle className="w-5 h-5 text-[#FF91A4] transition-colors" />
                   {matches.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#FF91A4] text-white text-[10px] rounded-full flex items-center justify-center font-bold shadow-md">
+                    <motion.span 
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white text-[10px] rounded-full flex items-center justify-center font-bold shadow-lg border-2 border-white"
+                    >
                       {matches.length}
-                    </span>
+                    </motion.span>
                   )}
                 </motion.button>
               )}
@@ -383,18 +394,18 @@ export default function DiscoveryFeedPage() {
               {/* Filter Button */}
               <motion.button
                 onClick={() => navigate('/filters')}
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.08, y: -2 }}
                 whileTap={{ scale: 0.95 }}
-                className="p-2.5 bg-[#FFE4E1] rounded-xl hover:bg-[#FF91A4] hover:text-white transition-all shadow-sm"
+                className="p-3 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] rounded-2xl hover:from-[#FF91A4] hover:to-[#FF69B4] transition-all shadow-md hover:shadow-xl border border-[#FFB6C1]/30"
               >
-                <Filter className="w-5 h-5 text-[#FF91A4] hover:text-white transition-colors" />
+                <Filter className="w-5 h-5 text-[#FF91A4] transition-colors" />
               </motion.button>
             </div>
           </div>
 
           {/* Daily Likes Progress Bar */}
-          <div className="flex items-center gap-2">
-            <div className="flex-1 bg-[#FFE4E1] rounded-full h-2.5 overflow-hidden shadow-inner">
+          <div className="flex items-center gap-3">
+            <div className="flex-1 bg-gradient-to-r from-[#FFE4E1] to-[#FFF0F5] rounded-full h-3 overflow-hidden shadow-inner border border-[#FFB6C1]/20">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ 
@@ -402,18 +413,25 @@ export default function DiscoveryFeedPage() {
                     ? '100%' 
                     : `${((DAILY_LIKE_LIMIT - remainingLikes) / DAILY_LIKE_LIMIT) * 100}%`
                 }}
-                className={`h-full rounded-full transition-all ${
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className={`h-full rounded-full transition-all relative overflow-hidden ${
                   isPremium
-                    ? 'bg-gradient-to-r from-[#FFD700] to-[#FFA500]'
+                    ? 'bg-gradient-to-r from-[#FFD700] via-[#FFA500] to-[#FFD700]'
                     : remainingLikes <= 5
-                      ? 'bg-gradient-to-r from-[#FF91A4] to-[#FF69B4]'
+                      ? 'bg-gradient-to-r from-[#FF91A4] via-[#FF69B4] to-[#FF91A4]'
                       : 'bg-gradient-to-r from-[#FF91A4] to-[#FF91A4]'
                 }`}
-              />
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
+              </motion.div>
             </div>
-            <span className="text-xs font-semibold text-[#FF91A4] min-w-[40px] text-right">
+            <motion.span 
+              animate={{ scale: remainingLikes <= 5 ? [1, 1.1, 1] : 1 }}
+              transition={{ duration: 2, repeat: remainingLikes <= 5 ? Infinity : 0 }}
+              className="text-xs font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent min-w-[50px] text-right"
+            >
               {remainingLikes} {isPremium ? '∞' : 'left'}
-            </span>
+            </motion.span>
           </div>
         </div>
       </motion.div>
@@ -434,19 +452,28 @@ export default function DiscoveryFeedPage() {
               />
           ) : (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-3xl shadow-2xl p-8 sm:p-12 text-center max-w-md mx-auto"
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-3xl shadow-2xl p-8 sm:p-12 text-center max-w-md mx-auto border border-[#FFB6C1]/20 relative overflow-hidden"
           >
-            <div className="w-24 h-24 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] rounded-full flex items-center justify-center mx-auto mb-6">
-              <User className="w-12 h-12 text-[#FF91A4]" />
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#212121] mb-3">No more profiles</h2>
-            <p className="text-[#757575] mb-8">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent"></div>
+            <motion.div 
+              animate={{ rotate: [0, 10, -10, 0] }}
+              transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
+              className="w-28 h-28 bg-gradient-to-br from-[#FFE4E1] via-[#FFF0F5] to-[#FFE4E1] rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg relative z-10"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent rounded-full"></div>
+              <User className="w-14 h-14 text-[#FF91A4] relative z-10" />
+            </motion.div>
+            <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-3 relative z-10">
+              No more profiles
+            </h2>
+            <p className="text-[#757575] mb-8 relative z-10">
               You've seen all available profiles. Check back later for new matches!
             </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
+            <div className="flex flex-col sm:flex-row gap-3 relative z-10">
+              <motion.button
                 onClick={() => {
                   // Remove all filters
                   localStorage.removeItem('discoveryFilters');
@@ -465,17 +492,21 @@ export default function DiscoveryFeedPage() {
                     window.location.reload();
                   }
                 }}
-                className="flex-1 px-6 py-3 bg-[#FF91A4] text-white rounded-xl font-semibold hover:bg-[#FF69B4] transition-all shadow-lg"
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex-1 px-6 py-3.5 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] text-white rounded-xl font-semibold hover:shadow-xl transition-all shadow-lg"
               >
                 Reset & See Again
-              </button>
+              </motion.button>
               {matches.length > 0 && (
-                <button
+                <motion.button
                   onClick={() => setShowMatches(true)}
-                  className="flex-1 px-6 py-3 bg-[#FFE4E1] text-[#FF91A4] rounded-xl font-semibold hover:bg-[#FF91A4] hover:text-white transition-all border-2 border-[#FF91A4]"
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex-1 px-6 py-3.5 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] text-[#FF91A4] rounded-xl font-semibold hover:from-[#FF91A4] hover:to-[#FF69B4] hover:text-white transition-all border-2 border-[#FF91A4] shadow-md"
                 >
                   View Matches ({matches.length})
-                </button>
+                </motion.button>
               )}
             </div>
           </motion.div>
@@ -494,22 +525,27 @@ export default function DiscoveryFeedPage() {
             onClick={() => setShowPremiumPrompt(false)}
           >
             <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
+              initial={{ scale: 0.9, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.9, y: 20, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl"
+              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl border border-[#FFB6C1]/20 relative overflow-hidden"
             >
+              <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent"></div>
               <div className="text-center mb-6">
                 <motion.div
-                  animate={{ rotate: [0, 10, -10, 0] }}
+                  animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}
                   transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}
-                  className="w-16 h-16 bg-gradient-to-br from-[#FFD700] to-[#FFA500] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg"
+                  className="w-20 h-20 bg-gradient-to-br from-[#FFD700] via-[#FFA500] to-[#FFD700] rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl relative overflow-hidden"
                 >
-                  <Crown className="w-8 h-8 text-white" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent"></div>
+                  <Crown className="w-10 h-10 text-white relative z-10" />
                 </motion.div>
-                <h3 className="text-2xl font-bold text-[#212121] mb-2">Upgrade to Premium</h3>
-                <p className="text-sm text-[#757575]">
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-2 relative z-10">
+                  Upgrade to Premium
+                </h3>
+                <p className="text-sm text-[#757575] relative z-10">
                   You've used all {DAILY_LIKE_LIMIT} free likes today!
                 </p>
               </div>
@@ -538,19 +574,23 @@ export default function DiscoveryFeedPage() {
                 ))}
               </div>
 
-              <div className="flex gap-3">
-                <button
+              <div className="flex gap-3 relative z-10">
+                <motion.button
                   onClick={() => setShowPremiumPrompt(false)}
-                  className="flex-1 px-4 py-3 border-2 border-[#E0E0E0] text-[#212121] rounded-xl font-semibold hover:border-[#757575] transition-all"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex-1 px-4 py-3 border-2 border-[#E0E0E0] text-[#212121] rounded-xl font-semibold hover:border-[#757575] hover:bg-[#F5F5F5] transition-all"
                 >
                   Maybe Later
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   onClick={handleUpgradePremium}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-[#FF91A4] to-[#FF91A4] text-white rounded-xl font-semibold hover:shadow-lg transition-all"
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] text-white rounded-xl font-semibold hover:shadow-xl transition-all shadow-lg"
                 >
                   Upgrade Now
-                </button>
+                </motion.button>
               </div>
             </motion.div>
           </motion.div>
@@ -558,7 +598,7 @@ export default function DiscoveryFeedPage() {
       </AnimatePresence>
 
       {/* Bottom Navigation Bar - Mobile Only */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t-2 border-[#FFB6C1]/30 shadow-lg">
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-white via-white/98 to-white/95 backdrop-blur-lg border-t-2 border-[#FFB6C1]/30 shadow-2xl">
         <div className="flex items-center justify-around px-2 py-2">
           {/* Profile */}
           <motion.button

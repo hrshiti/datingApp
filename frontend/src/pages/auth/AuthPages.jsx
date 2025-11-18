@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Mail, Phone, ArrowLeft, Shield, CheckCircle } from 'lucide-react';
+import { Phone, ArrowLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function AuthPages() {
   const navigate = useNavigate();
@@ -9,22 +10,20 @@ export default function AuthPages() {
   // Determine initial page from URL path
   const getInitialPage = () => {
     const path = location.pathname;
-    if (path === '/login') return 'login';
-    if (path === '/signup') return 'signup';
-    if (path === '/verify-otp') {
-      const type = new URLSearchParams(location.search).get('type');
-      return type === 'login' ? 'login-otp' : 'signup-otp';
-    }
-    if (path === '/success') return 'success';
-    return 'signup'; // default
+    if (path === '/welcome' || path === '/') return 'splash';
+    if (path === '/phone') return 'phone';
+    if (path === '/verify-otp') return 'otp';
+    return 'splash'; // default
   };
 
   const [currentPage, setCurrentPage] = useState(() => getInitialPage());
-  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState({ phone: '' });
+  const [otpTimer, setOtpTimer] = useState(60); // 60 seconds timer
+  const [canResend, setCanResend] = useState(false);
+  const [authFlow, setAuthFlow] = useState('signup'); // 'signup' or 'login'
 
   // Sync currentPage with URL changes
   useEffect(() => {
@@ -32,6 +31,47 @@ export default function AuthPages() {
     setCurrentPage(page);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname, location.search]);
+
+  // OTP Timer effect
+  useEffect(() => {
+    if (currentPage === 'otp' && otpTimer > 0 && !canResend) {
+      const timer = setTimeout(() => {
+        setOtpTimer(prev => {
+          if (prev <= 1) {
+            setCanResend(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [currentPage, otpTimer, canResend]);
+
+  // Validate phone number (10 digits)
+  const validatePhone = (phoneValue) => {
+    const digitsOnly = phoneValue.replace(/\D/g, '');
+    if (!digitsOnly) {
+      return 'Phone number is required';
+    }
+    if (digitsOnly.length !== 10) {
+      return 'Phone number must be exactly 10 digits';
+    }
+    return '';
+  };
+
+  // Handle phone change with validation
+  const handlePhoneChange = (value) => {
+    // Only allow digits and limit to 10 digits
+    const digitsOnly = value.replace(/\D/g, '');
+    if (digitsOnly.length <= 10) {
+      setPhone(digitsOnly);
+      if (errors.phone) {
+        const error = validatePhone(digitsOnly);
+        setErrors(prev => ({ ...prev, phone: error }));
+      }
+    }
+  };
 
   const handleOtpChange = (index, value) => {
     if (value.length <= 1 && /^\d*$/.test(value)) {
@@ -51,13 +91,37 @@ export default function AuthPages() {
     }
   };
 
-  const handleSendOtp = (type) => {
+  const handleSendOtp = () => {
+    // Validate phone number
+    const phoneError = validatePhone(phone);
+    if (phoneError) {
+      setErrors(prev => ({ ...prev, phone: phoneError }));
+      return;
+    }
+    
+    // Clear any errors
+    setErrors(prev => ({ ...prev, phone: '' }));
+    
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      const otpPage = type === 'login' ? 'login-otp' : 'signup-otp';
-      setCurrentPage(otpPage);
-      navigate(`/verify-otp?type=${type}`);
+      setCurrentPage('otp');
+      setOtpTimer(60);
+      setCanResend(false);
+      setOtp(['', '', '', '', '', '']); // Reset OTP
+      navigate('/verify-otp');
+    }, 1500);
+  };
+
+  const handleResendOtp = () => {
+    if (!canResend) return;
+    
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      setOtpTimer(60);
+      setCanResend(false);
+      setOtp(['', '', '', '', '', '']); // Reset OTP
     }, 1500);
   };
 
@@ -65,16 +129,119 @@ export default function AuthPages() {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      setCurrentPage('success');
-      // Store auth type in localStorage to know if it's signup or login
-      const authType = currentPage === 'signup-otp' ? 'signup' : 'login';
-      localStorage.setItem('authType', authType);
-      navigate('/success');
+      
+      // Store phone number
+      localStorage.setItem('authData', JSON.stringify({
+        phone: phone
+      }));
+      
+      // Route based on auth flow (signup or login)
+      if (authFlow === 'signup') {
+        // Signup flow → Go to onboarding (profile creation) - start from step 1
+        // Clear any partial onboarding data to start fresh
+        const freshOnboardingData = {
+          step1: {},
+          step2: {},
+          step3: {},
+          step4: {},
+          step5: {},
+          step6: {},
+          currentStep: 1,
+          completed: false
+        };
+        localStorage.setItem('onboardingData', JSON.stringify(freshOnboardingData));
+        navigate('/onboarding');
+      } else {
+        // Login flow → Go directly to discover/home page (skip onboarding)
+        navigate('/discover');
+      }
     }, 1500);
   };
 
-  // Login Page
-  if (currentPage === 'login') {
+  // Splash/Welcome Screen
+  if (currentPage === 'splash') {
+    return (
+      <div className="h-screen heart-background flex items-center justify-center p-3 sm:p-4 overflow-hidden">
+        <span className="heart-decoration">💕</span>
+        <span className="heart-decoration">💖</span>
+        <span className="heart-decoration">💗</span>
+        <span className="heart-decoration">💝</span>
+        <span className="heart-decoration">❤️</span>
+        <span className="heart-decoration">💓</span>
+        <div className="decoration-circle"></div>
+        <div className="decoration-circle"></div>
+        <div className="w-full max-w-md text-center relative z-10">
+          {/* App Logo */}
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="mb-8"
+          >
+            <motion.div 
+              animate={{ 
+                rotate: [0, 5, -5, 0],
+                scale: [1, 1.05, 1]
+              }}
+              transition={{ 
+                duration: 4, 
+                repeat: Infinity, 
+                repeatDelay: 2,
+                ease: "easeInOut"
+              }}
+              className="w-28 h-28 bg-gradient-to-br from-[#FF91A4] via-[#FF69B4] to-[#FF91A4] rounded-3xl mx-auto mb-6 flex items-center justify-center shadow-2xl relative overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent"></div>
+              <span className="text-6xl relative z-10">💕</span>
+            </motion.div>
+            <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-3">
+              DatingApp
+            </h1>
+            <p className="text-lg sm:text-xl text-gray-600 font-medium">Find your perfect match</p>
+          </motion.div>
+
+          {/* Continue Button */}
+          <motion.div 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-3xl shadow-2xl p-6 sm:p-8 border border-[#FFB6C1]/20 relative overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent"></div>
+            <motion.button
+              onClick={() => {
+                // This is signup flow
+                setAuthFlow('signup');
+                setCurrentPage('phone');
+                navigate('/phone');
+              }}
+              whileHover={{ scale: 1.02, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] text-white font-semibold py-4 rounded-2xl transition-all shadow-lg hover:shadow-xl mb-4 relative z-10"
+            >
+              Continue with Phone Number
+            </motion.button>
+
+            <motion.button
+              onClick={() => {
+                // This is login flow
+                setAuthFlow('login');
+                setCurrentPage('phone');
+                navigate('/phone');
+              }}
+              whileHover={{ scale: 1.05 }}
+              className="text-sm text-gray-600 hover:text-[#FF91A4] font-medium transition-colors relative z-10"
+            >
+              Already have an account? Login
+            </motion.button>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
+  // Phone Number Page
+  if (currentPage === 'phone') {
     return (
       <div className="h-screen heart-background flex items-center justify-center p-3 sm:p-4 overflow-hidden">
         <span className="heart-decoration">💕</span>
@@ -88,8 +255,8 @@ export default function AuthPages() {
         <div className="w-full max-w-md relative z-10">
           <button
             onClick={() => {
-              setCurrentPage('signup');
-              navigate('/signup');
+              setCurrentPage('splash');
+              navigate('/welcome');
             }}
             className="flex items-center text-gray-600 hover:text-black mb-6 transition-colors"
           >
@@ -98,104 +265,12 @@ export default function AuthPages() {
           </button>
 
           <div className="text-center mb-4 sm:mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-black mb-2">Login</h1>
-            <p className="text-sm sm:text-base text-gray-600">Enter your details to continue</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-black mb-2">Enter Your Phone Number</h1>
+            <p className="text-sm sm:text-base text-gray-600">We'll send you a verification code</p>
           </div>
 
           <div className="bg-white rounded-3xl shadow-lg p-5 sm:p-8">
             <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-black mb-2">
-                  Email or Phone
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter email or phone number"
-                    className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FF91A4] focus:outline-none transition-colors text-black"
-                  />
-                </div>
-              </div>
-
-              <button
-                onClick={() => handleSendOtp('login')}
-                disabled={!email || isLoading}
-                className="w-full bg-[#FF91A4] hover:bg-[#FF69B4] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-2xl transition-all transform hover:scale-105 active:scale-95 disabled:transform-none"
-              >
-                {isLoading ? 'Sending...' : 'Send OTP'}
-              </button>
-
-              <div className="text-center">
-                <button
-                  onClick={() => {
-                    setCurrentPage('signup');
-                    navigate('/signup');
-                  }}
-                  className="text-[#FF91A4] hover:text-[#FF69B4] font-medium"
-                >
-                  Don't have an account? Sign up
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Signup Page
-  if (currentPage === 'signup') {
-    return (
-      <div className="h-screen heart-background flex items-center justify-center p-3 sm:p-4 overflow-hidden">
-        <span className="heart-decoration">💕</span>
-        <span className="heart-decoration">❤️</span>
-        <span className="heart-decoration">💗</span>
-        <span className="heart-decoration">💝</span>
-        <span className="heart-decoration">❤️</span>
-        <span className="heart-decoration">💓</span>
-        <div className="decoration-circle"></div>
-        <div className="decoration-circle"></div>
-        <div className="w-full max-w-md relative z-10">
-
-          <div className="text-center mb-4 sm:mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-black mb-2">Sign Up</h1>
-            <p className="text-sm sm:text-base text-gray-600">Create your account</p>
-          </div>
-
-          <div className="bg-white rounded-3xl shadow-lg p-5 sm:p-8">
-            <div className="space-y-4 sm:space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-black mb-2">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter your full name"
-                  className="w-full px-4 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FF91A4] focus:outline-none transition-colors text-black"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-black mb-2">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                    className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FF91A4] focus:outline-none transition-colors text-black"
-                  />
-                </div>
-              </div>
-
               <div>
                 <label className="block text-sm font-medium text-black mb-2">
                   Phone Number
@@ -205,32 +280,30 @@ export default function AuthPages() {
                   <input
                     type="tel"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="Enter your phone number"
-                    className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-2xl focus:border-[#FF91A4] focus:outline-none transition-colors text-black"
+                    onChange={(e) => handlePhoneChange(e.target.value)}
+                    onBlur={() => {
+                      const error = validatePhone(phone);
+                      setErrors(prev => ({ ...prev, phone: error }));
+                    }}
+                    placeholder="Enter your 10-digit phone number"
+                    maxLength={10}
+                    className={`w-full pl-12 pr-4 py-4 border-2 rounded-2xl focus:outline-none transition-colors text-black ${
+                      errors.phone ? 'border-red-500' : 'border-gray-200 focus:border-[#FF91A4]'
+                    }`}
                   />
                 </div>
+                {errors.phone && (
+                  <p className="text-sm text-red-500 mt-1 ml-1">{errors.phone}</p>
+                )}
               </div>
 
               <button
-                onClick={() => handleSendOtp('signup')}
-                disabled={!name || !email || !phone || isLoading}
+                onClick={handleSendOtp}
+                disabled={!phone || isLoading || !!errors.phone || phone.length !== 10}
                 className="w-full bg-[#FF91A4] hover:bg-[#FF69B4] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-2xl transition-all transform hover:scale-105 active:scale-95 disabled:transform-none"
               >
                 {isLoading ? 'Sending...' : 'Send OTP'}
               </button>
-
-              <div className="text-center">
-                <button
-                  onClick={() => {
-                    setCurrentPage('login');
-                    navigate('/login');
-                  }}
-                  className="text-[#FF91A4] hover:text-[#FF69B4] font-medium"
-                >
-                  Already have an account? Login
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -239,7 +312,7 @@ export default function AuthPages() {
   }
 
   // OTP Verification Page
-  if (currentPage === 'login-otp' || currentPage === 'signup-otp') {
+  if (currentPage === 'otp') {
     return (
       <div className="h-screen heart-background flex items-center justify-center p-3 sm:p-4 overflow-hidden">
         <span className="heart-decoration">💕</span>
@@ -253,9 +326,8 @@ export default function AuthPages() {
         <div className="w-full max-w-md relative z-10">
           <button
             onClick={() => {
-              const prevPage = currentPage === 'login-otp' ? 'login' : 'signup';
-              setCurrentPage(prevPage);
-              navigate(`/${prevPage}`);
+              setCurrentPage('phone');
+              navigate('/phone');
             }}
             className="flex items-center text-gray-600 hover:text-black mb-4 sm:mb-6 transition-colors"
           >
@@ -265,12 +337,12 @@ export default function AuthPages() {
 
           <div className="text-center mb-4 sm:mb-8">
             <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#FFE4E1] rounded-full mx-auto mb-3 sm:mb-4 flex items-center justify-center">
-              <Mail className="w-6 h-6 sm:w-8 sm:h-8 text-[#FF91A4]" />
+              <Phone className="w-6 h-6 sm:w-8 sm:h-8 text-[#FF91A4]" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-black mb-2">Verify OTP</h1>
             <p className="text-sm sm:text-base text-gray-600">
               We've sent a code to<br />
-              <span className="font-medium text-black">{email || phone}</span>
+              <span className="font-medium text-black">{phone}</span>
             </p>
           </div>
 
@@ -306,9 +378,19 @@ export default function AuthPages() {
               </button>
 
               <div className="text-center">
-                <button className="text-gray-600 hover:text-black font-medium text-sm">
-                  Didn't receive code? <span className="text-[#FF91A4]">Resend</span>
-                </button>
+                {canResend ? (
+                  <button
+                    onClick={handleResendOtp}
+                    disabled={isLoading}
+                    className="text-gray-600 hover:text-black font-medium text-sm"
+                  >
+                    Didn't receive code? <span className="text-[#FF91A4] hover:text-[#FF69B4]">Resend OTP</span>
+                  </button>
+                ) : (
+                  <p className="text-gray-600 text-sm">
+                    Resend OTP in <span className="font-semibold text-[#FF91A4]">{otpTimer}s</span>
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -317,87 +399,4 @@ export default function AuthPages() {
     );
   }
 
-  // Success Page
-  if (currentPage === 'success') {
-    const handleContinue = () => {
-      const authType = localStorage.getItem('authType');
-      
-      if (authType === 'signup') {
-        // After signup, always go to onboarding
-        localStorage.removeItem('authType');
-        navigate('/onboarding');
-      } else {
-        // After login, check onboarding and profile setup status
-        const onboardingData = localStorage.getItem('onboardingData');
-        const profileSetup = localStorage.getItem('profileSetup');
-        
-        if (onboardingData) {
-          try {
-            const parsed = JSON.parse(onboardingData);
-            // Check if onboarding is completed
-            if (parsed.completed && parsed.currentStep >= 7) {
-              // Onboarding completed, check profile setup
-              if (profileSetup) {
-                try {
-                  const profileData = JSON.parse(profileSetup);
-                  // Check if profile has at least 1 photo
-                  if (profileData.photos && profileData.photos.length > 0) {
-                    // Profile setup complete, go to discover feed
-                    navigate('/discover');
-                  } else {
-                    // Profile setup incomplete, go to profile setup
-                    navigate('/profile-setup');
-                  }
-                } catch (e) {
-                  // Error parsing profile, go to profile setup
-                  navigate('/profile-setup');
-                }
-              } else {
-                // No profile setup data, go to profile setup
-                navigate('/profile-setup');
-              }
-            } else {
-              // Onboarding incomplete, go to onboarding
-              navigate('/onboarding');
-            }
-          } catch (e) {
-            // If error parsing, assume onboarding not done
-            navigate('/onboarding');
-          }
-        } else {
-          // No onboarding data, go to onboarding
-          navigate('/onboarding');
-        }
-        localStorage.removeItem('authType');
-      }
-    };
-
-    return (
-      <div className="h-screen heart-background flex items-center justify-center p-3 sm:p-4 overflow-hidden">
-        <span className="heart-decoration">💕</span>
-        <span className="heart-decoration">💖</span>
-        <span className="heart-decoration">💗</span>
-        <span className="heart-decoration">💝</span>
-        <span className="heart-decoration">❤️</span>
-        <span className="heart-decoration">💓</span>
-        <div className="decoration-circle"></div>
-        <div className="decoration-circle"></div>
-        <div className="w-full max-w-md text-center relative z-10">
-          <div className="w-24 h-24 bg-green-100 rounded-full mx-auto mb-6 flex items-center justify-center">
-            <CheckCircle className="w-16 h-16 text-green-500" />
-          </div>
-          <h1 className="text-3xl font-bold text-black mb-3">Success!</h1>
-          <p className="text-gray-600 mb-8">
-            Your account has been verified successfully
-          </p>
-          <button
-            onClick={handleContinue}
-            className="bg-[#FF91A4] hover:bg-[#FF69B4] text-white font-semibold py-4 px-8 rounded-2xl transition-all transform hover:scale-105 active:scale-95"
-          >
-            Continue
-          </button>
-        </div>
-      </div>
-    );
-  }
 }
