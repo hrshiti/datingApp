@@ -306,20 +306,20 @@ export default function ProfileCard({
                 </>
               )}
 
-              {/* Match Score Badge - Top Right */}
+              {/* Match Score Badge - Top Left */}
               {matchScore && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="absolute top-4 right-4 bg-gradient-to-br from-[#FF91A4] to-[#FF91A4] text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg z-10"
+                  className="absolute top-4 left-4 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg z-10"
                 >
                   {matchScore}% Match
                 </motion.div>
               )}
 
-              {/* Why Suggested Badges - Top Left */}
+              {/* Why Suggested Badges - Below Match Score (Top Left) */}
               {reasons.length > 0 && (
-                <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+                <div className={`absolute ${matchScore ? 'top-16' : 'top-4'} left-4 flex flex-col gap-2 z-10`}>
                   {reasons.slice(0, 2).map((reason, index) => (
                     <motion.div
                       key={index}

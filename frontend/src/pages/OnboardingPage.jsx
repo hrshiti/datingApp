@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin, Check, Edit2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Check, Edit2, Camera, ShoppingBag, User, Plane, Mic, Dumbbell, ChefHat, Activity, Palette, Mountain, Music, Wine, Gamepad2, Waves } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CustomDropdown from '../components/CustomDropdown';
 import CustomDatePicker from '../components/CustomDatePicker';
@@ -863,282 +863,103 @@ export default function OnboardingPage() {
               className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 border border-[#FFB6C1]/20 relative"
               style={{ zIndex: 1 }}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent pointer-events-none"></div>
-              <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-2 sm:mb-3 relative">
-                Interests & Hobbies
-              </h2>
-              <p className="text-xs sm:text-sm text-[#757575] mb-4 sm:mb-6">
-                Select at least 3 interests that describe you
-              </p>
-
-              {/* Interests Categories */}
-              <div className="space-y-4 sm:space-y-5 max-h-[60vh] overflow-y-auto pr-2">
-                {/* Adventure */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
+              {/* Header with Back and Skip */}
+              <div className="flex items-center justify-between mb-6 relative z-10">
+                <button
+                  onClick={handleBack}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                 >
-                  <h3 className="text-sm font-semibold text-[#212121] mb-2">Adventure</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {['Trekking', 'Travel', 'Camping', 'Sports', 'Hiking'].map((interest, idx) => (
-                      <motion.button
-                        key={interest}
-                        type="button"
-                        onClick={() => {
-                          const current = formData.interests;
-                          if (current.includes(interest)) {
-                            handleChange('interests', current.filter(item => item !== interest));
-                          } else {
-                            handleChange('interests', [...current, interest]);
-                          }
-                        }}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.1 + idx * 0.03 }}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
-                          formData.interests.includes(interest)
-                            ? 'bg-[#FF91A4] text-white border-2 border-[#FF91A4] shadow-md'
-                            : 'bg-white text-[#212121] border-2 border-[#FFB6C1] hover:border-[#FF91A4]'
-                        }`}
-                      >
-                        {interest}
-                      </motion.button>
-                    ))}
-                  </div>
-                </motion.div>
-
-                {/* Creative */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
+                  <ArrowLeft className="w-5 h-5 text-[#212121]" />
+                </button>
+                <button
+                  onClick={() => {
+                    // Skip validation and move to next step
+                    saveProgress();
+                    setCurrentStep(4);
+                  }}
+                  className="text-[#FF91A4] font-medium text-sm hover:text-[#FF69B4] transition-colors"
                 >
-                  <h3 className="text-sm font-semibold text-[#212121] mb-2">Creative</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {['Cooking', 'Reading', 'Music', 'Art', 'Photography', 'Writing'].map((interest, idx) => (
-                      <motion.button
-                        key={interest}
-                        type="button"
-                        onClick={() => {
-                          const current = formData.interests;
-                          if (current.includes(interest)) {
-                            handleChange('interests', current.filter(item => item !== interest));
-                          } else {
-                            handleChange('interests', [...current, interest]);
-                          }
-                        }}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.2 + idx * 0.03 }}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
-                          formData.interests.includes(interest)
-                            ? 'bg-[#FF91A4] text-white border-2 border-[#FF91A4] shadow-md'
-                            : 'bg-white text-[#212121] border-2 border-[#FFB6C1] hover:border-[#FF91A4]'
-                        }`}
-                      >
-                        {interest}
-                      </motion.button>
-                    ))}
-                  </div>
-                </motion.div>
-
-                {/* Social */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <h3 className="text-sm font-semibold text-[#212121] mb-2">Social</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {['Dancing', 'Movies', 'Gaming', 'Parties', 'Social Events'].map((interest, idx) => (
-                      <motion.button
-                        key={interest}
-                        type="button"
-                        onClick={() => {
-                          const current = formData.interests;
-                          if (current.includes(interest)) {
-                            handleChange('interests', current.filter(item => item !== interest));
-                          } else {
-                            handleChange('interests', [...current, interest]);
-                          }
-                        }}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.3 + idx * 0.03 }}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
-                          formData.interests.includes(interest)
-                            ? 'bg-[#FF91A4] text-white border-2 border-[#FF91A4] shadow-md'
-                            : 'bg-white text-[#212121] border-2 border-[#FFB6C1] hover:border-[#FF91A4]'
-                        }`}
-                      >
-                        {interest}
-                      </motion.button>
-                    ))}
-                  </div>
-                </motion.div>
-
-                {/* Wellness */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                >
-                  <h3 className="text-sm font-semibold text-[#212121] mb-2">Wellness</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {['Yoga', 'Fitness', 'Meditation', 'Nature', 'Running'].map((interest, idx) => (
-                      <motion.button
-                        key={interest}
-                        type="button"
-                        onClick={() => {
-                          const current = formData.interests;
-                          if (current.includes(interest)) {
-                            handleChange('interests', current.filter(item => item !== interest));
-                          } else {
-                            handleChange('interests', [...current, interest]);
-                          }
-                        }}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.4 + idx * 0.03 }}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
-                          formData.interests.includes(interest)
-                            ? 'bg-[#FF91A4] text-white border-2 border-[#FF91A4] shadow-md'
-                            : 'bg-white text-[#212121] border-2 border-[#FFB6C1] hover:border-[#FF91A4]'
-                        }`}
-                      >
-                        {interest}
-                      </motion.button>
-                    ))}
-                  </div>
-                </motion.div>
-
-                {/* Tech */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                >
-                  <h3 className="text-sm font-semibold text-[#212121] mb-2">Tech</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {['Coding', 'Gaming', 'Tech Gadgets', 'AI/ML'].map((interest, idx) => (
-                      <motion.button
-                        key={interest}
-                        type="button"
-                        onClick={() => {
-                          const current = formData.interests;
-                          if (current.includes(interest)) {
-                            handleChange('interests', current.filter(item => item !== interest));
-                          } else {
-                            handleChange('interests', [...current, interest]);
-                          }
-                        }}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.5 + idx * 0.03 }}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
-                          formData.interests.includes(interest)
-                            ? 'bg-[#FF91A4] text-white border-2 border-[#FF91A4] shadow-md'
-                            : 'bg-white text-[#212121] border-2 border-[#FFB6C1] hover:border-[#FF91A4]'
-                        }`}
-                      >
-                        {interest}
-                      </motion.button>
-                    ))}
-                  </div>
-                </motion.div>
-
-                {/* Others */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 }}
-                >
-                  <h3 className="text-sm font-semibold text-[#212121] mb-2">Others</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {['Pets', 'Fashion', 'Food', 'Books', 'Comedy'].map((interest, idx) => (
-                      <motion.button
-                        key={interest}
-                        type="button"
-                        onClick={() => {
-                          const current = formData.interests;
-                          if (current.includes(interest)) {
-                            handleChange('interests', current.filter(item => item !== interest));
-                          } else {
-                            handleChange('interests', [...current, interest]);
-                          }
-                        }}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.6 + idx * 0.03 }}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
-                          formData.interests.includes(interest)
-                            ? 'bg-[#FF91A4] text-white border-2 border-[#FF91A4] shadow-md'
-                            : 'bg-white text-[#212121] border-2 border-[#FFB6C1] hover:border-[#FF91A4]'
-                        }`}
-                      >
-                        {interest}
-                      </motion.button>
-                    ))}
-                  </div>
-                </motion.div>
+                  Skip
+                </button>
               </div>
 
-              {/* Selected Count */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: formData.interests.length > 0 ? 1 : 0 }}
-                className="mt-4 sm:mt-5 text-center"
-              >
-                <p className="text-xs sm:text-sm text-[#757575]">
-                  <span className="font-semibold text-[#FF91A4]">{formData.interests.length}</span> interests selected
-                  {formData.interests.length < 3 && (
-                    <span className="text-red-600"> (Select at least 3)</span>
-                  )}
-                </p>
-              </motion.div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#212121] mb-2 relative z-10">
+                Your interests
+              </h2>
+              <p className="text-sm sm:text-base text-[#757575] mb-6 relative z-10">
+                Select a few of your interests and let everyone know what you're passionate about.
+              </p>
+
+              {/* Interests Grid - All in one grid like Figma design */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 max-h-[50vh] overflow-y-auto pr-2 mb-6">
+                {[
+                  { name: 'Photography', icon: Camera },
+                  { name: 'Shopping', icon: ShoppingBag },
+                  { name: 'Run', icon: User },
+                  { name: 'Traveling', icon: Plane },
+                  { name: 'Karaoke', icon: Mic },
+                  { name: 'Yoga', icon: Dumbbell },
+                  { name: 'Cooking', icon: ChefHat },
+                  { name: 'Tennis', icon: Activity },
+                  { name: 'Art', icon: Palette },
+                  { name: 'Extreme', icon: Mountain },
+                  { name: 'Music', icon: Music },
+                  { name: 'Drink', icon: Wine },
+                  { name: 'Video games', icon: Gamepad2 },
+                  { name: 'Swimming', icon: Waves },
+                ].map((interest, idx) => {
+                  const Icon = interest.icon;
+                  const isSelected = formData.interests.includes(interest.name);
+                  return (
+                    <motion.button
+                      key={interest.name}
+                      type="button"
+                      onClick={() => {
+                        const current = formData.interests;
+                        if (current.includes(interest.name)) {
+                          handleChange('interests', current.filter(item => item !== interest.name));
+                        } else {
+                          handleChange('interests', [...current, interest.name]);
+                        }
+                      }}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: idx * 0.03 }}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={`flex flex-col items-center justify-center gap-2 p-4 sm:p-5 rounded-2xl transition-all border-2 ${
+                        isSelected
+                          ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white border-[#FF91A4] shadow-md'
+                          : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
+                      }`}
+                    >
+                      <Icon className={`w-6 h-6 sm:w-7 sm:h-7 ${isSelected ? 'text-white' : 'text-[#212121]'}`} />
+                      <span className="text-xs sm:text-sm font-medium text-center">{interest.name}</span>
+                    </motion.button>
+                  );
+                })}
+              </div>
 
               {errors.interests && (
                 <motion.p
                   initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-red-600 mt-2 text-center"
+                  className="text-xs text-[#FF91A4] mb-4 text-center"
                 >
                   {errors.interests}
                 </motion.p>
               )}
 
-              {/* Navigation Buttons */}
-              <div className="flex gap-2 sm:gap-3 pt-4 sm:pt-6">
-                <motion.button
-                  onClick={handleBack}
-                  whileHover={{ scale: 1.02, y: -1 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-gradient-to-r from-[#757575] to-[#616161] hover:from-[#616161] hover:to-[#757575] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all flex items-center justify-center shadow-md hover:shadow-lg relative z-10"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-1.5 sm:mr-2" />
-                  <span className="text-sm">Back</span>
-                </motion.button>
+              {/* Continue Button */}
+              <div className="pt-4">
                 <motion.button
                   onClick={handleNext}
                   disabled={formData.interests.length < 3}
-                  whileHover={{ scale: 1.02, y: -1 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm shadow-lg hover:shadow-xl disabled:shadow-none relative z-10"
+                  whileHover={{ scale: formData.interests.length >= 3 ? 1.02 : 1 }}
+                  whileTap={{ scale: formData.interests.length >= 3 ? 0.98 : 1 }}
+                  className="w-full bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-4 sm:py-5 rounded-2xl transition-all text-base sm:text-lg shadow-lg hover:shadow-xl disabled:shadow-none relative z-10"
                 >
-                  Next →
+                  Continue
                 </motion.button>
               </div>
             </motion.div>
