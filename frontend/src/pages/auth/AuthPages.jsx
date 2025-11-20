@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Phone, ArrowLeft } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ArrowLeft, Heart, ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function AuthPages() {
   const navigate = useNavigate();
@@ -18,12 +18,39 @@ export default function AuthPages() {
 
   const [currentPage, setCurrentPage] = useState(() => getInitialPage());
   const [phone, setPhone] = useState('');
+  const [countryCode, setCountryCode] = useState('+91'); // Default to India
+  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({ phone: '' });
   const [otpTimer, setOtpTimer] = useState(60); // 60 seconds timer
   const [canResend, setCanResend] = useState(false);
   const [authFlow, setAuthFlow] = useState('signup'); // 'signup' or 'login'
+  const countryDropdownRef = useRef(null);
+
+  // Common country codes
+  const countryCodes = [
+    { code: '+91', country: 'India' },
+    { code: '+1', country: 'USA/Canada' },
+    { code: '+44', country: 'UK' },
+    { code: '+61', country: 'Australia' },
+    { code: '+49', country: 'Germany' },
+    { code: '+33', country: 'France' },
+    { code: '+81', country: 'Japan' },
+    { code: '+86', country: 'China' },
+    { code: '+7', country: 'Russia' },
+    { code: '+55', country: 'Brazil' },
+    { code: '+52', country: 'Mexico' },
+    { code: '+34', country: 'Spain' },
+    { code: '+39', country: 'Italy' },
+    { code: '+82', country: 'South Korea' },
+    { code: '+65', country: 'Singapore' },
+    { code: '+971', country: 'UAE' },
+    { code: '+966', country: 'Saudi Arabia' },
+    { code: '+27', country: 'South Africa' },
+    { code: '+31', country: 'Netherlands' },
+    { code: '+46', country: 'Sweden' }
+  ];
 
   // Sync currentPage with URL changes
   useEffect(() => {
@@ -31,6 +58,23 @@ export default function AuthPages() {
     setCurrentPage(page);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname, location.search]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (countryDropdownRef.current && !countryDropdownRef.current.contains(event.target)) {
+        setIsCountryDropdownOpen(false);
+      }
+    };
+
+    if (isCountryDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isCountryDropdownOpen]);
 
   // OTP Timer effect
   useEffect(() => {
@@ -48,7 +92,7 @@ export default function AuthPages() {
     }
   }, [currentPage, otpTimer, canResend]);
 
-  // Validate phone number (10 digits)
+  // Validate phone number (exactly 10 digits)
   const validatePhone = (phoneValue) => {
     const digitsOnly = phoneValue.replace(/\D/g, '');
     if (!digitsOnly) {
@@ -130,9 +174,10 @@ export default function AuthPages() {
     setTimeout(() => {
       setIsLoading(false);
       
-      // Store phone number
+      // Store phone number with country code
       localStorage.setItem('authData', JSON.stringify({
-        phone: phone
+        phone: phone,
+        countryCode: countryCode
       }));
       
       // Route based on auth flow (signup or login)
@@ -152,7 +197,7 @@ export default function AuthPages() {
         localStorage.setItem('onboardingData', JSON.stringify(freshOnboardingData));
         navigate('/onboarding');
       } else {
-        // Login flow → Go directly to people (swiping feed) (skip onboarding)
+        // Login flow → Go directly to people page (skip onboarding)
         navigate('/people');
       }
     }, 1500);
@@ -173,15 +218,20 @@ export default function AuthPages() {
         <div className="w-full max-w-md text-center relative z-10">
           {/* App Logo */}
           <motion.div 
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="mb-8"
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="mb-10 sm:mb-12"
           >
             <motion.div 
               animate={{ 
                 rotate: [0, 5, -5, 0],
-                scale: [1, 1.05, 1]
+                scale: [1, 1.05, 1],
+                boxShadow: [
+                  "0 15px 30px rgba(255, 145, 164, 0.25)",
+                  "0 20px 40px rgba(255, 105, 180, 0.35)",
+                  "0 15px 30px rgba(255, 145, 164, 0.25)"
+                ]
               }}
               transition={{ 
                 duration: 4, 
@@ -189,25 +239,61 @@ export default function AuthPages() {
                 repeatDelay: 2,
                 ease: "easeInOut"
               }}
-              className="w-28 h-28 bg-gradient-to-br from-[#FF91A4] via-[#FF69B4] to-[#FF91A4] rounded-3xl mx-auto mb-6 flex items-center justify-center shadow-2xl relative overflow-hidden"
+              className="w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-br from-[#FF91A4] via-[#FF69B4] to-[#FF91A4] rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-xl relative overflow-hidden"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent"></div>
-              <span className="text-6xl relative z-10">💕</span>
+              <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-white/20 to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-white/30"></div>
+              <motion.div
+                animate={{ 
+                  scale: [1, 1.1, 1],
+                  rotate: [0, -5, 5, 0]
+                }}
+                transition={{ 
+                  duration: 2.5, 
+                  repeat: Infinity, 
+                  repeatDelay: 0.5,
+                  ease: "easeInOut"
+                }}
+                className="relative z-10"
+              >
+                <Heart className="w-12 h-12 sm:w-14 sm:h-14 text-white fill-white drop-shadow-md" strokeWidth={2.5} />
+              </motion.div>
             </motion.div>
-            <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-3">
+            <motion.h1 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-3xl sm:text-4xl font-bold text-[#212121] mb-3 drop-shadow-sm"
+            >
               DatingApp
-            </h1>
-            <p className="text-lg sm:text-xl text-gray-600 font-medium">Find your perfect match</p>
+            </motion.h1>
+            <motion.p 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="text-lg sm:text-xl text-[#757575] font-semibold mb-2"
+            >
+              Find your perfect match
+            </motion.p>
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="text-sm sm:text-base text-[#9E9E9E] font-medium"
+            >
+              Connect with people who share your interests
+            </motion.p>
           </motion.div>
 
           {/* Continue Button */}
           <motion.div 
-            initial={{ y: 20, opacity: 0 }}
+            initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-3xl shadow-2xl p-6 sm:p-8 border border-[#FFB6C1]/20 relative overflow-hidden"
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-3xl shadow-2xl p-6 sm:p-8 border border-[#FFB6C1]/30 relative overflow-hidden backdrop-blur-sm"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/10 via-[#FF69B4]/5 to-transparent"></div>
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#FF91A4] via-[#FF69B4] to-[#FF91A4]"></div>
             <motion.button
               onClick={() => {
                 // This is signup flow
@@ -215,11 +301,17 @@ export default function AuthPages() {
                 setCurrentPage('phone');
                 navigate('/phone');
               }}
-              whileHover={{ scale: 1.02, y: -2 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] text-white font-semibold py-4 rounded-2xl transition-all shadow-lg hover:shadow-xl mb-4 relative z-10"
+              whileHover={{ scale: 1.03, y: -3 }}
+              whileTap={{ scale: 0.97 }}
+              className="w-full bg-gradient-to-r from-[#FF91A4] via-[#FF69B4] to-[#FF91A4] text-white font-bold py-4 sm:py-5 rounded-2xl transition-all shadow-xl hover:shadow-2xl mb-5 relative z-10 text-base sm:text-lg group overflow-hidden"
             >
-              Continue with Phone Number
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                Continue with Phone Number
+              </span>
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-[#FF69B4] via-[#FF91A4] to-[#FF69B4] opacity-0 group-hover:opacity-100 transition-opacity"
+                initial={false}
+              />
             </motion.button>
 
             <motion.button
@@ -229,8 +321,9 @@ export default function AuthPages() {
                 setCurrentPage('phone');
                 navigate('/phone');
               }}
-              whileHover={{ scale: 1.05 }}
-              className="text-sm text-gray-600 hover:text-[#FF91A4] font-medium transition-colors relative z-10"
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.95 }}
+              className="text-sm sm:text-base text-[#757575] hover:text-[#FF91A4] font-semibold transition-all relative z-10 underline decoration-2 underline-offset-4 decoration-transparent hover:decoration-[#FF91A4]"
             >
               Already have an account? Login
             </motion.button>
@@ -253,30 +346,80 @@ export default function AuthPages() {
         <div className="decoration-circle"></div>
         <div className="decoration-circle"></div>
         <div className="w-full max-w-md relative z-10">
+          {/* Back Button */}
           <button
             onClick={() => {
               setCurrentPage('splash');
-              navigate('/welcome');
+              navigate('/');
             }}
-            className="flex items-center text-gray-600 hover:text-black mb-6 transition-colors"
+            className="mb-4 sm:mb-6 p-2 hover:bg-[#FFE4E1] rounded-xl transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            Back
+            <ArrowLeft className="w-5 h-5 text-[#212121]" />
           </button>
 
-          <div className="text-center mb-4 sm:mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-black mb-2">Enter Your Phone Number</h1>
-            <p className="text-sm sm:text-base text-gray-600">We'll send you a verification code</p>
-          </div>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-6 sm:mb-8"
+          >
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#212121] mb-2">Enter Your Phone Number</h1>
+            <p className="text-sm sm:text-base text-[#757575]">We'll send you a verification code</p>
+          </motion.div>
 
-          <div className="bg-white rounded-3xl shadow-lg p-5 sm:p-8">
-            <div className="space-y-6">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-3xl shadow-2xl p-6 sm:p-8 border border-[#FFB6C1]/20 relative overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent pointer-events-none"></div>
+            <div className="space-y-6 relative z-10">
               <div>
-                <label className="block text-sm font-medium text-black mb-2">
-                  Phone Number
+                <label className="block text-sm sm:text-base font-semibold text-[#212121] mb-3">
+                  Phone Number <span className="text-[#FF91A4]">*</span>
                 </label>
-                <div className="relative">
-                  <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <div className="flex gap-2">
+                  <div className="relative" ref={countryDropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
+                      className="px-3 sm:px-4 py-4 border-2 rounded-2xl focus:outline-none transition-all text-[#212121] text-sm sm:text-base bg-white shadow-sm hover:shadow-md border-[#FFB6C1] focus:border-[#FF91A4] focus:ring-2 focus:ring-[#FF91A4]/20 font-semibold flex items-center gap-2 min-w-[80px]"
+                    >
+                      <span>{countryCode}</span>
+                      <ChevronDown 
+                        className={`w-4 h-4 transition-transform ${isCountryDropdownOpen ? 'rotate-180' : ''}`} 
+                      />
+                    </button>
+                    <AnimatePresence>
+                      {isCountryDropdownOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.2 }}
+                          className="absolute top-full left-0 mt-1 bg-white border-2 border-[#FFB6C1] rounded-2xl shadow-xl z-50 w-full min-w-[120px] max-h-[200px] overflow-y-auto"
+                        >
+                          {countryCodes.map((item) => (
+                            <button
+                              key={item.code}
+                              type="button"
+                              onClick={() => {
+                                setCountryCode(item.code);
+                                setIsCountryDropdownOpen(false);
+                              }}
+                              className={`w-full px-4 py-3 text-left text-sm hover:bg-[#FFE4E1] transition-colors first:rounded-t-2xl last:rounded-b-2xl ${
+                                countryCode === item.code ? 'bg-[#FFE4E1] font-semibold' : ''
+                              }`}
+                            >
+                              <span className="font-semibold">{item.code}</span>
+                              <span className="text-[#757575] ml-2 text-xs">{item.country}</span>
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                   <input
                     type="tel"
                     value={phone}
@@ -285,27 +428,59 @@ export default function AuthPages() {
                       const error = validatePhone(phone);
                       setErrors(prev => ({ ...prev, phone: error }));
                     }}
-                    placeholder="Enter your 10-digit phone number"
+                    placeholder="Enter your phone number"
                     maxLength={10}
-                    className={`w-full pl-12 pr-4 py-4 border-2 rounded-2xl focus:outline-none transition-colors text-black ${
-                      errors.phone ? 'border-red-500' : 'border-gray-200 focus:border-[#FF91A4]'
+                    className={`flex-1 px-4 py-4 border-2 rounded-2xl focus:outline-none transition-all text-[#212121] text-base bg-white shadow-sm hover:shadow-md ${
+                      errors.phone 
+                        ? 'border-red-500 focus:border-red-600 focus:ring-2 focus:ring-red-500/20' 
+                        : 'border-[#FFB6C1] focus:border-[#FF91A4] focus:ring-2 focus:ring-[#FF91A4]/20'
                     }`}
                   />
                 </div>
                 {errors.phone && (
-                  <p className="text-sm text-red-500 mt-1 ml-1">{errors.phone}</p>
+                  <motion.p 
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-sm text-red-600 mt-2 ml-1"
+                  >
+                    {errors.phone}
+                  </motion.p>
+                )}
+                {!errors.phone && phone.length > 0 && (
+                  <p className="text-xs text-[#757575] mt-2 ml-1">
+                    {phone.length} digits
+                  </p>
                 )}
               </div>
 
-              <button
+              <motion.button
                 onClick={handleSendOtp}
                 disabled={!phone || isLoading || !!errors.phone || phone.length !== 10}
-                className="w-full bg-[#FF91A4] hover:bg-[#FF69B4] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-2xl transition-all transform hover:scale-105 active:scale-95 disabled:transform-none"
+                whileHover={{ scale: phone.length === 10 && !isLoading ? 1.02 : 1, y: phone.length === 10 && !isLoading ? -2 : 0 }}
+                whileTap={{ scale: phone.length === 10 && !isLoading ? 0.98 : 1 }}
+                className="w-full bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-bold py-4 sm:py-5 rounded-2xl transition-all shadow-lg hover:shadow-xl disabled:shadow-none text-base sm:text-lg relative overflow-hidden group"
               >
-                {isLoading ? 'Sending...' : 'Send OTP'}
-              </button>
+                {isLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                    />
+                    Sending...
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    Send OTP
+                  </span>
+                )}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-[#FF69B4] via-[#FF91A4] to-[#FF69B4] opacity-0 group-hover:opacity-100 transition-opacity"
+                  initial={false}
+                />
+              </motion.button>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     );
@@ -324,37 +499,34 @@ export default function AuthPages() {
         <div className="decoration-circle"></div>
         <div className="decoration-circle"></div>
         <div className="w-full max-w-md relative z-10">
-          <button
-            onClick={() => {
-              setCurrentPage('phone');
-              navigate('/phone');
-            }}
-            className="flex items-center text-gray-600 hover:text-black mb-4 sm:mb-6 transition-colors"
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-6 sm:mb-8"
           >
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            Back
-          </button>
-
-          <div className="text-center mb-4 sm:mb-8">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#FFE4E1] rounded-full mx-auto mb-3 sm:mb-4 flex items-center justify-center">
-              <Phone className="w-6 h-6 sm:w-8 sm:h-8 text-[#FF91A4]" />
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-black mb-2">Verify OTP</h1>
-            <p className="text-sm sm:text-base text-gray-600">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#212121] mb-2">Verify OTP</h1>
+            <p className="text-sm sm:text-base text-[#757575]">
               We've sent a code to<br />
-              <span className="font-medium text-black">{phone}</span>
+              <span className="font-semibold text-[#212121]">{countryCode} {phone}</span>
             </p>
-          </div>
+          </motion.div>
 
-          <div className="bg-white rounded-3xl shadow-lg p-5 sm:p-8">
-            <div className="space-y-4 sm:space-y-6">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-3xl shadow-2xl p-6 sm:p-8 border border-[#FFB6C1]/20 relative overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent pointer-events-none"></div>
+            <div className="space-y-6 relative z-10">
               <div>
-                <label className="block text-sm font-medium text-black mb-3 sm:mb-4 text-center">
+                <label className="block text-sm sm:text-base font-semibold text-[#212121] mb-4 sm:mb-5 text-center">
                   Enter 6-digit code
                 </label>
-                <div className="flex justify-center items-center gap-1.5 sm:gap-2 px-1">
+                <div className="flex justify-center items-center gap-2 sm:gap-3 px-1">
                   {otp.map((digit, index) => (
-                    <input
+                    <motion.input
                       key={index}
                       id={`otp-${index}`}
                       type="text"
@@ -363,37 +535,64 @@ export default function AuthPages() {
                       value={digit}
                       onChange={(e) => handleOtpChange(index, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                      className="flex-1 max-w-[45px] sm:max-w-[50px] h-12 sm:h-14 text-center text-xl sm:text-2xl font-bold border-2 border-gray-200 rounded-xl focus:border-[#FF91A4] focus:outline-none transition-colors text-black"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      whileFocus={{ scale: 1.05 }}
+                      className="flex-1 max-w-[50px] sm:max-w-[55px] h-14 sm:h-16 text-center text-2xl sm:text-3xl font-bold border-2 rounded-xl focus:outline-none transition-all text-[#212121] bg-white shadow-sm hover:shadow-md focus:shadow-lg focus:ring-2 focus:ring-[#FF91A4]/20 border-[#FFB6C1] focus:border-[#FF91A4]"
                     />
                   ))}
                 </div>
               </div>
 
-              <button
+              <motion.button
                 onClick={handleVerifyOtp}
                 disabled={otp.some(d => !d) || isLoading}
-                className="w-full bg-[#FF91A4] hover:bg-[#FF69B4] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-2xl transition-all transform hover:scale-105 active:scale-95 disabled:transform-none"
+                whileHover={{ scale: !otp.some(d => !d) && !isLoading ? 1.02 : 1, y: !otp.some(d => !d) && !isLoading ? -2 : 0 }}
+                whileTap={{ scale: !otp.some(d => !d) && !isLoading ? 0.98 : 1 }}
+                className="w-full bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-bold py-4 sm:py-5 rounded-2xl transition-all shadow-lg hover:shadow-xl disabled:shadow-none text-base sm:text-lg relative overflow-hidden group"
               >
-                {isLoading ? 'Verifying...' : 'Verify OTP'}
-              </button>
+                {isLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                    />
+                    Verifying...
+                  </span>
+                ) : (
+                  <span>Verify OTP</span>
+                )}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-[#FF69B4] via-[#FF91A4] to-[#FF69B4] opacity-0 group-hover:opacity-100 transition-opacity"
+                  initial={false}
+                />
+              </motion.button>
 
-              <div className="text-center">
+              <div className="text-center pt-2">
                 {canResend ? (
-                  <button
+                  <motion.button
                     onClick={handleResendOtp}
                     disabled={isLoading}
-                    className="text-gray-600 hover:text-black font-medium text-sm"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="text-[#757575] hover:text-[#212121] font-semibold text-sm sm:text-base transition-colors"
                   >
-                    Didn't receive code? <span className="text-[#FF91A4] hover:text-[#FF69B4]">Resend OTP</span>
-                  </button>
+                    Didn't receive code? <span className="text-[#FF91A4] hover:text-[#FF69B4] underline decoration-2 underline-offset-2">Resend OTP</span>
+                  </motion.button>
                 ) : (
-                  <p className="text-gray-600 text-sm">
-                    Resend OTP in <span className="font-semibold text-[#FF91A4]">{otpTimer}s</span>
-                  </p>
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-[#757575] text-sm sm:text-base"
+                  >
+                    Resend OTP in <span className="font-bold text-[#FF91A4]">{otpTimer}s</span>
+                  </motion.p>
                 )}
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     );

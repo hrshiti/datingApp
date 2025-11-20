@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, Camera } from 'lucide-react';
+import { Check, Camera, Upload, User, Sparkles, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PhotoUpload from '../components/PhotoUpload';
 import { colors, animations } from '../constants/theme';
@@ -13,7 +13,7 @@ export default function ProfileSetupPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   const maxBioLength = 200;
-  const minPhotos = 1;
+  const minPhotos = 4;
   const maxPhotos = 6;
 
   // Check if onboarding is completed, if not redirect to onboarding
@@ -35,16 +35,12 @@ export default function ProfileSetupPage() {
       return;
     }
 
-    // Check if profile setup is already complete
+    // Load existing profile setup data if any (but don't redirect - let user complete the page)
     const savedData = localStorage.getItem('profileSetup');
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
-        // If profile has photos, redirect to people (swiping feed)
-        if (parsed.photos && parsed.photos.length > 0) {
-          navigate('/people');
-          return;
-        }
+        // Load existing photos and bio, but still show the page
         setPhotos(parsed.photos || []);
         setBio(parsed.bio || '');
       } catch (e) {
@@ -171,7 +167,7 @@ export default function ProfileSetupPage() {
   };
 
   return (
-    <div className="h-screen heart-background flex items-center justify-center p-3 sm:p-4 overflow-hidden relative">
+    <div className="h-screen heart-background flex flex-col overflow-hidden relative">
       <span className="heart-decoration">💕</span>
       <span className="heart-decoration">💖</span>
       <span className="heart-decoration">💗</span>
@@ -181,70 +177,42 @@ export default function ProfileSetupPage() {
       <div className="decoration-circle"></div>
       <div className="decoration-circle"></div>
       
-      <div className="w-full max-w-2xl relative z-10">
+      <div className="w-full h-full relative z-10 flex flex-col">
         <motion.div
           variants={pageVariants}
           initial="initial"
           animate="animate"
           exit="exit"
           transition={pageTransition}
-          className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 border border-[#FFB6C1]/20 relative overflow-hidden"
+          className="bg-gradient-to-br from-white to-[#FFF0F5] h-full w-full flex flex-col p-4 sm:p-6 md:p-8 relative overflow-hidden"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent pointer-events-none"></div>
           
           {/* Header */}
-          <div className="mb-4 sm:mb-6 relative z-10">
-            <button
-              onClick={() => {
-                // Go back to onboarding Step 7 (Review page)
-                const onboardingData = localStorage.getItem('onboardingData');
-                if (onboardingData) {
-                  try {
-                    const parsed = JSON.parse(onboardingData);
-                    // Set current step to 7 (Review page) so user can review
-                    parsed.currentStep = 7;
-                    localStorage.setItem('onboardingData', JSON.stringify(parsed));
-                  } catch (e) {
-                    console.error('Error updating onboarding data:', e);
-                  }
-                }
-                navigate('/onboarding');
-              }}
-              className="flex items-center text-[#757575] hover:text-[#212121] mb-3 sm:mb-4 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-              <span className="text-sm sm:text-base">Back</span>
-            </button>
-            <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-2">
-              Complete Your Profile
-            </h1>
-            <p className="text-xs sm:text-sm text-[#757575] mb-4">
-              Add photos and tell others about yourself
-            </p>
-            <div className="bg-gradient-to-r from-[#FFE4E1] to-[#FFF0F5] border border-[#FFB6C1] rounded-xl p-3 mb-4">
-              <p className="text-xs sm:text-sm text-[#212121] font-medium">
-                📸 Upload at least 1 photo to continue
-              </p>
-              <p className="text-xs text-[#757575] mt-1">
-                Add a bio to help others know more about you (optional)
-              </p>
-            </div>
+          <div className="mb-6 sm:mb-8 relative z-10">
           </div>
 
-          <div className="space-y-6 sm:space-y-8 max-h-[65vh] overflow-y-auto pr-2 relative z-10">
+          <div className="space-y-6 sm:space-y-8 flex-1 overflow-y-auto pr-2 relative z-10 min-h-0">
             {/* Section 1: Photo Upload */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 border-2 border-[#FFB6C1] shadow-sm"
+              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl p-5 sm:p-6 border-2 border-[#FFB6C1] shadow-md hover:shadow-lg transition-shadow"
             >
-              <label className="block text-sm sm:text-base font-semibold text-[#212121] mb-3">
-                📷 Upload Your Photos <span className="text-[#FF91A4]">*</span>
-              </label>
-              <p className="text-xs text-[#757575] mb-3">
-                Add photos to show others who you are. At least 1 photo is required.
-              </p>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-md">
+                  <Upload className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                </div>
+                <div>
+                  <label className="block text-sm sm:text-base font-bold text-[#212121]">
+                    Upload Your Photos <span className="text-[#FF91A4]">*</span>
+                  </label>
+                  <p className="text-xs sm:text-sm text-[#757575] mt-1">
+                    Add photos to show others who you are
+                  </p>
+                </div>
+              </div>
               <PhotoUpload
                 photos={photos}
                 onChange={setPhotos}
@@ -255,9 +223,18 @@ export default function ProfileSetupPage() {
                 <motion.p
                   initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-[#FF91A4] mt-2"
+                  className="text-xs text-[#FF91A4] mt-3 font-medium"
                 >
                   {errors.photos}
+                </motion.p>
+              )}
+              {photos.length > 0 && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-xs sm:text-sm text-[#757575] mt-3"
+                >
+                  ✓ {photos.length} photo{photos.length > 1 ? 's' : ''} uploaded
                 </motion.p>
               )}
             </motion.div>
@@ -267,14 +244,21 @@ export default function ProfileSetupPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 border-2 border-[#FFB6C1] shadow-sm"
+              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl p-5 sm:p-6 border-2 border-[#FFB6C1] shadow-md hover:shadow-lg transition-shadow"
             >
-              <label className="block text-sm sm:text-base font-semibold text-[#212121] mb-2">
-                ✍️ Write Your Bio <span className="text-[#757575] text-xs font-normal">(Optional)</span>
-              </label>
-              <p className="text-xs text-[#757575] mb-3">
-                Tell others about yourself, your interests, and what you're looking for.
-              </p>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-md">
+                  <User className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                </div>
+                <div>
+                  <label className="block text-sm sm:text-base font-bold text-[#212121]">
+                    Write Your Bio <span className="text-[#757575] text-xs font-normal">(Optional)</span>
+                  </label>
+                  <p className="text-xs sm:text-sm text-[#757575] mt-1">
+                    Tell others about yourself, your interests, and what you're looking for
+                  </p>
+                </div>
+              </div>
               <textarea
                 value={bio}
                 onChange={(e) => {
@@ -283,13 +267,26 @@ export default function ProfileSetupPage() {
                   }
                 }}
                 placeholder="Tell others about yourself..."
-                rows={4}
+                rows={5}
                 className="w-full px-4 py-3 border-2 border-[#FFB6C1] rounded-xl sm:rounded-2xl text-sm sm:text-base text-[#212121] bg-white focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 focus:border-[#FF91A4] transition-all resize-none shadow-sm hover:shadow-md"
               />
-              <div className="flex justify-between items-center mt-2">
-                <p className="text-xs text-[#757575]">
+              <div className="flex justify-between items-center mt-3">
+                <p className={`text-xs sm:text-sm font-medium ${
+                  bio.length > maxBioLength * 0.9 
+                    ? 'text-[#FF91A4]' 
+                    : 'text-[#757575]'
+                }`}>
                   {bio.length}/{maxBioLength} characters
                 </p>
+                {bio.length > 0 && (
+                  <motion.span
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-xs text-[#FF91A4] font-medium"
+                  >
+                    ✓ Bio added
+                  </motion.span>
+                )}
               </div>
             </motion.div>
 
@@ -299,23 +296,36 @@ export default function ProfileSetupPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
+                className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl p-5 sm:p-6 border-2 border-[#FFB6C1] shadow-md"
               >
-                <label className="block text-sm sm:text-base font-semibold text-[#212121] mb-2">
-                  Your Interests
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {interests.slice(0, 8).map((interest) => (
-                    <span
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-md">
+                    <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  </div>
+                  <label className="block text-sm sm:text-base font-bold text-[#212121]">
+                    Your Interests
+                  </label>
+                </div>
+                <div className="flex flex-wrap gap-2.5">
+                  {interests.slice(0, 8).map((interest, idx) => (
+                    <motion.span
                       key={interest}
-                      className="px-3 py-1.5 bg-[#FFE4E1] text-[#FF91A4] rounded-lg text-xs sm:text-sm font-medium"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.3 + idx * 0.03 }}
+                      className="px-3 sm:px-4 py-2 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] text-[#FF91A4] rounded-xl text-xs sm:text-sm font-semibold border border-[#FFB6C1] shadow-sm"
                     >
                       {interest}
-                    </span>
+                    </motion.span>
                   ))}
                   {interests.length > 8 && (
-                    <span className="px-3 py-1.5 bg-[#FFE4E1] text-[#FF91A4] rounded-lg text-xs sm:text-sm font-medium">
+                    <motion.span
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="px-3 sm:px-4 py-2 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] text-[#FF91A4] rounded-xl text-xs sm:text-sm font-semibold border border-[#FFB6C1] shadow-sm"
+                    >
                       +{interests.length - 8} more
-                    </span>
+                    </motion.span>
                   )}
                 </div>
               </motion.div>
@@ -326,15 +336,15 @@ export default function ProfileSetupPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="border-2 border-[#FFB6C1] rounded-xl sm:rounded-2xl p-3 sm:p-4 bg-gradient-to-br from-white to-[#FFF0F5]"
+              className="border-2 border-[#FFB6C1] rounded-xl sm:rounded-2xl p-5 sm:p-6 bg-gradient-to-br from-white to-[#FFF0F5] shadow-md"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-full flex items-center justify-center shadow-md">
-                    <Camera className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-lg">
+                    <Shield className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                   </div>
                   <div>
-                    <label className="block text-sm sm:text-base font-semibold text-[#212121] mb-1">
+                    <label className="block text-sm sm:text-base font-bold text-[#212121] mb-1">
                       Photo Verification
                     </label>
                     <p className="text-xs sm:text-sm text-[#757575]">
@@ -347,9 +357,9 @@ export default function ProfileSetupPage() {
                     // Navigate to photo verification page
                     navigate('/photo-verification');
                   }}
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-[#FF91A4] hover:text-[#FF69B4] border border-[#FFB6C1] hover:border-[#FF91A4] rounded-lg transition-all whitespace-nowrap"
+                  className="px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-[#FF91A4] hover:text-white bg-white hover:bg-gradient-to-r hover:from-[#FF91A4] hover:to-[#FF69B4] border-2 border-[#FFB6C1] hover:border-[#FF91A4] rounded-xl transition-all whitespace-nowrap shadow-sm hover:shadow-md"
                 >
                   Verify Later
                 </motion.button>
@@ -359,7 +369,7 @@ export default function ProfileSetupPage() {
           </div>
 
           {/* Complete Button */}
-          <div className="pt-4 sm:pt-6 mt-4 sm:mt-6 border-t border-[#FFB6C1] relative z-10">
+          <div className="pt-4 sm:pt-6 mt-4 sm:mt-6 border-t border-[#FFB6C1] relative z-10 flex-shrink-0">
             {errors.general && (
               <motion.p
                 initial={{ opacity: 0, y: -5 }}

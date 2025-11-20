@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, X, Sliders } from 'lucide-react';
+import { ArrowLeft, X, Sliders, Users, MapPin, Heart, Sparkles, Smile, Home, GraduationCap, Briefcase, RotateCcw, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CustomDropdown from '../components/CustomDropdown';
 
@@ -249,31 +249,39 @@ export default function FilterPage() {
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="relative z-20 bg-white/95 backdrop-blur-md border-b-2 border-[#FFB6C1] shadow-sm"
+        className="relative z-20 bg-white/95 backdrop-blur-md border-b-2 border-[#FFB6C1] shadow-md"
       >
-        <div className="max-w-2xl mx-auto px-4 py-2">
+        <div className="max-w-2xl mx-auto px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <motion.button
                 onClick={() => navigate('/discover')}
-                whileHover={{ scale: 1.1 }}
+                whileHover={{ scale: 1.1, x: -2 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-1.5 hover:bg-[#FFE4E1] rounded-lg transition-colors"
+                className="p-2 hover:bg-[#FFE4E1] rounded-xl transition-colors"
               >
                 <ArrowLeft className="w-5 h-5 text-[#212121]" />
               </motion.button>
-              <div className="flex items-center gap-2">
-                <Sliders className="w-4 h-4 text-[#FF91A4]" />
-                <h1 className="text-lg font-bold text-[#212121]">Filters</h1>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-md">
+                  <Sliders className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent">
+                    Filters
+                  </h1>
+                  <p className="text-xs text-[#757575]">Customize your discovery</p>
+                </div>
               </div>
             </div>
             <motion.button
               onClick={handleReset}
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
-              className="px-3 py-1.5 text-xs font-semibold text-[#757575] hover:text-[#FF91A4] transition-colors"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-[#757575] hover:text-[#FF91A4] transition-colors bg-[#FFE4E1] hover:bg-[#FFB6C1] rounded-xl"
             >
-              Reset
+              <RotateCcw className="w-4 h-4" />
+              <span className="hidden sm:inline">Reset</span>
             </motion.button>
           </div>
         </div>
@@ -281,29 +289,34 @@ export default function FilterPage() {
 
       {/* Filter Content */}
       <div className="flex-1 overflow-y-auto scrollbar-hide pb-24">
-        <div className="max-w-2xl mx-auto px-4 py-4">
+        <div className="max-w-2xl mx-auto px-4 py-4 sm:py-6">
           {/* Age Range */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-4 bg-white rounded-xl p-4 shadow-sm border border-[#FFB6C1]/20"
+            className="mb-4 sm:mb-5 bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-md border-2 border-[#FFB6C1]"
           >
-            <h2 className="text-base font-bold text-[#212121] mb-3">Age Range</h2>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-md">
+                <Users className="w-5 h-5 text-white" />
+              </div>
+              <h2 className="text-base sm:text-lg font-bold text-[#212121]">Age Range</h2>
+            </div>
+            <div className="flex items-center gap-4">
               <div className="flex-1">
-                <label className="block text-xs text-[#757575] mb-1.5">Min</label>
+                <label className="block text-xs sm:text-sm text-[#757575] mb-2 font-medium">Min Age</label>
                 <input
                   type="text"
                   inputMode="numeric"
                   value={filters.ageRange.min}
                   onChange={(e) => handleAgeRangeChange('min', e.target.value)}
                   onBlur={() => handleAgeRangeBlur('min')}
-                  className="w-full px-3 py-2 bg-[#FFE4E1] border-2 border-[#FFB6C1]/30 rounded-lg text-[#212121] font-semibold text-sm focus:outline-none focus:border-[#FF91A4] transition-all"
+                  className="w-full px-4 py-3 bg-white border-2 border-[#FFB6C1] rounded-xl text-[#212121] font-semibold text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 focus:border-[#FF91A4] transition-all shadow-sm hover:shadow-md"
                 />
               </div>
-              <div className="pt-6 text-[#757575] font-bold text-lg">-</div>
+              <div className="pt-8 text-[#FF91A4] font-bold text-xl sm:text-2xl">-</div>
               <div className="flex-1">
-                <label className="block text-xs text-[#757575] mb-1.5">Max</label>
+                <label className="block text-xs sm:text-sm text-[#757575] mb-2 font-medium">Max Age</label>
                 <input
                   type="text"
                   inputMode="numeric"
@@ -311,7 +324,7 @@ export default function FilterPage() {
                   onChange={(e) => handleAgeRangeChange('max', e.target.value)}
                   onBlur={() => handleAgeRangeBlur('max')}
                   placeholder="Any"
-                  className="w-full px-3 py-2 bg-[#FFE4E1] border-2 border-[#FFB6C1]/30 rounded-lg text-[#212121] font-semibold text-sm focus:outline-none focus:border-[#FF91A4] transition-all"
+                  className="w-full px-4 py-3 bg-white border-2 border-[#FFB6C1] rounded-xl text-[#212121] font-semibold text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 focus:border-[#FF91A4] transition-all shadow-sm hover:shadow-md"
                 />
               </div>
             </div>
@@ -322,12 +335,17 @@ export default function FilterPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="mb-4 bg-white rounded-xl p-4 shadow-sm border border-[#FFB6C1]/20"
+            className="mb-4 sm:mb-5 bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-md border-2 border-[#FFB6C1]"
           >
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-bold text-[#212121]">Distance</h2>
-              <div className="px-3 py-1 bg-gradient-to-r from-[#FFE4E1] to-[#FFF0F5] rounded-lg text-sm font-bold text-[#FF91A4]">
-                {filters.distancePref} km
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-md">
+                <MapPin className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1 flex items-center justify-between">
+                <h2 className="text-base sm:text-lg font-bold text-[#212121]">Distance</h2>
+                <div className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] rounded-xl text-sm sm:text-base font-bold text-white shadow-md">
+                  {filters.distancePref} km
+                </div>
               </div>
             </div>
             <input
@@ -337,20 +355,28 @@ export default function FilterPage() {
               step="5"
               value={filters.distancePref}
               onChange={(e) => handleDistanceChange(e.target.value)}
-              className="w-full h-2 bg-[#FFE4E1] rounded-lg appearance-none cursor-pointer accent-[#FF91A4]"
+              className="w-full h-3 bg-gradient-to-r from-[#FFE4E1] to-[#FFF0F5] rounded-lg appearance-none cursor-pointer accent-[#FF91A4] shadow-inner"
+              style={{
+                background: `linear-gradient(to right, #FF91A4 0%, #FF91A4 ${((filters.distancePref - 5) / 95) * 100}%, #FFE4E1 ${((filters.distancePref - 5) / 95) * 100}%, #FFE4E1 100%)`
+              }}
             />
           </motion.div>
 
-          {/* Gender & Looking For - Combined */}
+          {/* Gender */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="mb-4 bg-white rounded-xl p-4 shadow-sm border border-[#FFB6C1]/20"
+            className="mb-4 sm:mb-5 bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-md border-2 border-[#FFB6C1]"
           >
-            <h2 className="text-base font-bold text-[#212121] mb-3">Gender</h2>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-md">
+                <Users className="w-5 h-5 text-white" />
+              </div>
+              <h2 className="text-base sm:text-lg font-bold text-[#212121]">Gender</h2>
+            </div>
             <CustomDropdown
-              options={genderOptions}
+              options={[{ value: '', label: 'Any gender' }, ...genderOptions]}
               value={filters.gender}
               onChange={(value) => setFilters(prev => ({ ...prev, gender: value }))}
               placeholder="Any gender"
@@ -362,20 +388,25 @@ export default function FilterPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="mb-4 bg-white rounded-xl p-4 shadow-sm border border-[#FFB6C1]/20"
+            className="mb-4 sm:mb-5 bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-md border-2 border-[#FFB6C1]"
           >
-            <h2 className="text-base font-bold text-[#212121] mb-3">Looking For</h2>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-md">
+                <Heart className="w-5 h-5 text-white" />
+              </div>
+              <h2 className="text-base sm:text-lg font-bold text-[#212121]">Looking For</h2>
+            </div>
+            <div className="flex flex-wrap gap-2.5">
               {lookingForOptions.map((option) => (
                 <motion.button
                   key={option.value}
                   onClick={() => handleLookingForToggle(option.value)}
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-all ${
+                  className={`px-4 py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition-all ${
                     filters.lookingFor.includes(option.value)
-                      ? 'bg-gradient-to-r from-[#FF91A4] to-[#FF91A4] text-white shadow-sm'
-                      : 'bg-[#FFE4E1] text-[#212121] border border-[#FFB6C1]/30 hover:border-[#FF91A4]'
+                      ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white shadow-md'
+                      : 'bg-white text-[#212121] border-2 border-[#FFB6C1] hover:border-[#FF91A4] shadow-sm'
                   }`}
                 >
                   {option.label}
@@ -389,27 +420,39 @@ export default function FilterPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="mb-4 bg-white rounded-xl p-4 shadow-sm border border-[#FFB6C1]/20"
+            className="mb-4 sm:mb-5 bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-md border-2 border-[#FFB6C1]"
           >
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-bold text-[#212121]">Interests</h2>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-md">
+                  <Sparkles className="w-5 h-5 text-white" />
+                </div>
+                <h2 className="text-base sm:text-lg font-bold text-[#212121]">Interests</h2>
+              </div>
               {filters.interests.length > 0 && (
-                <span className="px-2 py-0.5 bg-[#FF91A4] text-white text-xs font-bold rounded-full">
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="px-3 py-1 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] text-white text-xs sm:text-sm font-bold rounded-full shadow-md"
+                >
                   {filters.interests.length}
-                </span>
+                </motion.span>
               )}
             </div>
-            <div className="flex flex-wrap gap-2">
-              {availableInterests.map((interest) => (
+            <div className="flex flex-wrap gap-2.5">
+              {availableInterests.map((interest, idx) => (
                 <motion.button
                   key={interest}
                   onClick={() => handleInterestToggle(interest)}
-                  whileHover={{ scale: 1.05 }}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.4 + idx * 0.02 }}
+                  whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-all ${
+                  className={`px-3 sm:px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm transition-all ${
                     filters.interests.includes(interest)
-                      ? 'bg-gradient-to-r from-[#FFE4E1] to-[#FFF0F5] text-[#FF91A4] border-2 border-[#FF91A4] shadow-sm'
-                      : 'bg-[#FFE4E1] text-[#212121] border border-[#FFB6C1]/30 hover:border-[#FF91A4]'
+                      ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white border-2 border-[#FF91A4] shadow-md'
+                      : 'bg-white text-[#212121] border-2 border-[#FFB6C1] hover:border-[#FF91A4] shadow-sm'
                   }`}
                 >
                   {interest}
@@ -423,15 +466,20 @@ export default function FilterPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="mb-4 bg-white rounded-xl p-4 shadow-sm border border-[#FFB6C1]/20"
+            className="mb-4 sm:mb-5 bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-md border-2 border-[#FFB6C1]"
           >
-            <h2 className="text-base font-bold text-[#212121] mb-3">Personality</h2>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-md">
+                <Smile className="w-5 h-5 text-white" />
+              </div>
+              <h2 className="text-base sm:text-lg font-bold text-[#212121]">Personality</h2>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               {Object.entries(personalityOptions).map(([key, options]) => (
                 <div key={key}>
-                  <label className="block text-xs text-[#757575] mb-1.5 capitalize">{key}</label>
+                  <label className="block text-xs sm:text-sm text-[#757575] mb-2 font-medium capitalize">{key}</label>
                   <CustomDropdown
-                    options={options}
+                    options={[{ value: '', label: 'Any' }, ...options]}
                     value={filters.personality[key]}
                     onChange={(value) => setFilters(prev => ({
                       ...prev,
@@ -449,14 +497,19 @@ export default function FilterPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
-            className="mb-4 bg-white rounded-xl p-4 shadow-sm border border-[#FFB6C1]/20"
+            className="mb-4 sm:mb-5 bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-md border-2 border-[#FFB6C1]"
           >
-            <h2 className="text-base font-bold text-[#212121] mb-3">Dealbreakers</h2>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-md">
+                <Home className="w-5 h-5 text-white" />
+              </div>
+              <h2 className="text-base sm:text-lg font-bold text-[#212121]">Dealbreakers</h2>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-[#757575] mb-1.5">Kids</label>
+                <label className="block text-xs sm:text-sm text-[#757575] mb-2 font-medium">Kids</label>
                 <CustomDropdown
-                  options={kidsOptions}
+                  options={[{ value: '', label: 'Any' }, ...kidsOptions]}
                   value={filters.dealbreakers.kids}
                   onChange={(value) => setFilters(prev => ({
                     ...prev,
@@ -466,9 +519,9 @@ export default function FilterPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-[#757575] mb-1.5">Smoking</label>
+                <label className="block text-xs sm:text-sm text-[#757575] mb-2 font-medium">Smoking</label>
                 <CustomDropdown
-                  options={smokingOptions}
+                  options={[{ value: '', label: 'Any' }, ...smokingOptions]}
                   value={filters.dealbreakers.smoking}
                   onChange={(value) => setFilters(prev => ({
                     ...prev,
@@ -478,9 +531,9 @@ export default function FilterPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-[#757575] mb-1.5">Pets</label>
+                <label className="block text-xs sm:text-sm text-[#757575] mb-2 font-medium">Pets</label>
                 <CustomDropdown
-                  options={petsOptions}
+                  options={[{ value: '', label: 'Any' }, ...petsOptions]}
                   value={filters.dealbreakers.pets}
                   onChange={(value) => setFilters(prev => ({
                     ...prev,
@@ -490,9 +543,9 @@ export default function FilterPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-[#757575] mb-1.5">Drinking</label>
+                <label className="block text-xs sm:text-sm text-[#757575] mb-2 font-medium">Drinking</label>
                 <CustomDropdown
-                  options={drinkingOptions}
+                  options={[{ value: '', label: 'Any' }, ...drinkingOptions]}
                   value={filters.dealbreakers.drinking}
                   onChange={(value) => setFilters(prev => ({
                     ...prev,
@@ -509,14 +562,19 @@ export default function FilterPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
-            className="mb-4 bg-white rounded-xl p-4 shadow-sm border border-[#FFB6C1]/20"
+            className="mb-4 sm:mb-5 bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-md border-2 border-[#FFB6C1]"
           >
-            <h2 className="text-base font-bold text-[#212121] mb-3">Additional Filters</h2>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-md">
+                <GraduationCap className="w-5 h-5 text-white" />
+              </div>
+              <h2 className="text-base sm:text-lg font-bold text-[#212121]">Additional Filters</h2>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-[#757575] mb-1.5">Education</label>
+                <label className="block text-xs sm:text-sm text-[#757575] mb-2 font-medium">Education</label>
                 <CustomDropdown
-                  options={educationOptions}
+                  options={[{ value: '', label: 'Any' }, ...educationOptions]}
                   value={filters.optional.education}
                   onChange={(value) => setFilters(prev => ({
                     ...prev,
@@ -526,7 +584,7 @@ export default function FilterPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-[#757575] mb-1.5">Profession</label>
+                <label className="block text-xs sm:text-sm text-[#757575] mb-2 font-medium">Profession</label>
                 <input
                   type="text"
                   value={filters.optional.profession || ''}
@@ -535,7 +593,7 @@ export default function FilterPage() {
                     optional: { ...prev.optional, profession: e.target.value }
                   }))}
                   placeholder="Any profession"
-                  className="w-full px-3 py-2 bg-[#FFE4E1] border-2 border-[#FFB6C1]/30 rounded-lg text-[#212121] font-semibold text-sm focus:outline-none focus:border-[#FF91A4] transition-all"
+                  className="w-full px-4 py-3 bg-white border-2 border-[#FFB6C1] rounded-xl text-[#212121] font-semibold text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 focus:border-[#FF91A4] transition-all shadow-sm hover:shadow-md"
                 />
               </div>
             </div>
@@ -544,22 +602,23 @@ export default function FilterPage() {
       </div>
 
       {/* Fixed Bottom Actions */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t-2 border-[#FFB6C1]/30 shadow-lg p-3">
-        <div className="max-w-2xl mx-auto flex gap-2">
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t-2 border-[#FFB6C1] shadow-xl p-4">
+        <div className="max-w-2xl mx-auto flex gap-3">
           <motion.button
             onClick={() => navigate('/discover')}
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.02, y: -2 }}
             whileTap={{ scale: 0.98 }}
-            className="flex-1 px-4 py-2.5 bg-white border-2 border-[#E0E0E0] text-[#212121] rounded-lg font-semibold text-sm hover:border-[#757575] transition-all"
+            className="flex-1 px-4 py-3 bg-white border-2 border-[#E0E0E0] text-[#212121] rounded-xl font-semibold text-sm sm:text-base hover:border-[#757575] transition-all shadow-sm hover:shadow-md"
           >
             Cancel
           </motion.button>
           <motion.button
             onClick={handleApply}
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.02, y: -2 }}
             whileTap={{ scale: 0.98 }}
-            className="flex-1 px-4 py-2.5 bg-gradient-to-r from-[#FF91A4] to-[#FF91A4] text-white rounded-lg font-semibold text-sm shadow-md hover:shadow-lg transition-all"
+            className="flex-1 px-4 py-3 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] text-white rounded-xl font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
           >
+            <Check className="w-4 h-4 sm:w-5 sm:h-5" />
             Apply Filters
           </motion.button>
         </div>

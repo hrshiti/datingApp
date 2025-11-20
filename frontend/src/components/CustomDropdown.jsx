@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 export default function CustomDropdown({ 
   options, 
@@ -15,17 +14,31 @@ export default function CustomDropdown({
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
 
-  // Calculate dropdown position when opening - always below button
+  // Calculate dropdown position when opening - check if should be above or below
   useEffect(() => {
     const updatePosition = () => {
       if (isOpen && buttonRef.current) {
         const rect = buttonRef.current.getBoundingClientRect();
-        // Always position below the button, fixed to viewport
-        setDropdownPosition({
-          top: rect.bottom + 4, // 4px gap below button
-          left: rect.left,
-          width: rect.width
-        });
+        const viewportHeight = window.innerHeight;
+        const dropdownHeight = 240; // max-h-60 = 240px
+        const spaceBelow = viewportHeight - rect.bottom;
+        const spaceAbove = rect.top;
+        
+        // If not enough space below but enough space above, position above
+        if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
+          setDropdownPosition({
+            top: rect.top - dropdownHeight - 4, // 4px gap above button
+            left: rect.left,
+            width: rect.width
+          });
+        } else {
+          // Default: position below the button
+          setDropdownPosition({
+            top: rect.bottom + 4, // 4px gap below button
+            left: rect.left,
+            width: rect.width
+          });
+        }
       }
     };
 
@@ -74,7 +87,7 @@ export default function CustomDropdown({
             e.stopPropagation();
             setIsOpen(!isOpen);
           }}
-        className={`w-full px-4 py-2.5 sm:py-3 border-2 rounded-xl sm:rounded-2xl text-sm sm:text-base text-left flex items-center justify-between transition-colors ${
+        className={`w-full px-4 md:px-3 py-2.5 sm:py-3 md:py-2 border-2 rounded-xl sm:rounded-2xl text-sm sm:text-base md:text-sm text-left flex items-center justify-between transition-colors ${
           error
             ? 'border-red-500 focus:border-red-600'
             : isOpen
@@ -85,51 +98,30 @@ export default function CustomDropdown({
         <span className={value ? 'text-[#212121]' : 'text-[#757575]'}>
           {selectedLabel}
         </span>
-        <motion.div
-          animate={{ rotate: isOpen ? 180 : 0 }}
-          transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+        <div
+          style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+          className="transition-transform duration-200"
         >
-          <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-[#757575]" />
-        </motion.div>
+          <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 text-[#757575]" />
+        </div>
         </button>
       </div>
 
-      <AnimatePresence mode="wait">
         {isOpen && (
-          <motion.div
-            key="dropdown-menu"
+        <div
             ref={dropdownRef}
-            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-            animate={{ 
-              opacity: 1, 
-              y: 0, 
-              scale: 1,
-              transition: {
-                duration: 0.25,
-                ease: [0.4, 0, 0.2, 1]
-              }
-            }}
-            exit={{ 
-              opacity: 0, 
-              y: -10, 
-              scale: 0.95,
-              transition: {
-                duration: 0.2,
-                ease: [0.4, 0, 0.2, 1]
-              }
-            }}
             className="fixed bg-white border-2 border-[#FFB6C1] rounded-xl sm:rounded-2xl shadow-2xl max-h-60 overflow-hidden"
             style={{ 
               position: 'fixed',
               top: `${dropdownPosition.top}px`,
               left: `${dropdownPosition.left}px`,
               width: `${dropdownPosition.width}px`,
-              zIndex: 99999
+              zIndex: 999999
             }}
           >
             <div className="overflow-y-auto max-h-60">
-              {options.map((option, index) => (
-                <motion.button
+            {options.map((option) => (
+              <button
                   key={option.value}
                   type="button"
                   onClick={(e) => {
@@ -137,17 +129,17 @@ export default function CustomDropdown({
                     e.stopPropagation();
                     handleSelect(option.value);
                   }}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ 
-                    opacity: 1, 
-                    x: 0,
-                    transition: {
-                      delay: index * 0.02,
-                      duration: 0.15
+                onMouseEnter={(e) => {
+                  if (value !== option.value) {
+                    e.target.style.backgroundColor = '#FFF0F5';
                     }
                   }}
-                  whileHover={{ backgroundColor: value === option.value ? '#FF69B4' : '#FFF0F5' }}
-                  className={`w-full px-4 py-2.5 sm:py-3 text-left text-sm sm:text-base transition-colors ${
+                onMouseLeave={(e) => {
+                  if (value !== option.value) {
+                    e.target.style.backgroundColor = '';
+                  }
+                }}
+                className={`w-full px-4 md:px-3 py-2.5 sm:py-3 md:py-2 text-left text-sm sm:text-base md:text-sm transition-colors ${
                     value === option.value
                       ? 'bg-[#FF91A4] text-white'
                       : 'text-[#212121]'
@@ -158,12 +150,11 @@ export default function CustomDropdown({
                   }`}
                 >
                   {option.label}
-                </motion.button>
+              </button>
               ))}
             </div>
-          </motion.div>
+        </div>
         )}
-      </AnimatePresence>
     </>
   );
 }

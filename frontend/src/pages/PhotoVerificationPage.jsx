@@ -22,7 +22,7 @@ export default function PhotoVerificationPage() {
     
     try {
       const parsed = JSON.parse(profileSetup);
-      // If already verified, go to people (swiping feed)
+      // If already verified, go to people page
       if (parsed.verified && parsed.verificationPhoto) {
         navigate('/people');
         return;
@@ -95,7 +95,7 @@ export default function PhotoVerificationPage() {
         }
       }
 
-      // Navigate to people (swiping feed) after 2 seconds
+      // Navigate to people page after 2 seconds
       setTimeout(() => {
         navigate('/people');
       }, 2000);

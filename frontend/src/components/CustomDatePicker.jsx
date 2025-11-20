@@ -27,11 +27,21 @@ export default function CustomDatePicker({
     const updatePosition = () => {
       if (isOpen && buttonRef.current) {
         const rect = buttonRef.current.getBoundingClientRect();
+        const isDesktop = window.innerWidth >= 768; // md breakpoint
+        const calendarWidth = isDesktop ? 280 : rect.width; // Fixed width on desktop, full width on mobile
+        // Center calendar on desktop, align left on mobile
+        let left = isDesktop 
+          ? rect.left + (rect.width / 2) - (calendarWidth / 2)
+          : rect.left;
+        // Ensure it doesn't go off screen
+        const minLeft = 8; // 8px margin from left
+        const maxLeft = window.innerWidth - calendarWidth - 8; // 8px margin from right
+        left = Math.max(minLeft, Math.min(maxLeft, left));
         // Always position below the button, fixed to viewport
         setCalendarPosition({
           top: rect.bottom + 4, // 4px gap below button
-          left: rect.left,
-          width: rect.width
+          left: left,
+          width: calendarWidth
         });
       }
     };
@@ -91,8 +101,12 @@ export default function CustomDatePicker({
   };
 
   const handleDateSelect = (day) => {
-    const selectedDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-    const dateString = selectedDate.toISOString().split('T')[0];
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+    // Format date string manually to avoid timezone issues
+    const monthStr = String(month + 1).padStart(2, '0');
+    const dayStr = String(day).padStart(2, '0');
+    const dateString = `${year}-${monthStr}-${dayStr}`;
     onChange(dateString);
     setIsOpen(false);
   };
@@ -108,11 +122,12 @@ export default function CustomDatePicker({
 
   const isDateSelected = (day) => {
     if (!value) return false;
-    const selectedDate = new Date(value);
+    // Parse date string manually to avoid timezone issues
+    const [year, month, dateDay] = value.split('-').map(Number);
     return (
-      selectedDate.getDate() === day &&
-      selectedDate.getMonth() === currentMonth.getMonth() &&
-      selectedDate.getFullYear() === currentMonth.getFullYear()
+      dateDay === day &&
+      month - 1 === currentMonth.getMonth() && // month is 1-indexed in date string
+      year === currentMonth.getFullYear()
     );
   };
 
@@ -212,17 +227,18 @@ export default function CustomDatePicker({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-            className="fixed bg-white border-2 border-[#FFB6C1] rounded-xl shadow-2xl p-3"
+            className="fixed bg-white border-2 border-[#FFB6C1] rounded-xl shadow-2xl p-3 md:p-2 w-full md:w-auto"
             style={{ 
               position: 'fixed',
               top: `${calendarPosition.top}px`,
               left: `${calendarPosition.left}px`,
-              width: `${calendarPosition.width}px`,
+              width: window.innerWidth >= 768 ? '280px' : `${calendarPosition.width}px`,
+              maxWidth: 'calc(100vw - 16px)', // Prevent overflow on small screens
               zIndex: 99999
             }}
           >
             {/* Month & Year Navigation */}
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-3 md:mb-2">
               <button
                 type="button"
                 onClick={(e) => {
@@ -230,10 +246,10 @@ export default function CustomDatePicker({
                   e.stopPropagation();
                   navigateMonth('prev');
                 }}
-                className="p-1 hover:bg-[#FFF0F0] rounded transition-colors"
+                className="p-1 md:p-0.5 hover:bg-[#FFF0F0] rounded transition-colors"
                 title="Previous month"
               >
-                <ChevronLeft className="w-5 h-5 text-[#757575]" />
+                <ChevronLeft className="w-5 h-5 md:w-4 md:h-4 text-[#757575]" />
               </button>
               <div className="flex items-center gap-2">
                 {/* Month Selector */}
@@ -244,7 +260,7 @@ export default function CustomDatePicker({
                     e.stopPropagation();
                     setShowYearPicker(false);
                   }}
-                  className="px-2 py-1 text-sm font-semibold text-[#212121] hover:bg-[#FFF0F0] rounded transition-colors"
+                  className="px-2 py-1 md:px-1.5 md:py-0.5 text-sm md:text-xs font-semibold text-[#212121] hover:bg-[#FFF0F0] rounded transition-colors"
                 >
                   {monthNames[currentMonth.getMonth()]}
                 </button>
@@ -257,11 +273,11 @@ export default function CustomDatePicker({
                       e.stopPropagation();
                       setShowYearPicker(!showYearPicker);
                     }}
-                    className="px-2 py-1 text-sm font-semibold text-[#FF91A4] hover:bg-[#FFE4E1] rounded transition-colors flex items-center gap-1"
+                    className="px-2 py-1 md:px-1.5 md:py-0.5 text-sm md:text-xs font-semibold text-[#FF91A4] hover:bg-[#FFE4E1] rounded transition-colors flex items-center gap-1"
                   >
                     {currentMonth.getFullYear()}
                     <ChevronRight 
-                      className={`w-3 h-3 text-[#FF91A4] transition-transform ${showYearPicker ? 'rotate-90' : ''}`} 
+                      className={`w-3 h-3 md:w-2.5 md:h-2.5 text-[#FF91A4] transition-transform ${showYearPicker ? 'rotate-90' : ''}`} 
                     />
                   </button>
                   
@@ -273,10 +289,10 @@ export default function CustomDatePicker({
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -10, scale: 0.95 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute top-full left-0 mt-1 bg-white border-2 border-[#FFB6C1] rounded-xl shadow-2xl p-2 max-h-48 overflow-y-auto"
+                        className="absolute top-full left-0 mt-1 bg-white border-2 border-[#FFB6C1] rounded-xl shadow-2xl p-2 md:p-1.5 max-h-48 md:max-h-40 overflow-y-auto"
                         style={{ zIndex: 100000, width: '120px' }}
                       >
-                        <div className="flex items-center justify-between mb-2 px-1">
+                        <div className="flex items-center justify-between mb-2 md:mb-1 px-1">
                           <button
                             type="button"
                             onClick={(e) => {
@@ -286,12 +302,12 @@ export default function CustomDatePicker({
                               const newYear = Math.max(currentYear - 10, getYearList()[getYearList().length - 1]);
                               handleYearSelect(newYear);
                             }}
-                            className="p-1 hover:bg-[#FFF0F0] rounded transition-colors"
+                            className="p-1 md:p-0.5 hover:bg-[#FFF0F0] rounded transition-colors"
                             title="Previous 10 years"
                           >
-                            <ChevronLeft className="w-4 h-4 text-[#757575]" />
+                            <ChevronLeft className="w-4 h-4 md:w-3 md:h-3 text-[#757575]" />
                           </button>
-                          <span className="text-xs font-medium text-[#757575]">Year</span>
+                          <span className="text-xs md:text-[10px] font-medium text-[#757575]">Year</span>
                           <button
                             type="button"
                             onClick={(e) => {
@@ -302,13 +318,13 @@ export default function CustomDatePicker({
                               const newYear = Math.min(currentYear + 10, maxYear);
                               handleYearSelect(newYear);
                             }}
-                            className="p-1 hover:bg-[#FFF0F0] rounded transition-colors"
+                            className="p-1 md:p-0.5 hover:bg-[#FFF0F0] rounded transition-colors"
                             title="Next 10 years"
                           >
-                            <ChevronRight className="w-4 h-4 text-[#757575]" />
+                            <ChevronRight className="w-4 h-4 md:w-3 md:h-3 text-[#757575]" />
                           </button>
                         </div>
-                        <div className="grid grid-cols-1 gap-1 max-h-40 overflow-y-auto">
+                        <div className="grid grid-cols-1 gap-1 md:gap-0.5 max-h-40 md:max-h-32 overflow-y-auto">
                           {getYearList().map((year) => {
                             const isSelected = year === currentMonth.getFullYear();
                             const maxYear = maxDate ? new Date(maxDate).getFullYear() : new Date().getFullYear() - 18;
@@ -323,7 +339,7 @@ export default function CustomDatePicker({
                                   if (!isDisabled) handleYearSelect(year);
                                 }}
                                 disabled={isDisabled}
-                                className={`px-2 py-1.5 text-xs rounded transition-all text-left ${
+                                className={`px-2 py-1.5 md:px-1.5 md:py-1 text-xs md:text-[10px] rounded transition-all text-left ${
                                   isDisabled
                                     ? 'text-[#E0E0E0] cursor-not-allowed'
                                     : isSelected
@@ -348,24 +364,24 @@ export default function CustomDatePicker({
                   e.stopPropagation();
                   navigateMonth('next');
                 }}
-                className="p-1 hover:bg-[#FFF0F0] rounded transition-colors"
+                className="p-1 md:p-0.5 hover:bg-[#FFF0F0] rounded transition-colors"
                 title="Next month"
               >
-                <ChevronRight className="w-5 h-5 text-[#757575]" />
+                <ChevronRight className="w-5 h-5 md:w-4 md:h-4 text-[#757575]" />
               </button>
             </div>
 
             {/* Week Days */}
-            <div className="grid grid-cols-7 gap-1 mb-2">
+            <div className="grid grid-cols-7 gap-1 md:gap-0.5 mb-2 md:mb-1">
               {weekDays.map(day => (
-                <div key={day} className="text-xs text-center text-[#757575] font-medium py-1">
+                <div key={day} className="text-xs md:text-[10px] text-center text-[#757575] font-medium py-1 md:py-0.5">
                   {day}
                 </div>
               ))}
             </div>
 
             {/* Calendar Days */}
-            <div className="grid grid-cols-7 gap-1">
+            <div className="grid grid-cols-7 gap-1 md:gap-0.5">
               {days.map((day, index) => {
                 if (day === null) {
                   return <div key={`empty-${index}`} className="aspect-square" />;
@@ -384,7 +400,7 @@ export default function CustomDatePicker({
                       if (!disabled) handleDateSelect(day);
                     }}
                     disabled={disabled}
-                    className={`aspect-square text-sm rounded transition-all ${
+                    className={`aspect-square text-sm md:text-xs rounded transition-all ${
                       disabled
                         ? 'text-[#E0E0E0] cursor-not-allowed'
                         : selected

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   ArrowLeft, Heart, Eye, Crown, Sparkles, 
-  MessageCircle, X, Lock, Star, UserCircle, Users
+  MessageCircle, X, Lock, Star, UserCircle, Users, Check
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mockProfiles, calculateDistance } from '../data/mockProfiles';
@@ -15,6 +15,7 @@ export default function LikedYouPage() {
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [currentUserLocation, setCurrentUserLocation] = useState(null);
+  const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'new', 'nearby'
 
   useEffect(() => {
     // Check premium status
@@ -136,121 +137,447 @@ export default function LikedYouPage() {
     return date.toLocaleDateString();
   };
 
-  // If not premium, show premium prompt
+  // Calculate filter counts
+  const allCount = likedYouProfiles.length;
+  const newCount = likedYouProfiles.filter(p => p.isNew).length;
+  const nearbyCount = likedYouProfiles.filter(p => {
+    if (!currentUserLocation) return false;
+    const distance = getDistance(p);
+    return distance <= 30; // Within 30 km
+  }).length;
+
+  // If not premium, show premium prompt with new design
   if (!isPremium) {
     return (
-      <div className="h-screen heart-background flex flex-col relative overflow-hidden">
-        <span className="heart-decoration">💕</span>
-        <span className="heart-decoration">💖</span>
-        <span className="heart-decoration">💗</span>
-        <div className="decoration-circle"></div>
-        <div className="decoration-circle"></div>
+      <div className="min-h-screen bg-gradient-to-br from-[#FFF0F5] via-[#FFE4E1] to-[#FFF0F5] flex flex-col relative overflow-hidden">
+        {/* Decorative Background Elements */}
+        <div className="absolute top-0 left-0 w-72 h-72 bg-[#FF91A4]/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#FF69B4]/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
 
-        {/* Enhanced Header */}
+        {/* Left Sidebar Navigation - Desktop Only (Instagram Style) */}
+        <div className="hidden md:flex fixed left-0 top-0 bottom-0 w-16 bg-white border-r border-[#E0E0E0] z-30 flex-col items-center justify-center py-4">
+          <div className="flex flex-col items-center gap-2">
+            {/* Profile */}
+            <motion.button
+              onClick={() => navigate('/profile')}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center justify-center w-12 h-12 transition-colors relative group"
+            >
+              <UserCircle className={`w-6 h-6 ${location.pathname === '/profile' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+              {location.pathname === '/profile' && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+              )}
+            </motion.button>
+
+            {/* Discover */}
+            <motion.button
+              onClick={() => navigate('/discover')}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center justify-center w-12 h-12 transition-colors relative group"
+            >
+              <Sparkles className={`w-6 h-6 ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+              {location.pathname === '/discover' && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+              )}
+            </motion.button>
+
+            {/* People */}
+            <motion.button
+              onClick={() => navigate('/people')}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center justify-center w-12 h-12 transition-colors relative group"
+            >
+              <Users className={`w-6 h-6 ${location.pathname === '/people' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+              {location.pathname === '/people' && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+              )}
+            </motion.button>
+
+            {/* Liked You */}
+            <motion.button
+              onClick={() => navigate('/liked-you')}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center justify-center w-12 h-12 transition-colors relative group"
+            >
+              <Heart className={`w-6 h-6 ${location.pathname === '/liked-you' ? 'text-[#FF91A4] fill-[#FF91A4]' : 'text-[#212121]'}`} />
+              {location.pathname === '/liked-you' && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+              )}
+            </motion.button>
+
+            {/* Chats */}
+            <motion.button
+              onClick={() => navigate('/chats')}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center justify-center w-12 h-12 transition-colors relative group"
+            >
+              <MessageCircle className={`w-6 h-6 ${location.pathname === '/chats' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+              {location.pathname === '/chats' && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+              )}
+            </motion.button>
+          </div>
+        </div>
+
+        {/* Enhanced Header - Fixed */}
         <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          className="relative z-20 bg-gradient-to-b from-white via-white/98 to-white/95 backdrop-blur-lg border-b border-[#FFB6C1]/30 shadow-lg"
+          className="fixed top-0 left-0 right-0 z-30 bg-gradient-to-b from-white via-white/98 to-white/95 backdrop-blur-lg border-b border-[#FFB6C1]/30 shadow-lg"
         >
           <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
-            <div className="flex items-center gap-3">
-              <motion.button
-                onClick={() => navigate(-1)}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="p-1.5 hover:bg-[#FFE4E1] rounded-lg transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5 text-[#212121]" />
-              </motion.button>
-              <motion.div 
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FF91A4] via-[#FF69B4] to-[#FF91A4] flex items-center justify-center shadow-lg relative overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
-                <Eye className="w-6 h-6 text-white relative z-10" />
-              </motion.div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent">
-                  Who Liked You
-                </h1>
-                <p className="text-xs sm:text-sm text-[#757575] font-medium">See who's interested in you</p>
-              </div>
+            <div className="flex items-center justify-center">
+              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent">
+                Liked You
+              </h1>
             </div>
           </div>
         </motion.div>
 
-        {/* Premium Lock Screen */}
-        <div className="flex-1 flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center"
-          >
+        {/* Content - with padding for fixed header */}
+        <div className="flex-1 overflow-y-auto scrollbar-hide pb-24 relative z-10 pt-24 sm:pt-28 md:ml-16">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6">
+            {/* Descriptive Text */}
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-base sm:text-lg text-[#212121] text-center mb-5 font-medium"
+            >
+              See who likes you and match with them instantly, with Premium.
+            </motion.p>
+
+            {/* Filter Buttons */}
             <motion.div
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="w-20 h-20 bg-gradient-to-br from-[#FFD700] to-[#FFA500] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="flex gap-3 mb-6 overflow-x-auto scrollbar-hide pb-2"
             >
-              <Lock className="w-10 h-10 text-white" />
+              <motion.button
+                onClick={() => setActiveFilter('all')}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                className={`flex items-center gap-2 px-5 py-3 rounded-full font-bold text-sm whitespace-nowrap transition-all shadow-md ${
+                  activeFilter === 'all'
+                    ? 'bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-[#212121] shadow-lg'
+                    : 'bg-white text-[#212121] border-2 border-[#E0E0E0] hover:border-[#FFD700]'
+                }`}
+              >
+                {activeFilter === 'all' && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 500 }}
+                  >
+                    <Check className="w-4 h-4" />
+                  </motion.div>
+                )}
+                <span>All</span>
+                <span className="text-xs font-bold">• {allCount > 50 ? '50+' : allCount}</span>
+              </motion.button>
+              
+              <motion.button
+                onClick={() => setActiveFilter('new')}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                className={`flex items-center gap-2 px-5 py-3 rounded-full font-bold text-sm whitespace-nowrap transition-all shadow-md ${
+                  activeFilter === 'new'
+                    ? 'bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-[#212121] shadow-lg'
+                    : 'bg-white text-[#212121] border-2 border-[#E0E0E0] hover:border-[#FFD700]'
+                }`}
+              >
+                {activeFilter === 'new' && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 500 }}
+                  >
+                    <Check className="w-4 h-4" />
+                  </motion.div>
+                )}
+                <span>New</span>
+                <span className="text-xs font-bold">• {newCount > 50 ? '50+' : newCount}</span>
+              </motion.button>
+              
+              <motion.button
+                onClick={() => setActiveFilter('nearby')}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                className={`flex items-center gap-2 px-5 py-3 rounded-full font-bold text-sm whitespace-nowrap transition-all shadow-md ${
+                  activeFilter === 'nearby'
+                    ? 'bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-[#212121] shadow-lg'
+                    : 'bg-white text-[#212121] border-2 border-[#E0E0E0] hover:border-[#FFD700]'
+                }`}
+              >
+                {activeFilter === 'nearby' && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 500 }}
+                  >
+                    <Check className="w-4 h-4" />
+                  </motion.div>
+                )}
+                <span>Nearby</span>
+                <span className="text-xs font-bold">• {nearbyCount > 30 ? '30+' : nearbyCount}</span>
+              </motion.button>
             </motion.div>
-            <h2 className="text-2xl font-bold text-[#212121] mb-2">Premium Feature 🔒</h2>
-            <p className="text-sm text-[#757575] mb-6">
-              Upgrade to Premium to see who liked your profile!
-            </p>
-            <div className="space-y-3 mb-6">
-              {[
-                'See all profiles who liked you',
-                'Get notified when someone likes you',
-                'Unlimited likes to match back',
-                'Priority in their discovery feed'
-              ].map((feature, index) => (
-                <motion.div
-                  key={feature}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-center gap-3 text-sm text-[#212121]"
-                >
-                  <div className="w-6 h-6 bg-[#4CAF50] rounded-full flex items-center justify-center flex-shrink-0">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <span>{feature}</span>
-                </motion.div>
-              ))}
-            </div>
-            <motion.button
-              onClick={() => navigate('/premium')}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="w-full px-6 py-3 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+
+            {/* Blurred Profile Boxes */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="mb-6"
             >
-              <Crown className="w-5 h-5" />
-              <span>Upgrade to Premium</span>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-5 sm:gap-6">
+                {likedYouProfiles.slice(0, 4).map((profile, index) => (
+                  <motion.div
+                    key={profile.id}
+                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ delay: 0.25 + index * 0.05, type: "spring", stiffness: 200 }}
+                    className="relative rounded-3xl overflow-hidden shadow-xl border-2 border-white/50"
+                    style={{ filter: 'blur(20px)' }}
+                  >
+                    <div className="aspect-[3/4] relative overflow-hidden bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5]">
+                      <img
+                        src={profile.photos?.[0] || `https://ui-avatars.com/api/?name=${profile.name}&background=FF1744&color=fff&size=400`}
+                        alt={profile.name}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                      <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                        <div className="h-4 bg-white/40 rounded-full mb-2 w-24 shadow-md"></div>
+                        <div className="h-3 bg-white/30 rounded-full w-20 shadow-md"></div>
+                      </div>
+                    </div>
+                    {/* Lock Icon Overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-black/30 to-black/50 backdrop-blur-sm">
+                      <motion.div
+                        animate={{ scale: [1, 1.15, 1], rotate: [0, 5, -5, 0] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="w-14 h-14 bg-gradient-to-br from-white to-white/90 rounded-full flex items-center justify-center shadow-2xl border-2 border-white/50"
+                      >
+                        <Lock className="w-7 h-7 text-[#FF91A4]" />
+                      </motion.div>
+                    </div>
+                  </motion.div>
+                ))}
+                {/* If less than 4 profiles, show placeholder boxes */}
+                {Array.from({ length: Math.max(0, 4 - likedYouProfiles.length) }).map((_, index) => (
+                  <motion.div
+                    key={`placeholder-${index}`}
+                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ delay: 0.25 + (likedYouProfiles.length + index) * 0.05, type: "spring", stiffness: 200 }}
+                    className="relative rounded-3xl overflow-hidden shadow-xl border-2 border-white/50"
+                    style={{ filter: 'blur(20px)' }}
+                  >
+                    <div className="aspect-[3/4] relative overflow-hidden bg-gradient-to-br from-[#FFE4E1] via-[#FF91A4] to-[#FF69B4]">
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                      <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                        <div className="h-4 bg-white/40 rounded-full mb-2 w-24 shadow-md"></div>
+                        <div className="h-3 bg-white/30 rounded-full w-20 shadow-md"></div>
+                      </div>
+                    </div>
+                    {/* Lock Icon Overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-black/30 to-black/50 backdrop-blur-sm">
+                      <motion.div
+                        animate={{ scale: [1, 1.15, 1], rotate: [0, 5, -5, 0] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="w-14 h-14 bg-gradient-to-br from-white to-white/90 rounded-full flex items-center justify-center shadow-2xl border-2 border-white/50"
+                      >
+                        <Lock className="w-7 h-7 text-[#FF91A4]" />
+                      </motion.div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* See Who Likes You Button */}
+            <motion.button
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              onClick={() => navigate('/premium')}
+              whileHover={{ scale: 1.02, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full py-4 sm:py-5 bg-gradient-to-r from-[#212121] to-[#424242] text-white rounded-2xl font-bold text-lg sm:text-xl shadow-2xl hover:shadow-3xl transition-all mt-6 relative overflow-hidden group"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] opacity-0 group-hover:opacity-10 transition-opacity"></div>
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                <Crown className="w-5 h-5 sm:w-6 sm:h-6" />
+                See who likes you
+              </span>
             </motion.button>
-          </motion.div>
+          </div>
+        </div>
+
+        {/* Bottom Navigation Bar */}
+        <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-[#E0E0E0]">
+          <div className="flex items-center justify-around px-2 py-2">
+            {/* Profile */}
+            <motion.button
+              onClick={() => navigate('/profile')}
+              whileTap={{ scale: 0.9 }}
+              className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative"
+            >
+              <UserCircle className={`w-5 h-5 ${location.pathname === '/profile' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+              <span className={`text-xs font-medium ${location.pathname === '/profile' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+                Profile
+              </span>
+              {location.pathname === '/profile' && (
+                <div className="absolute -top-1 right-2 w-2 h-2 bg-[#FF91A4] rounded-full"></div>
+              )}
+            </motion.button>
+
+            {/* Discover */}
+            <motion.button
+              onClick={() => navigate('/discover')}
+              whileTap={{ scale: 0.9 }}
+              className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors"
+            >
+              <Sparkles className={`w-5 h-5 ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+              <span className={`text-xs font-medium ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+                Discover
+              </span>
+            </motion.button>
+
+            {/* People */}
+            <motion.button
+              onClick={() => navigate('/people')}
+              whileTap={{ scale: 0.9 }}
+              className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative"
+            >
+              <Users className={`w-5 h-5 ${location.pathname === '/people' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+              <span className={`text-xs font-medium ${location.pathname === '/people' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+                People
+              </span>
+            </motion.button>
+
+            {/* Liked You */}
+            <motion.button
+              onClick={() => navigate('/liked-you')}
+              whileTap={{ scale: 0.9 }}
+              className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative"
+            >
+              <Heart className={`w-5 h-5 ${location.pathname === '/liked-you' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+              <span className={`text-xs font-medium ${location.pathname === '/liked-you' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+                Liked You
+              </span>
+              {location.pathname === '/liked-you' && (
+                <div className="absolute -top-1 right-2 w-2 h-2 bg-[#FF91A4] rounded-full"></div>
+              )}
+            </motion.button>
+
+            {/* Chats */}
+            <motion.button
+              onClick={() => navigate('/chats')}
+              whileTap={{ scale: 0.9 }}
+              className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative"
+            >
+              <MessageCircle className={`w-5 h-5 ${location.pathname === '/chats' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+              <span className={`text-xs font-medium ${location.pathname === '/chats' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+                Chats
+              </span>
+            </motion.button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen heart-background flex flex-col relative overflow-hidden">
-      <span className="heart-decoration">💕</span>
-      <span className="heart-decoration">💖</span>
-      <span className="heart-decoration">💗</span>
-      <span className="heart-decoration">💝</span>
-      <div className="decoration-circle"></div>
-      <div className="decoration-circle"></div>
+    <div className="min-h-screen bg-gradient-to-br from-[#FFF0F5] via-[#FFE4E1] to-[#FFF0F5] flex flex-col relative overflow-hidden">
+      {/* Decorative Background Elements */}
+      <div className="absolute top-0 left-0 w-72 h-72 bg-[#FF91A4]/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#FF69B4]/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
 
-      {/* Enhanced Header */}
+      {/* Left Sidebar Navigation - Desktop Only (Instagram Style) */}
+      <div className="hidden md:flex fixed left-0 top-0 bottom-0 w-16 bg-white border-r border-[#E0E0E0] z-30 flex-col items-center justify-center py-4">
+        <div className="flex flex-col items-center gap-2">
+          {/* Profile */}
+          <motion.button
+            onClick={() => navigate('/profile')}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center justify-center w-12 h-12 transition-colors relative group"
+          >
+            <UserCircle className={`w-6 h-6 ${location.pathname === '/profile' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            {location.pathname === '/profile' && (
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+            )}
+          </motion.button>
+
+          {/* Discover */}
+          <motion.button
+            onClick={() => navigate('/discover')}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center justify-center w-12 h-12 transition-colors relative group"
+          >
+            <Sparkles className={`w-6 h-6 ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            {location.pathname === '/discover' && (
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+            )}
+          </motion.button>
+
+          {/* People */}
+          <motion.button
+            onClick={() => navigate('/people')}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center justify-center w-12 h-12 transition-colors relative group"
+          >
+            <Users className={`w-6 h-6 ${location.pathname === '/people' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            {location.pathname === '/people' && (
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+            )}
+          </motion.button>
+
+          {/* Liked You */}
+          <motion.button
+            onClick={() => navigate('/liked-you')}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center justify-center w-12 h-12 transition-colors relative group"
+          >
+            <Heart className={`w-6 h-6 ${location.pathname === '/liked-you' ? 'text-[#FF91A4] fill-[#FF91A4]' : 'text-[#212121]'}`} />
+            {location.pathname === '/liked-you' && (
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+            )}
+          </motion.button>
+
+          {/* Chats */}
+          <motion.button
+            onClick={() => navigate('/chats')}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center justify-center w-12 h-12 transition-colors relative group"
+          >
+            <MessageCircle className={`w-6 h-6 ${location.pathname === '/chats' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            {location.pathname === '/chats' && (
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+            )}
+          </motion.button>
+        </div>
+      </div>
+
+      {/* Enhanced Header - Fixed */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        className="relative z-20 bg-gradient-to-b from-white via-white/98 to-white/95 backdrop-blur-lg border-b border-[#FFB6C1]/30 shadow-lg"
+        className="fixed top-0 left-0 right-0 z-30 bg-gradient-to-b from-white via-white/98 to-white/95 backdrop-blur-lg border-b border-[#FFB6C1]/30 shadow-lg"
       >
         <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
           <div className="flex items-center justify-between">
@@ -259,7 +586,7 @@ export default function LikedYouPage() {
                 onClick={() => navigate(-1)}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-1.5 hover:bg-[#FFE4E1] rounded-lg transition-colors"
+                className="p-2 hover:bg-[#FFE4E1] rounded-xl transition-colors"
               >
                 <ArrowLeft className="w-5 h-5 text-[#212121]" />
               </motion.button>
@@ -282,17 +609,17 @@ export default function LikedYouPage() {
             <motion.div
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="w-10 h-10 bg-gradient-to-br from-[#FFD700] via-[#FFA500] to-[#FFD700] rounded-full flex items-center justify-center shadow-lg relative overflow-hidden"
+              className="w-12 h-12 bg-gradient-to-br from-[#FFD700] via-[#FFA500] to-[#FFD700] rounded-2xl flex items-center justify-center shadow-lg relative overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
-              <Crown className="w-5 h-5 text-white relative z-10" />
+              <Crown className="w-6 h-6 text-white relative z-10" />
             </motion.div>
           </div>
         </div>
       </motion.div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide pt-4 pb-20">
+      {/* Content - with padding for fixed header */}
+      <div className="flex-1 overflow-y-auto scrollbar-hide pb-24 relative z-10 pt-24 sm:pt-28 md:ml-16">
         {likedYouProfiles.length === 0 ? (
           <div className="flex items-center justify-center h-full px-4">
             <motion.div
@@ -303,11 +630,11 @@ export default function LikedYouPage() {
               <motion.div
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="w-24 h-24 bg-[#FFE4E1] rounded-full flex items-center justify-center mx-auto mb-4"
+                className="w-24 h-24 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl"
               >
                 <Heart className="w-12 h-12 text-[#FF91A4]" />
               </motion.div>
-              <h3 className="text-xl font-bold text-[#212121] mb-2">No Likes Yet</h3>
+              <h3 className="text-2xl font-bold text-[#212121] mb-2">No Likes Yet</h3>
               <p className="text-sm text-[#757575] mb-6">
                 Keep swiping! When someone likes you, they'll appear here.
               </p>
@@ -315,56 +642,63 @@ export default function LikedYouPage() {
                 onClick={() => navigate('/discover')}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-6 py-3 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] text-white rounded-xl font-semibold shadow-lg"
+                className="px-6 py-3 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all"
               >
                 Start Discovering
               </motion.button>
             </motion.div>
           </div>
         ) : (
-          <div className="max-w-2xl mx-auto px-4 py-4">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6">
               {likedYouProfiles.map((profile, index) => (
                 <motion.div
                   key={profile.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: index * 0.05 }}
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ delay: index * 0.05, type: "spring", stiffness: 200 }}
                   className="relative group cursor-pointer"
                   onClick={() => setSelectedProfile(profile)}
+                  whileHover={{ y: -5 }}
                 >
-                  <div className="relative rounded-2xl overflow-hidden shadow-lg border-2 border-[#FFB6C1] hover:border-[#FF91A4] transition-all">
+                  <div className="relative rounded-3xl overflow-hidden shadow-xl border-2 border-[#FFB6C1]/50 hover:border-[#FF91A4] transition-all bg-white">
                     {/* Profile Image */}
                     <div className="aspect-[3/4] relative overflow-hidden bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5]">
-                      <img
+                      <motion.img
                         src={profile.photos?.[0] || `https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=600&fit=crop`}
                         alt={profile.name}
                         className="w-full h-full object-cover"
+                        whileHover={{ scale: 1.1 }}
+                        transition={{ duration: 0.3 }}
                       />
                       {/* New Badge */}
                       {profile.isNew && (
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          className="absolute top-2 left-2 px-2 py-1 bg-[#4CAF50] text-white text-xs font-bold rounded-full flex items-center gap-1"
+                          className="absolute top-3 left-3 px-3 py-1.5 bg-gradient-to-r from-[#4CAF50] to-[#2E7D32] text-white text-xs font-bold rounded-full flex items-center gap-1.5 shadow-lg"
                         >
-                          <Sparkles className="w-3 h-3" />
+                          <Sparkles className="w-3.5 h-3.5" />
                           <span>NEW</span>
                         </motion.div>
                       )}
                       {/* Premium Badge */}
-                      <div className="absolute top-2 right-2 w-6 h-6 bg-gradient-to-br from-[#FFD700] to-[#FFA500] rounded-full flex items-center justify-center shadow-md">
-                        <Crown className="w-3 h-3 text-white" />
-                      </div>
+                      <motion.div 
+                        animate={{ scale: [1, 1.1, 1] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="absolute top-3 right-3 w-8 h-8 bg-gradient-to-br from-[#FFD700] to-[#FFA500] rounded-full flex items-center justify-center shadow-lg"
+                      >
+                        <Crown className="w-4 h-4 text-white" />
+                      </motion.div>
                       {/* Gradient Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                       {/* Info */}
-                      <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
-                        <h3 className="font-bold text-sm mb-1">{profile.name}</h3>
-                        <p className="text-xs opacity-90">
+                      <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                        <h3 className="font-bold text-base mb-1 drop-shadow-lg">{profile.name}</h3>
+                        <p className="text-xs opacity-95 drop-shadow-md mb-1">
                           {profile.age} • {getDistance(profile)} km
                         </p>
-                        <p className="text-xs opacity-75 mt-1">
+                        <p className="text-xs opacity-80 drop-shadow-sm">
                           {formatTimeAgo(profile.likedAt)}
                         </p>
                       </div>

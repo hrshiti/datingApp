@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { ArrowLeft, Send, MoreVertical, Heart, Shield } from 'lucide-react';
+import { ArrowLeft, Send, MoreVertical, Heart, Shield, User, Camera, Image as ImageIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mockProfiles } from '../data/mockProfiles';
 import ReportBlockModal from '../components/ReportBlockModal';
@@ -16,6 +16,7 @@ export default function ChatDetailPage() {
   const [profile, setProfile] = useState(null);
   const [showReportBlockModal, setShowReportBlockModal] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
 
   // Dummy messages data
   const dummyMessages = [
@@ -165,7 +166,14 @@ export default function ChatDetailPage() {
   if (!profile) {
     return (
       <div className="h-screen heart-background flex items-center justify-center">
-        <div className="text-[#212121]">Loading...</div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center"
+        >
+          <div className="w-16 h-16 border-4 border-[#FF91A4] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-[#212121] font-medium">Loading chat...</p>
+        </motion.div>
       </div>
     );
   }
@@ -185,22 +193,32 @@ export default function ChatDetailPage() {
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="fixed top-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-b-2 border-[#FFB6C1] shadow-sm"
+        className="fixed top-0 left-0 right-0 z-30 bg-gradient-to-b from-white via-white/98 to-white/95 backdrop-blur-lg border-b-2 border-[#FFB6C1]/30 shadow-lg"
       >
-        <div className="max-w-2xl mx-auto px-4 py-3">
+        <div className="max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
               <motion.button
                 onClick={() => navigate('/chats')}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-1.5 hover:bg-[#FFE4E1] rounded-lg transition-colors"
+                className="p-2 hover:bg-[#FFE4E1] rounded-xl transition-colors flex-shrink-0"
               >
                 <ArrowLeft className="w-5 h-5 text-[#212121]" />
               </motion.button>
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FF91A4] to-[#FF91A4] p-0.5">
+              
+              {/* Profile Info - Clickable */}
+              <motion.div
+                onClick={() => navigate('/people', { state: { showUserId: profile.id } })}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
+              >
+                <div className="relative flex-shrink-0">
+                  <motion.div
+                    whileHover={{ rotate: 5 }}
+                    className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] p-1 shadow-lg"
+                  >
                     <img
                       src={profile.photos?.[0] || `https://ui-avatars.com/api/?name=${profile.name}&background=FF1744&color=fff&size=100`}
                       alt={profile.name}
@@ -209,31 +227,49 @@ export default function ChatDetailPage() {
                         e.target.src = `https://ui-avatars.com/api/?name=${profile.name}&background=FF1744&color=fff&size=100`;
                       }}
                     />
+                  </motion.div>
+                  {isOnline && (
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-[#4CAF50] border-3 border-white rounded-full shadow-lg"
+                    ></motion.div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-lg font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent truncate hover:from-[#FF69B4] hover:to-[#FF91A4] transition-all">
+                    {profile.name}
+                  </h1>
+                  <div className="flex items-center gap-2">
+                    <motion.div
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className={`w-2 h-2 rounded-full ${isOnline ? 'bg-[#4CAF50]' : 'bg-[#757575]'}`}
+                    ></motion.div>
+                    <p className="text-xs text-[#757575] font-medium">
+                      {isOnline ? 'Online' : 'Offline'}
+                    </p>
                   </div>
-                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-[#4CAF50] border-2 border-white rounded-full"></div>
                 </div>
-                <div>
-                  <h1 className="text-lg font-bold text-[#212121]">{profile.name}</h1>
-                  <p className="text-xs text-[#757575]">Online</p>
-                </div>
-              </div>
+              </motion.div>
             </div>
-            <div className="flex items-center gap-2 relative">
+            
+            <div className="flex items-center gap-2 relative flex-shrink-0">
               <motion.button
-                whileHover={{ scale: 1.1 }}
+                whileHover={{ scale: 1.1, rotate: 5 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-2 hover:bg-[#FFE4E1] rounded-lg transition-colors"
+                className="p-2.5 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] hover:from-[#FF91A4] hover:to-[#FF69B4] rounded-xl transition-all shadow-md hover:shadow-lg"
               >
-                <Heart className="w-5 h-5 text-[#FF91A4]" />
+                <Heart className="w-5 h-5 text-[#FF91A4] transition-colors" />
               </motion.button>
               <div className="relative">
                 <motion.button
                   onClick={() => setShowMenu(!showMenu)}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  className="p-2 hover:bg-[#FFE4E1] rounded-lg transition-colors"
+                  className="p-2.5 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] hover:from-[#FF91A4] hover:to-[#FF69B4] rounded-xl transition-all shadow-md hover:shadow-lg"
                 >
-                  <MoreVertical className="w-5 h-5 text-[#212121]" />
+                  <MoreVertical className="w-5 h-5 text-[#FF91A4] transition-colors" />
                 </motion.button>
                 
                 {/* Dropdown Menu */}
@@ -243,8 +279,18 @@ export default function ChatDetailPage() {
                       initial={{ opacity: 0, y: -10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                      className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-[#FFB6C1] overflow-hidden z-40"
+                      className="absolute right-0 top-full mt-2 w-56 bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl shadow-2xl border-2 border-[#FFB6C1]/30 overflow-hidden z-40"
                     >
+                      <button
+                        onClick={() => {
+                          setShowMenu(false);
+                          navigate('/people', { state: { showUserId: profile.id } });
+                        }}
+                        className="w-full px-4 py-3 text-left hover:bg-[#FFE4E1] transition-colors flex items-center gap-3 text-[#212121] border-b border-[#FFB6C1]/20"
+                      >
+                        <User className="w-4 h-4 text-[#FF91A4]" />
+                        <span className="text-sm font-medium">View Profile</span>
+                      </button>
                       <button
                         onClick={() => {
                           setShowMenu(false);
@@ -267,11 +313,11 @@ export default function ChatDetailPage() {
       {/* Messages Area - Scrollable */}
       <div 
         ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto scrollbar-hide pt-16 pb-20" 
+        className="flex-1 overflow-y-auto scrollbar-hide pt-20 pb-24" 
         style={{ minHeight: 0 }}
       >
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          <div className="space-y-3 pb-4">
+        <div className="max-w-2xl mx-auto px-4 py-6">
+          <div className="space-y-4 pb-4">
             {messages.map((message, index) => {
               const showAvatar = index === 0 || messages[index - 1].isSent !== message.isSent;
               const showTime = index === messages.length - 1 || 
@@ -280,19 +326,23 @@ export default function ChatDetailPage() {
               return (
                 <motion.div
                   key={message.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className={`flex items-end gap-2 ${message.isSent ? 'flex-row-reverse' : 'flex-row'}`}
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ delay: index * 0.03, type: "spring", stiffness: 300, damping: 25 }}
+                  className={`flex items-end gap-3 ${message.isSent ? 'flex-row-reverse' : 'flex-row'}`}
                 >
                   {/* Avatar - Only show for received messages */}
                   {!message.isSent && (
-                    <div className="flex-shrink-0 w-8 h-8">
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      onClick={() => navigate('/people', { state: { showUserId: profile.id } })}
+                      className="flex-shrink-0 w-10 h-10 cursor-pointer"
+                    >
                       {showAvatar ? (
                         <img
                           src={profile.photos?.[0] || `https://ui-avatars.com/api/?name=${profile.name}&background=FF1744&color=fff&size=100`}
                           alt={profile.name}
-                          className="w-full h-full rounded-full object-cover"
+                          className="w-full h-full rounded-full object-cover border-2 border-[#FFB6C1]/30 shadow-md"
                           onError={(e) => {
                             e.target.src = `https://ui-avatars.com/api/?name=${profile.name}&background=FF1744&color=fff&size=100`;
                           }}
@@ -300,30 +350,35 @@ export default function ChatDetailPage() {
                       ) : (
                         <div className="w-full h-full"></div>
                       )}
-                    </div>
+                    </motion.div>
                   )}
 
                   {/* Message Bubble */}
-                  <div className={`flex flex-col ${message.isSent ? 'items-end' : 'items-start'} max-w-[75%]`}>
-                    <div
-                      className={`px-4 py-2.5 rounded-2xl ${
+                  <div className={`flex flex-col ${message.isSent ? 'items-end' : 'items-start'} max-w-[75%] sm:max-w-[65%]`}>
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      className={`px-4 py-3 rounded-2xl ${
                         message.isSent
-                          ? 'bg-gradient-to-r from-[#FF91A4] to-[#FF91A4] text-white rounded-tr-sm'
-                          : 'bg-white text-[#212121] border border-[#FFB6C1]/30 rounded-tl-sm'
-                      } shadow-sm`}
+                          ? 'bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] text-white rounded-tr-sm shadow-lg'
+                          : 'bg-white text-[#212121] border-2 border-[#FFB6C1]/30 rounded-tl-sm shadow-md'
+                      }`}
                     >
-                      <p className="text-sm leading-relaxed break-words">{message.text}</p>
-                    </div>
+                      <p className="text-sm sm:text-base leading-relaxed break-words">{message.text}</p>
+                    </motion.div>
                     {showTime && (
-                      <span className={`text-xs text-[#757575] mt-1 px-1 ${message.isSent ? 'text-right' : 'text-left'}`}>
+                      <motion.span
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className={`text-xs text-[#757575] mt-1.5 px-2 ${message.isSent ? 'text-right' : 'text-left'}`}
+                      >
                         {formatTime(message.timestamp)}
-                      </span>
+                      </motion.span>
                     )}
                   </div>
 
                   {/* Spacer for sent messages */}
                   {message.isSent && (
-                    <div className="flex-shrink-0 w-8 h-8"></div>
+                    <div className="flex-shrink-0 w-10 h-10"></div>
                   )}
                 </motion.div>
               );
@@ -334,30 +389,39 @@ export default function ChatDetailPage() {
       </div>
 
       {/* Input Area - Fixed at Bottom */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t-2 border-[#FFB6C1]/30 shadow-lg pb-4 sm:pb-3 pt-2">
-        <div className="max-w-2xl mx-auto px-4 py-3">
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSendMessage();
-                }
-              }}
-              placeholder="Type a message..."
-              className="flex-1 px-4 py-3 bg-[#FFE4E1] border-2 border-[#FFB6C1]/30 rounded-xl text-[#212121] placeholder-[#757575] focus:outline-none focus:border-[#FF91A4] transition-all"
-            />
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-white via-white/98 to-white/95 backdrop-blur-lg border-t-2 border-[#FFB6C1]/30 shadow-2xl pb-4 sm:pb-3 pt-3">
+        <div className="max-w-2xl mx-auto px-4 py-2">
+          <div className="flex items-end gap-3">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="p-3 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] rounded-xl shadow-md hover:shadow-lg border border-[#FFB6C1]/30 flex-shrink-0"
+            >
+              <ImageIcon className="w-5 h-5 text-[#FF91A4]" />
+            </motion.button>
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
+                placeholder="Type a message..."
+                className="w-full px-4 py-3.5 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] border-2 border-[#FFB6C1]/30 rounded-2xl text-[#212121] placeholder-[#757575] focus:outline-none focus:border-[#FF91A4] transition-all shadow-md"
+              />
+            </div>
             <motion.button
               onClick={handleSendMessage}
               disabled={!newMessage.trim()}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`p-3 rounded-xl transition-all ${
+              whileHover={newMessage.trim() ? { scale: 1.1, rotate: 5 } : {}}
+              whileTap={newMessage.trim() ? { scale: 0.9 } : {}}
+              className={`p-3.5 rounded-2xl transition-all flex-shrink-0 ${
                 newMessage.trim()
-                  ? 'bg-gradient-to-r from-[#FF91A4] to-[#FF91A4] text-white shadow-md hover:shadow-lg'
+                  ? 'bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] text-white shadow-xl hover:shadow-2xl'
                   : 'bg-[#E0E0E0] text-[#757575] cursor-not-allowed'
               }`}
             >
@@ -389,4 +453,3 @@ export default function ChatDetailPage() {
     </div>
   );
 }
-

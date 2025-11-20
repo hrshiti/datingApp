@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin, Check, Edit2, Camera, ShoppingBag, User, Plane, Mic, Dumbbell, ChefHat, Activity, Palette, Mountain, Music, Wine, Gamepad2, Waves } from 'lucide-react';
+import { ArrowLeft, MapPin, Check, Edit2, Camera, ShoppingBag, User, Plane, Mic, Dumbbell, ChefHat, Activity, Palette, Mountain, Music, Wine, Gamepad2, Waves, UserCircle, MapPin as MapPinIcon, Heart, Smile, Home, Settings, Users, Calendar, Sun, Moon, Zap, MessageSquare, Sparkles, Coffee, Baby, Cigarette, Dog, GlassWater, GraduationCap, Briefcase, Languages, Star, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CustomDropdown from '../components/CustomDropdown';
 import CustomDatePicker from '../components/CustomDatePicker';
+import PhotoUpload from '../components/PhotoUpload';
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
-  const totalSteps = 7;
+  const totalSteps = 10;
   const [currentStep, setCurrentStep] = useState(1);
   // Ensure progress percentage is clamped between 0-100 and never exceeds 100%
   const progressPercentage = Math.min(Math.round((currentStep / totalSteps) * 100), 100);
@@ -47,20 +48,31 @@ export default function OnboardingPage() {
       drinking: '',
       religion: ''
     },
-    // Step 6
+    // Step 6 - Prompts
+    prompts: [],
+    // Step 7
     optional: {
       education: '',
       profession: '',
       languages: [],
       horoscope: ''
     },
-    // Step 7 - Review (no separate data, just review)
+    // Step 8 - Profile Setup
+    photos: [],
+    bio: '',
+    // Step 9 - Verification (no separate data, just verification)
+    verified: false,
+    // Step 10 - Review (no separate data, just review)
     reviewed: false
   });
 
   const [errors, setErrors] = useState({});
   const [showCustomGender, setShowCustomGender] = useState(false);
   const [showCustomOrientation, setShowCustomOrientation] = useState(false);
+  
+  const maxBioLength = 200;
+  const minPhotos = 4;
+  const maxPhotos = 6;
 
   // Load saved data from localStorage
   useEffect(() => {
@@ -105,31 +117,16 @@ export default function OnboardingPage() {
           return;
         }
         
-        // If onboarding is already completed, redirect existing users
+        // If onboarding is already completed, redirect to people page
         if (parsed.completed) {
-          // Onboarding completed - check profile setup status
-          const profileSetup = localStorage.getItem('profileSetup');
-          if (profileSetup) {
-            try {
-              const profileData = JSON.parse(profileSetup);
-              // If profile has photos, redirect to people (swiping feed)
-              if (profileData.photos && profileData.photos.length > 0) {
-                navigate('/people');
-                return;
-              }
-            } catch (e) {
-              // Error parsing profile, go to profile setup
-            }
-          }
-          // Profile setup incomplete or not started, go to profile setup
-          navigate('/profile-setup');
+          navigate('/people');
           return;
         }
         
         // Onboarding not completed - load saved progress
-        // Clamp currentStep to valid range (1-7)
+        // Clamp currentStep to valid range (1-9)
         const step = parsed.currentStep || 1;
-        const validStep = Math.min(Math.max(step, 1), 7);
+        const validStep = Math.min(Math.max(step, 1), 9);
         
         setFormData(prev => {
           // Handle backward compatibility: if lookingFor is an array, take first item
@@ -146,7 +143,10 @@ export default function OnboardingPage() {
             ...parsed.step3,
             personality: parsed.step4?.personality || prev.personality,
             dealbreakers: parsed.step5?.dealbreakers || prev.dealbreakers,
-            optional: parsed.step6?.optional || prev.optional
+            optional: parsed.step6?.optional || prev.optional,
+            photos: parsed.step7?.photos || prev.photos,
+            bio: parsed.step7?.bio || prev.bio,
+            verified: parsed.step8?.verified || prev.verified
           };
         });
         setCurrentStep(validStep);
@@ -281,14 +281,57 @@ export default function OnboardingPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Validate Step 6 (all fields are optional)
+  // Validate Step 6 (Prompts - at least 3 required)
   const validateStep6 = () => {
-    // All fields are optional, so always return true
+    const newErrors = {};
+    
+    if (!formData.prompts || formData.prompts.length < 3) {
+      newErrors.prompts = 'Please select and answer at least 3 prompts';
+    } else {
+      // Check if all selected prompts have answers
+      const incompletePrompts = formData.prompts.filter(p => !p.answer || p.answer.trim() === '');
+      if (incompletePrompts.length > 0) {
+        newErrors.prompts = 'Please provide answers for all selected prompts';
+      }
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Validate Step 7 (Optional Details - language is mandatory)
+  const validateStep7 = () => {
+    const newErrors = {};
+    
+    // Language is mandatory - at least one must be selected
+    if (!formData.optional.languages || formData.optional.languages.length === 0) {
+      newErrors.languages = 'Please select at least one language';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Validate Step 8 (Profile Setup - minimum 4 photos required)
+  const validateStep8 = () => {
+    const newErrors = {};
+    
+    if (!formData.photos || formData.photos.length < 4) {
+      newErrors.photos = 'Please upload at least 4 photos';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Validate Step 9 (Photo Verification - optional)
+  const validateStep9 = () => {
+    // Verification is optional, so always return true
     return true;
   };
 
-  // Validate Step 7 (review step)
-  const validateStep7 = () => {
+  // Validate Step 10 (Review step)
+  const validateStep10 = () => {
     // User just needs to confirm/submit, no validation needed
     return true;
   };
@@ -352,7 +395,14 @@ export default function OnboardingPage() {
         dealbreakers: formData.dealbreakers
       },
       step6: {
+        prompts: formData.prompts
+      },
+      step7: {
         optional: formData.optional
+      },
+      step8: {
+        photos: formData.photos,
+        bio: formData.bio
       },
       currentStep: currentStep
     };
@@ -364,7 +414,9 @@ export default function OnboardingPage() {
     if (currentStep === 1) {
       if (validateStep1()) {
         saveProgress();
-        setCurrentStep(2);
+        // After basic information, navigate directly to people page
+        navigate('/people');
+        return;
       }
     } else if (currentStep === 2) {
       if (validateStep2()) {
@@ -393,10 +445,51 @@ export default function OnboardingPage() {
       }
     } else if (currentStep === 7) {
       if (validateStep7()) {
+        saveProgress();
+        setCurrentStep(8);
+      }
+    } else if (currentStep === 8) {
+      if (validateStep8()) {
+        saveProgress();
+        setCurrentStep(9);
+      }
+    } else if (currentStep === 9) {
+      if (validateStep9()) {
+        saveProgress();
+        setCurrentStep(10);
+      }
+    } else if (currentStep === 10) {
+      if (validateStep10()) {
+        // Convert photos to base64 for storage
+        const photosData = formData.photos.map(photo => {
+          if (photo.file) {
+            // If it's a file, we need to convert it (this will be handled in the final save)
+            return photo;
+          } else {
+            // Already converted
+            return photo;
+          }
+        });
+
+        // Save profile setup data
+        const profileData = {
+          photos: photosData,
+          bio: formData.bio.trim(),
+          completedAt: new Date().toISOString(),
+        };
+        localStorage.setItem('profileSetup', JSON.stringify(profileData));
+
         // Mark onboarding as complete
         const savedData = JSON.parse(localStorage.getItem('onboardingData') || '{}');
         savedData.completed = true;
-        savedData.currentStep = 7; // Keep at 7, don't go to 8
+        savedData.currentStep = 10;
+        savedData.step8 = {
+          photos: formData.photos,
+          bio: formData.bio
+        };
+        savedData.step9 = {
+          verified: formData.verified
+        };
         localStorage.setItem('onboardingData', JSON.stringify(savedData));
         
         // Check if user came from edit profile page
@@ -407,8 +500,8 @@ export default function OnboardingPage() {
           // Redirect back to profile page after editing
           navigate('/profile');
         } else {
-          // Navigate to profile setup (photo upload) page (normal flow)
-          navigate('/profile-setup');
+          // Navigate to people page (normal flow)
+          navigate('/people');
         }
       }
     }
@@ -448,7 +541,7 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="h-screen heart-background flex items-center justify-center p-3 sm:p-4 overflow-hidden relative">
+    <div className="h-screen heart-background flex flex-col items-center justify-center p-3 sm:p-4 md:p-4 lg:p-6 overflow-hidden relative">
       <span className="heart-decoration">💕</span>
       <span className="heart-decoration">💖</span>
       <span className="heart-decoration">💗</span>
@@ -458,34 +551,36 @@ export default function OnboardingPage() {
       <div className="decoration-circle"></div>
       <div className="decoration-circle"></div>
       
-      <div className="w-full max-w-md relative z-10">
-        {/* Enhanced Progress Bar */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-          className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-5 mb-4 sm:mb-5 border border-[#FFB6C1]/20 relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent"></div>
-          <div className="flex justify-between items-center mb-2 sm:mb-3 relative z-10">
-            <span className="text-sm sm:text-base font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent">
-              {progressPercentage}% Complete
-            </span>
-            <span className="text-xs sm:text-sm font-semibold text-[#757575]">
-              Step {currentStep} of {totalSteps}
-            </span>
-          </div>
-          <div className="w-full bg-gradient-to-r from-[#FFE4E1] to-[#FFF0F5] rounded-full h-2.5 sm:h-3 overflow-hidden shadow-inner border border-[#FFB6C1]/20 relative z-10">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${progressPercentage}%` }}
-              transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
-              className="h-full rounded-full bg-gradient-to-r from-[#FF91A4] via-[#FF69B4] to-[#FF91A4] relative overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
-            </motion.div>
-          </div>
-        </motion.div>
+      <div className="w-full max-w-md md:max-w-2xl lg:max-w-3xl relative z-10 flex flex-col h-full justify-center md:justify-start md:py-2">
+        {/* Enhanced Progress Bar - Hidden for Step 1 */}
+        {currentStep !== 1 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 md:p-3 mb-3 sm:mb-4 md:mb-3 border border-[#FFB6C1]/20 relative overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent"></div>
+            <div className="flex justify-between items-center mb-1.5 sm:mb-2 relative z-10">
+              <span className="text-base sm:text-lg md:text-sm font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent">
+                {progressPercentage}% Complete
+              </span>
+              <span className="text-sm sm:text-base md:text-xs font-semibold text-[#757575]">
+                Step {currentStep} of {totalSteps}
+              </span>
+            </div>
+            <div className="w-full bg-gradient-to-r from-[#FFE4E1] to-[#FFF0F5] rounded-full h-2 sm:h-2.5 md:h-2 overflow-hidden shadow-inner border border-[#FFB6C1]/20 relative z-10">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${progressPercentage}%` }}
+                transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+                className="h-full rounded-full bg-gradient-to-r from-[#FF91A4] via-[#FF69B4] to-[#FF91A4] relative overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Form Card */}
         <AnimatePresence mode="wait">
@@ -497,17 +592,23 @@ export default function OnboardingPage() {
               animate="animate"
               exit="exit"
               transition={pageTransition}
-              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 border border-[#FFB6C1]/20 relative"
+              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 md:p-4 border border-[#FFB6C1]/20 relative flex flex-col max-h-[calc(100vh-180px)] md:max-h-[calc(100vh-140px)]"
               style={{ zIndex: 1 }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent pointer-events-none"></div>
-              <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-4 sm:mb-6 relative">
-                Basic Information
-              </h2>
+              <div className="flex items-center gap-2 mb-2 sm:mb-3 md:mb-2 relative z-10 flex-shrink-0">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-lg flex items-center justify-center shadow-md">
+                  <UserCircle className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                </div>
+                <h2 className="text-xl sm:text-2xl md:text-lg font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent">
+                  Basic Information
+                </h2>
+              </div>
               
+              <div className="flex-1 overflow-y-auto pr-1 -mr-1 min-h-0">
               {/* Name */}
-              <div className="mb-3 sm:mb-4 relative">
-                <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5 sm:mb-2">
+              <div className="mb-2 sm:mb-3 relative">
+                <label className="block text-base sm:text-lg font-medium text-[#212121] mb-2 sm:mb-2.5">
                   Name <span className="text-[#FF91A4]">*</span>
                 </label>
                 <input
@@ -515,20 +616,20 @@ export default function OnboardingPage() {
                   value={formData.name}
                   onChange={(e) => handleChange('name', e.target.value)}
                   placeholder="Enter your full name"
-                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 rounded-xl text-sm ${
+                  className={`w-full px-4 sm:px-5 py-3 sm:py-3.5 border-2 rounded-lg text-base sm:text-lg ${
                     errors.name
                       ? 'border-red-500 focus:border-red-600 bg-red-50'
                       : 'border-[#FFB6C1] focus:border-[#FF91A4] bg-white'
                   } text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-all shadow-sm hover:shadow-md`}
                 />
                 {errors.name && (
-                  <p className="text-xs text-red-600 mt-1">{errors.name}</p>
+                  <p className="text-sm sm:text-base text-red-600 mt-1.5">{errors.name}</p>
                 )}
               </div>
 
               {/* Date of Birth */}
               <div className="mb-3 sm:mb-4 relative">
-                <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5 sm:mb-2">
+                <label className="block text-base sm:text-lg font-medium text-[#212121] mb-2 sm:mb-2.5">
                   Age / Date of Birth <span className="text-[#FF91A4]">*</span>
                 </label>
                 <CustomDatePicker
@@ -538,16 +639,16 @@ export default function OnboardingPage() {
                   error={!!errors.dob}
                 />
                 {age !== null && age >= 18 && (
-                  <p className="text-xs text-[#757575] mt-1">Age: {age} years</p>
+                  <p className="text-sm sm:text-base text-[#757575] mt-1.5">Age: {age} years</p>
                 )}
                 {errors.dob && (
-                  <p className="text-xs text-red-600 mt-1">{errors.dob}</p>
+                  <p className="text-sm sm:text-base text-red-600 mt-1.5">{errors.dob}</p>
                 )}
               </div>
 
               {/* Gender Identity */}
               <div className="mb-3 sm:mb-4 relative">
-                <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5 sm:mb-2">
+                <label className="block text-base sm:text-lg font-medium text-[#212121] mb-2 sm:mb-2.5">
                   Gender Identity <span className="text-[#FF91A4]">*</span>
                 </label>
                 <CustomDropdown
@@ -565,7 +666,7 @@ export default function OnboardingPage() {
                   error={!!errors.gender}
                 />
                 {errors.gender && (
-                  <p className="text-xs text-red-600 mt-1">{errors.gender}</p>
+                  <p className="text-sm sm:text-base text-red-600 mt-1.5">{errors.gender}</p>
                 )}
                 {showCustomGender && (
                   <motion.div
@@ -580,14 +681,14 @@ export default function OnboardingPage() {
                       value={formData.customGender}
                       onChange={(e) => handleChange('customGender', e.target.value)}
                       placeholder="Please specify your gender"
-                      className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 rounded-xl text-sm ${
+                      className={`w-full px-4 sm:px-5 py-3 sm:py-3.5 border-2 rounded-lg text-base sm:text-lg ${
                         errors.customGender
                           ? 'border-red-500 focus:border-red-600 bg-red-50'
                           : 'border-[#FFB6C1] focus:border-[#FF91A4] bg-white'
                       } text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-all shadow-sm hover:shadow-md`}
                     />
                     {errors.customGender && (
-                      <p className="text-xs text-red-600 mt-1">{errors.customGender}</p>
+                      <p className="text-sm sm:text-base text-red-600 mt-1.5">{errors.customGender}</p>
                     )}
                   </motion.div>
                 )}
@@ -595,7 +696,7 @@ export default function OnboardingPage() {
 
               {/* Sexual Orientation */}
               <div className="mb-3 sm:mb-4 relative">
-                <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5 sm:mb-2">
+                <label className="block text-base sm:text-lg font-medium text-[#212121] mb-2 sm:mb-2.5">
                   Sexual Orientation <span className="text-[#FF91A4]">*</span>
                 </label>
                 <CustomDropdown
@@ -614,7 +715,7 @@ export default function OnboardingPage() {
                   error={!!errors.orientation}
                 />
                 {errors.orientation && (
-                  <p className="text-xs text-red-600 mt-1">{errors.orientation}</p>
+                  <p className="text-sm sm:text-base text-red-600 mt-1.5">{errors.orientation}</p>
                 )}
                 {showCustomOrientation && (
                   <motion.div
@@ -629,14 +730,14 @@ export default function OnboardingPage() {
                       value={formData.customOrientation}
                       onChange={(e) => handleChange('customOrientation', e.target.value)}
                       placeholder="Please specify your orientation"
-                      className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 rounded-xl text-sm ${
+                      className={`w-full px-4 sm:px-5 py-3 sm:py-3.5 border-2 rounded-lg text-base sm:text-lg ${
                         errors.customOrientation
                           ? 'border-red-500 focus:border-red-600 bg-red-50'
                           : 'border-[#FFB6C1] focus:border-[#FF91A4] bg-white'
                       } text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-all shadow-sm hover:shadow-md`}
                     />
                     {errors.customOrientation && (
-                      <p className="text-xs text-red-600 mt-1">{errors.customOrientation}</p>
+                      <p className="text-sm sm:text-base text-red-600 mt-1.5">{errors.customOrientation}</p>
                     )}
                   </motion.div>
                 )}
@@ -644,7 +745,7 @@ export default function OnboardingPage() {
 
               {/* Looking For */}
               <div className="mb-3 sm:mb-4 relative">
-                <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5 sm:mb-2">
+                <label className="block text-base sm:text-lg font-medium text-[#212121] mb-2 sm:mb-2.5">
                   Looking For <span className="text-[#FF91A4]">*</span>
                 </label>
                 <CustomDropdown
@@ -661,27 +762,28 @@ export default function OnboardingPage() {
                   error={!!errors.lookingFor}
                 />
                 {errors.lookingFor && (
-                  <p className="text-xs text-red-600 mt-1">{errors.lookingFor}</p>
+                  <p className="text-sm sm:text-base text-red-600 mt-1.5">{errors.lookingFor}</p>
                 )}
+              </div>
               </div>
 
               {/* Navigation Buttons */}
-              <div className="flex gap-2 sm:gap-3 pt-2 relative">
+              <div className="flex gap-2 pt-2 md:pt-2 relative flex-shrink-0 mt-2">
                 <motion.button
                   onClick={handleBack}
                   whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-gradient-to-r from-[#757575] to-[#616161] hover:from-[#616161] hover:to-[#757575] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all flex items-center justify-center shadow-md hover:shadow-lg"
+                  className="flex-1 bg-gradient-to-r from-[#757575] to-[#616161] hover:from-[#616161] hover:to-[#757575] text-white font-bold py-3.5 sm:py-4 md:py-2.5 rounded-xl transition-all flex items-center justify-center shadow-lg hover:shadow-xl text-base sm:text-lg md:text-base"
                 >
-                  <ArrowLeft className="w-4 h-4 mr-1.5 sm:mr-2" />
-                  <span className="text-sm">Back</span>
+                  <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 md:w-4 md:h-4 mr-2" />
+                  <span className="text-base sm:text-lg md:text-base">Back</span>
                 </motion.button>
                 <motion.button
                   onClick={handleNext}
                   disabled={!formData.name || !formData.dob || !formData.gender || !formData.orientation || !formData.lookingFor}
                   whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm shadow-lg hover:shadow-xl disabled:shadow-none"
+                  className="flex-1 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-bold py-3.5 sm:py-4 md:py-2.5 rounded-xl transition-all disabled:transform-none text-base sm:text-lg md:text-base shadow-xl hover:shadow-2xl disabled:shadow-none"
                 >
                   Next →
                 </motion.button>
@@ -697,17 +799,22 @@ export default function OnboardingPage() {
               animate="animate"
               exit="exit"
               transition={pageTransition}
-              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 border border-[#FFB6C1]/20 relative"
+              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 md:p-4 border border-[#FFB6C1]/20 relative flex flex-col max-h-[calc(100vh-180px)] md:max-h-[calc(100vh-140px)]"
               style={{ zIndex: 1 }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent pointer-events-none"></div>
-              <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-4 sm:mb-6 relative">
-                Location & Preferences
-              </h2>
+              <div className="flex items-center gap-2 mb-3 sm:mb-4 relative z-10">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-lg flex items-center justify-center shadow-md">
+                  <MapPinIcon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                </div>
+                <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent">
+                  Location & Preferences
+                </h2>
+              </div>
 
               {/* City */}
               <div className="mb-3 sm:mb-4">
-                <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5 sm:mb-2">
+                <label className="block text-base sm:text-lg font-medium text-[#212121] mb-2 sm:mb-2.5">
                   City <span className="text-[#FF91A4]">*</span>
                 </label>
                 <div className="relative">
@@ -717,7 +824,7 @@ export default function OnboardingPage() {
                     value={formData.city}
                     onChange={(e) => handleChange('city', e.target.value)}
                     placeholder="Enter your city"
-                    className={`w-full pl-10 pr-3 py-2.5 sm:py-3 border-2 rounded-xl text-sm ${
+                    className={`w-full pl-10 pr-3 py-3 sm:py-3.5 border-2 rounded-xl text-base sm:text-lg ${
                       errors.city
                         ? 'border-red-500 focus:border-red-600 bg-red-50'
                         : 'border-[#FFB6C1] focus:border-[#FF91A4] bg-white'
@@ -725,18 +832,18 @@ export default function OnboardingPage() {
                   />
                 </div>
                 {errors.city && (
-                  <p className="text-xs text-red-600 mt-1">{errors.city}</p>
+                  <p className="text-sm sm:text-base text-red-600 mt-1.5">{errors.city}</p>
                 )}
               </div>
 
               {/* Age Range */}
               <div className="mb-3 sm:mb-4">
-                <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5 sm:mb-2">
+                <label className="block text-base sm:text-lg font-medium text-[#212121] mb-2 sm:mb-2.5">
                   Preferred Age Range
                 </label>
                 <div className="flex items-center gap-3">
                   <div className="flex-1">
-                    <label className="text-xs text-[#757575] mb-1 block">Min</label>
+                    <label className="text-sm sm:text-base text-[#757575] mb-1.5 block">Min</label>
                     <input
                       type="text"
                       inputMode="numeric"
@@ -761,12 +868,12 @@ export default function OnboardingPage() {
                         handleChange('ageRange', { ...formData.ageRange, min: clampedVal });
                       }}
                       placeholder="18"
-                      className="w-full px-3 py-2.5 border-2 border-[#FFB6C1] rounded-xl text-sm text-[#212121] focus:border-[#FF91A4] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-colors"
+                      className="w-full px-4 py-3 border-2 border-[#FFB6C1] rounded-xl text-base sm:text-lg text-[#212121] focus:border-[#FF91A4] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-colors"
                     />
                   </div>
                   <span className="text-[#757575] mt-5">-</span>
                   <div className="flex-1">
-                    <label className="text-xs text-[#757575] mb-1 block">Max</label>
+                    <label className="text-sm sm:text-base text-[#757575] mb-1.5 block">Max</label>
                     <input
                       type="text"
                       inputMode="numeric"
@@ -798,30 +905,39 @@ export default function OnboardingPage() {
                         // If empty, keep it empty - user can fill later
                       }}
                       placeholder="Enter max age"
-                      className="w-full px-3 py-2.5 border-2 border-[#FFB6C1] rounded-xl text-sm text-[#212121] focus:border-[#FF91A4] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-colors"
+                      className="w-full px-4 py-3 border-2 border-[#FFB6C1] rounded-xl text-base sm:text-lg text-[#212121] focus:border-[#FF91A4] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-colors"
                     />
                   </div>
                 </div>
                 {errors.ageRange && (
-                  <p className="text-xs text-red-600 mt-1">{errors.ageRange}</p>
+                  <p className="text-sm sm:text-base text-red-600 mt-1.5">{errors.ageRange}</p>
                 )}
               </div>
 
               {/* Distance Preference */}
-              <div className="mb-4 sm:mb-6">
-                <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5 sm:mb-2">
+              <div className="mb-3 sm:mb-4">
+                <label className="block text-base sm:text-lg font-medium text-[#212121] mb-2 sm:mb-2.5">
                   Maximum Distance (km)
                 </label>
-                <input
-                  type="range"
-                  min="5"
-                  max="100"
-                  step="5"
-                  value={formData.distancePref}
-                  onChange={(e) => handleChange('distancePref', parseInt(e.target.value))}
-                  className="w-full h-2 bg-[#E0E0E0] rounded-lg appearance-none cursor-pointer accent-[#FF91A4]"
-                />
-                <div className="flex justify-between text-xs text-[#757575] mt-1">
+                <div className="relative">
+                  <input
+                    type="range"
+                    min="5"
+                    max="100"
+                    step="5"
+                    value={formData.distancePref}
+                    onChange={(e) => handleChange('distancePref', parseInt(e.target.value))}
+                    className="distance-slider w-full h-3 bg-[#E0E0E0] rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: `linear-gradient(to right, 
+                        #FF91A4 0%, 
+                        #FF69B4 ${((formData.distancePref - 5) / (100 - 5)) * 100}%, 
+                        #E0E0E0 ${((formData.distancePref - 5) / (100 - 5)) * 100}%, 
+                        #E0E0E0 100%)`
+                    }}
+                  />
+                </div>
+                <div className="flex justify-between text-sm sm:text-base text-[#757575] mt-1.5">
                   <span>5 km</span>
                   <span className="font-semibold text-[#FF91A4]">{formData.distancePref} km</span>
                   <span>100 km</span>
@@ -834,7 +950,7 @@ export default function OnboardingPage() {
                   onClick={handleBack}
                   whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-gradient-to-r from-[#757575] to-[#616161] hover:from-[#616161] hover:to-[#757575] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all flex items-center justify-center shadow-md hover:shadow-lg relative z-10"
+                  className="flex-1 bg-gradient-to-r from-[#757575] to-[#616161] hover:from-[#616161] hover:to-[#757575] text-white font-semibold py-2.5 sm:py-3 md:py-2 rounded-xl transition-all flex items-center justify-center shadow-md hover:shadow-lg relative z-10 text-sm md:text-sm"
                 >
                   <ArrowLeft className="w-4 h-4 mr-1.5 sm:mr-2" />
                   <span className="text-sm">Back</span>
@@ -844,7 +960,7 @@ export default function OnboardingPage() {
                   disabled={!formData.city || formData.city.trim() === '' || (formData.ageRange.max !== '' && formData.ageRange.min >= formData.ageRange.max)}
                   whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm shadow-lg hover:shadow-xl disabled:shadow-none relative z-10"
+                  className="flex-1 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-bold py-3.5 sm:py-4 md:py-2.5 rounded-xl transition-all disabled:transform-none text-base sm:text-lg md:text-base shadow-xl hover:shadow-2xl disabled:shadow-none relative z-10"
                 >
                   Next →
                 </motion.button>
@@ -860,38 +976,28 @@ export default function OnboardingPage() {
               animate="animate"
               exit="exit"
               transition={pageTransition}
-              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 border border-[#FFB6C1]/20 relative"
+              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 md:p-4 border border-[#FFB6C1]/20 relative flex flex-col max-h-[calc(100vh-180px)] md:max-h-[calc(100vh-140px)]"
               style={{ zIndex: 1 }}
             >
-              {/* Header with Back and Skip */}
-              <div className="flex items-center justify-between mb-6 relative z-10">
+              {/* Header with Back */}
+              <div className="flex items-center justify-start mb-4 relative z-10">
                 <button
                   onClick={handleBack}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
                 >
-                  <ArrowLeft className="w-5 h-5 text-[#212121]" />
-                </button>
-                <button
-                  onClick={() => {
-                    // Skip validation and move to next step
-                    saveProgress();
-                    setCurrentStep(4);
-                  }}
-                  className="text-[#FF91A4] font-medium text-sm hover:text-[#FF69B4] transition-colors"
-                >
-                  Skip
+                  <ArrowLeft className="w-4 h-4 text-[#212121]" />
                 </button>
               </div>
 
-              <h2 className="text-2xl sm:text-3xl font-bold text-[#212121] mb-2 relative z-10">
-                Your interests
+              <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-3 relative z-10">
+                Your Interests
               </h2>
-              <p className="text-sm sm:text-base text-[#757575] mb-6 relative z-10">
+              <p className="text-base sm:text-lg text-[#757575] mb-4 relative z-10">
                 Select a few of your interests and let everyone know what you're passionate about.
               </p>
 
               {/* Interests Grid - All in one grid like Figma design */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 max-h-[50vh] overflow-y-auto pr-2 mb-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4 max-h-[35vh] md:max-h-[40vh] overflow-y-auto pr-2 mb-3 md:mb-2">
                 {[
                   { name: 'Photography', icon: Camera },
                   { name: 'Shopping', icon: ShoppingBag },
@@ -927,14 +1033,14 @@ export default function OnboardingPage() {
                       transition={{ delay: idx * 0.03 }}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className={`flex flex-col items-center justify-center gap-2 p-4 sm:p-5 rounded-2xl transition-all border-2 ${
+                      className={`flex flex-col items-center justify-center gap-1.5 p-3 sm:p-4 rounded-xl transition-all border-2 ${
                         isSelected
                           ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white border-[#FF91A4] shadow-md'
                           : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
                       }`}
                     >
-                      <Icon className={`w-6 h-6 sm:w-7 sm:h-7 ${isSelected ? 'text-white' : 'text-[#212121]'}`} />
-                      <span className="text-xs sm:text-sm font-medium text-center">{interest.name}</span>
+                      <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${isSelected ? 'text-white' : 'text-[#212121]'}`} />
+                      <span className="text-sm sm:text-base font-medium text-center">{interest.name}</span>
                     </motion.button>
                   );
                 })}
@@ -944,7 +1050,7 @@ export default function OnboardingPage() {
                 <motion.p
                   initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-[#FF91A4] mb-4 text-center"
+                  className="text-sm sm:text-base text-[#FF91A4] mb-4 text-center"
                 >
                   {errors.interests}
                 </motion.p>
@@ -957,7 +1063,7 @@ export default function OnboardingPage() {
                   disabled={formData.interests.length < 3}
                   whileHover={{ scale: formData.interests.length >= 3 ? 1.02 : 1 }}
                   whileTap={{ scale: formData.interests.length >= 3 ? 0.98 : 1 }}
-                  className="w-full bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-4 sm:py-5 rounded-2xl transition-all text-base sm:text-lg shadow-lg hover:shadow-xl disabled:shadow-none relative z-10"
+                  className="w-full bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-4 sm:py-5 md:py-3 rounded-2xl transition-all text-base sm:text-lg md:text-base shadow-lg hover:shadow-xl disabled:shadow-none relative z-10"
                 >
                   Continue
                 </motion.button>
@@ -973,52 +1079,71 @@ export default function OnboardingPage() {
               animate="animate"
               exit="exit"
               transition={pageTransition}
-              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 border border-[#FFB6C1]/20 relative"
+              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 md:p-4 border border-[#FFB6C1]/20 relative flex flex-col max-h-[calc(100vh-180px)] md:max-h-[calc(100vh-140px)]"
               style={{ zIndex: 1 }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent pointer-events-none"></div>
-              <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-2 sm:mb-3 relative">
-                Personality Traits
-              </h2>
-              <p className="text-xs sm:text-sm text-[#757575] mb-4 sm:mb-6">
+              <div className="flex items-center gap-2 mb-3 sm:mb-4 relative z-10">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-lg flex items-center justify-center shadow-md">
+                  <Smile className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                </div>
+                <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent">
+                  Personality Traits
+                </h2>
+              </div>
+              <p className="text-base sm:text-lg text-[#757575] mb-3 sm:mb-4">
                 Choose the option that best describes you
               </p>
 
               {/* Personality Questions */}
-              <div className="space-y-3 sm:space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+              <div className="space-y-4 sm:space-y-5 max-h-[45vh] md:max-h-[50vh] overflow-y-auto pr-2 relative z-10 flex-1">
                 {/* Social vs Introvert */}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="mb-3 sm:mb-4"
+                  className="mb-4 sm:mb-5"
                 >
-                  <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                    Social Style <span className="text-[#FF91A4]">*</span>
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF91A4]" />
+                    <label className="text-base sm:text-lg font-semibold text-[#212121]">
+                      Social Style <span className="text-[#FF91A4]">*</span>
+                    </label>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
                     {[
-                      { value: 'social', label: 'Social' },
-                      { value: 'introvert', label: 'Introvert' }
-                    ].map((option) => (
-                      <motion.button
-                        key={option.value}
-                        type="button"
-                        onClick={() => handleChange('personality', { ...formData.personality, social: option.value })}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
-                          formData.personality.social === option.value
-                            ? 'bg-[#FF91A4] text-white border-[#FF91A4] shadow-md'
-                            : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
-                        } ${errors.social ? 'border-red-500' : ''}`}
-                      >
-                        {option.label}
-                      </motion.button>
-                    ))}
+                      { value: 'social', label: 'Social', icon: Users },
+                      { value: 'introvert', label: 'Introvert', icon: User }
+                    ].map((option) => {
+                      const Icon = option.icon;
+                      const isSelected = formData.personality.social === option.value;
+                      return (
+                        <motion.button
+                          key={option.value}
+                          type="button"
+                          onClick={() => handleChange('personality', { ...formData.personality, social: option.value })}
+                          whileHover={{ scale: 1.02, y: -2 }}
+                          whileTap={{ scale: 0.98 }}
+                          className={`relative px-3 sm:px-4 py-3 sm:py-4 rounded-xl border-2 text-base sm:text-lg font-semibold transition-all flex flex-col items-center gap-1.5 ${
+                            isSelected
+                              ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white border-[#FF91A4] shadow-lg'
+                              : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4] hover:shadow-md'
+                          } ${errors.social ? 'border-red-500' : ''}`}
+                        >
+                          <Icon className={`w-6 h-6 sm:w-7 sm:h-7 ${isSelected ? 'text-white' : 'text-[#FF91A4]'}`} />
+                          <span>{option.label}</span>
+                        </motion.button>
+                      );
+                    })}
                   </div>
                   {errors.social && (
-                    <p className="text-xs text-red-600 mt-1">{errors.social}</p>
+                    <motion.p
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-sm sm:text-base text-[#FF91A4] mt-2"
+                    >
+                      {errors.social}
+                    </motion.p>
                   )}
                 </motion.div>
 
@@ -1027,34 +1152,48 @@ export default function OnboardingPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 }}
-                  className="mb-3 sm:mb-4"
+                  className="mb-4 sm:mb-5"
                 >
-                  <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                    Planning Style <span className="text-[#FF91A4]">*</span>
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF91A4]" />
+                    <label className="text-base sm:text-lg font-semibold text-[#212121]">
+                      Planning Style <span className="text-[#FF91A4]">*</span>
+                    </label>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
                     {[
-                      { value: 'planner', label: 'Planner' },
-                      { value: 'spontaneous', label: 'Spontaneous' }
-                    ].map((option) => (
-                      <motion.button
-                        key={option.value}
-                        type="button"
-                        onClick={() => handleChange('personality', { ...formData.personality, planning: option.value })}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
-                          formData.personality.planning === option.value
-                            ? 'bg-[#FF91A4] text-white border-[#FF91A4] shadow-md'
-                            : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
-                        } ${errors.planning ? 'border-red-500' : ''}`}
-                      >
-                        {option.label}
-                      </motion.button>
-                    ))}
+                      { value: 'planner', label: 'Planner', icon: Calendar },
+                      { value: 'spontaneous', label: 'Spontaneous', icon: Zap }
+                    ].map((option) => {
+                      const Icon = option.icon;
+                      const isSelected = formData.personality.planning === option.value;
+                      return (
+                        <motion.button
+                          key={option.value}
+                          type="button"
+                          onClick={() => handleChange('personality', { ...formData.personality, planning: option.value })}
+                          whileHover={{ scale: 1.02, y: -2 }}
+                          whileTap={{ scale: 0.98 }}
+                          className={`relative px-3 sm:px-4 py-3 sm:py-4 rounded-xl border-2 text-base sm:text-lg font-semibold transition-all flex flex-col items-center gap-1.5 ${
+                            isSelected
+                              ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white border-[#FF91A4] shadow-lg'
+                              : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4] hover:shadow-md'
+                          } ${errors.planning ? 'border-red-500' : ''}`}
+                        >
+                          <Icon className={`w-6 h-6 sm:w-7 sm:h-7 ${isSelected ? 'text-white' : 'text-[#FF91A4]'}`} />
+                          <span>{option.label}</span>
+                        </motion.button>
+                      );
+                    })}
                   </div>
                   {errors.planning && (
-                    <p className="text-xs text-red-600 mt-1">{errors.planning}</p>
+                    <motion.p
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-sm sm:text-base text-[#FF91A4] mt-2"
+                    >
+                      {errors.planning}
+                    </motion.p>
                   )}
                 </motion.div>
 
@@ -1063,34 +1202,48 @@ export default function OnboardingPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="mb-3 sm:mb-4"
+                  className="mb-4 sm:mb-5"
                 >
-                  <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                    Approach <span className="text-[#FF91A4]">*</span>
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF91A4]" />
+                    <label className="text-base sm:text-lg font-semibold text-[#212121]">
+                      Approach <span className="text-[#FF91A4]">*</span>
+                    </label>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
                     {[
-                      { value: 'romantic', label: 'Romantic' },
-                      { value: 'practical', label: 'Practical' }
-                    ].map((option) => (
-                      <motion.button
-                        key={option.value}
-                        type="button"
-                        onClick={() => handleChange('personality', { ...formData.personality, romantic: option.value })}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
-                          formData.personality.romantic === option.value
-                            ? 'bg-[#FF91A4] text-white border-[#FF91A4] shadow-md'
-                            : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
-                        } ${errors.romantic ? 'border-red-500' : ''}`}
-                      >
-                        {option.label}
-                      </motion.button>
-                    ))}
+                      { value: 'romantic', label: 'Romantic', icon: Heart },
+                      { value: 'practical', label: 'Practical', icon: Check }
+                    ].map((option) => {
+                      const Icon = option.icon;
+                      const isSelected = formData.personality.romantic === option.value;
+                      return (
+                        <motion.button
+                          key={option.value}
+                          type="button"
+                          onClick={() => handleChange('personality', { ...formData.personality, romantic: option.value })}
+                          whileHover={{ scale: 1.02, y: -2 }}
+                          whileTap={{ scale: 0.98 }}
+                          className={`relative px-3 sm:px-4 py-3 sm:py-4 rounded-xl border-2 text-base sm:text-lg font-semibold transition-all flex flex-col items-center gap-1.5 ${
+                            isSelected
+                              ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white border-[#FF91A4] shadow-lg'
+                              : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4] hover:shadow-md'
+                          } ${errors.romantic ? 'border-red-500' : ''}`}
+                        >
+                          <Icon className={`w-6 h-6 sm:w-7 sm:h-7 ${isSelected ? 'text-white' : 'text-[#FF91A4]'}`} />
+                          <span>{option.label}</span>
+                        </motion.button>
+                      );
+                    })}
                   </div>
                   {errors.romantic && (
-                    <p className="text-xs text-red-600 mt-1">{errors.romantic}</p>
+                    <motion.p
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-sm sm:text-base text-[#FF91A4] mt-2"
+                    >
+                      {errors.romantic}
+                    </motion.p>
                   )}
                 </motion.div>
 
@@ -1099,34 +1252,48 @@ export default function OnboardingPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.25 }}
-                  className="mb-3 sm:mb-4"
+                  className="mb-4 sm:mb-5"
                 >
-                  <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                    Energy Time <span className="text-[#FF91A4]">*</span>
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF91A4]" />
+                    <label className="text-base sm:text-lg font-semibold text-[#212121]">
+                      Energy Time <span className="text-[#FF91A4]">*</span>
+                    </label>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
                     {[
-                      { value: 'morning', label: 'Morning Person' },
-                      { value: 'night', label: 'Night Owl' }
-                    ].map((option) => (
-                      <motion.button
-                        key={option.value}
-                        type="button"
-                        onClick={() => handleChange('personality', { ...formData.personality, morning: option.value })}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
-                          formData.personality.morning === option.value
-                            ? 'bg-[#FF91A4] text-white border-[#FF91A4] shadow-md'
-                            : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
-                        } ${errors.morning ? 'border-red-500' : ''}`}
-                      >
-                        {option.label}
-                      </motion.button>
-                    ))}
+                      { value: 'morning', label: 'Morning Person', icon: Sun },
+                      { value: 'night', label: 'Night Owl', icon: Moon }
+                    ].map((option) => {
+                      const Icon = option.icon;
+                      const isSelected = formData.personality.morning === option.value;
+                      return (
+                        <motion.button
+                          key={option.value}
+                          type="button"
+                          onClick={() => handleChange('personality', { ...formData.personality, morning: option.value })}
+                          whileHover={{ scale: 1.02, y: -2 }}
+                          whileTap={{ scale: 0.98 }}
+                          className={`relative px-3 sm:px-4 py-3 sm:py-4 rounded-xl border-2 text-base sm:text-lg font-semibold transition-all flex flex-col items-center gap-1.5 ${
+                            isSelected
+                              ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white border-[#FF91A4] shadow-lg'
+                              : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4] hover:shadow-md'
+                          } ${errors.morning ? 'border-red-500' : ''}`}
+                        >
+                          <Icon className={`w-6 h-6 sm:w-7 sm:h-7 ${isSelected ? 'text-white' : 'text-[#FF91A4]'}`} />
+                          <span>{option.label}</span>
+                        </motion.button>
+                      );
+                    })}
                   </div>
                   {errors.morning && (
-                    <p className="text-xs text-red-600 mt-1">{errors.morning}</p>
+                    <motion.p
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-sm sm:text-base text-[#FF91A4] mt-2"
+                    >
+                      {errors.morning}
+                    </motion.p>
                   )}
                 </motion.div>
 
@@ -1135,34 +1302,48 @@ export default function OnboardingPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="mb-3 sm:mb-4"
+                  className="mb-4 sm:mb-5"
                 >
-                  <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                    Lifestyle <span className="text-[#FF91A4]">*</span>
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Home className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF91A4]" />
+                    <label className="text-base sm:text-lg font-semibold text-[#212121]">
+                      Lifestyle <span className="text-[#FF91A4]">*</span>
+                    </label>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
                     {[
-                      { value: 'homebody', label: 'Homebody' },
-                      { value: 'outgoing', label: 'Outgoing' }
-                    ].map((option) => (
-                      <motion.button
-                        key={option.value}
-                        type="button"
-                        onClick={() => handleChange('personality', { ...formData.personality, homebody: option.value })}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
-                          formData.personality.homebody === option.value
-                            ? 'bg-[#FF91A4] text-white border-[#FF91A4] shadow-md'
-                            : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
-                        } ${errors.homebody ? 'border-red-500' : ''}`}
-                      >
-                        {option.label}
-                      </motion.button>
-                    ))}
+                      { value: 'homebody', label: 'Homebody', icon: Home },
+                      { value: 'outgoing', label: 'Outgoing', icon: Plane }
+                    ].map((option) => {
+                      const Icon = option.icon;
+                      const isSelected = formData.personality.homebody === option.value;
+                      return (
+                        <motion.button
+                          key={option.value}
+                          type="button"
+                          onClick={() => handleChange('personality', { ...formData.personality, homebody: option.value })}
+                          whileHover={{ scale: 1.02, y: -2 }}
+                          whileTap={{ scale: 0.98 }}
+                          className={`relative px-3 sm:px-4 py-3 sm:py-4 rounded-xl border-2 text-base sm:text-lg font-semibold transition-all flex flex-col items-center gap-1.5 ${
+                            isSelected
+                              ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white border-[#FF91A4] shadow-lg'
+                              : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4] hover:shadow-md'
+                          } ${errors.homebody ? 'border-red-500' : ''}`}
+                        >
+                          <Icon className={`w-6 h-6 sm:w-7 sm:h-7 ${isSelected ? 'text-white' : 'text-[#FF91A4]'}`} />
+                          <span>{option.label}</span>
+                        </motion.button>
+                      );
+                    })}
                   </div>
                   {errors.homebody && (
-                    <p className="text-xs text-red-600 mt-1">{errors.homebody}</p>
+                    <motion.p
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-sm sm:text-base text-[#FF91A4] mt-2"
+                    >
+                      {errors.homebody}
+                    </motion.p>
                   )}
                 </motion.div>
 
@@ -1171,34 +1352,48 @@ export default function OnboardingPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.35 }}
-                  className="mb-3 sm:mb-4"
+                  className="mb-4 sm:mb-5"
                 >
-                  <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                    Personality <span className="text-[#FF91A4]">*</span>
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Smile className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF91A4]" />
+                    <label className="text-base sm:text-lg font-semibold text-[#212121]">
+                      Personality <span className="text-[#FF91A4]">*</span>
+                    </label>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
                     {[
-                      { value: 'serious', label: 'Serious' },
-                      { value: 'fun-loving', label: 'Fun-loving' }
-                    ].map((option) => (
-                      <motion.button
-                        key={option.value}
-                        type="button"
-                        onClick={() => handleChange('personality', { ...formData.personality, serious: option.value })}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
-                          formData.personality.serious === option.value
-                            ? 'bg-[#FF91A4] text-white border-[#FF91A4] shadow-md'
-                            : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
-                        } ${errors.serious ? 'border-red-500' : ''}`}
-                      >
-                        {option.label}
-                      </motion.button>
-                    ))}
+                      { value: 'serious', label: 'Serious', icon: Check },
+                      { value: 'fun-loving', label: 'Fun-loving', icon: Sparkles }
+                    ].map((option) => {
+                      const Icon = option.icon;
+                      const isSelected = formData.personality.serious === option.value;
+                      return (
+                        <motion.button
+                          key={option.value}
+                          type="button"
+                          onClick={() => handleChange('personality', { ...formData.personality, serious: option.value })}
+                          whileHover={{ scale: 1.02, y: -2 }}
+                          whileTap={{ scale: 0.98 }}
+                          className={`relative px-3 sm:px-4 py-3 sm:py-4 rounded-xl border-2 text-base sm:text-lg font-semibold transition-all flex flex-col items-center gap-1.5 ${
+                            isSelected
+                              ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white border-[#FF91A4] shadow-lg'
+                              : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4] hover:shadow-md'
+                          } ${errors.serious ? 'border-red-500' : ''}`}
+                        >
+                          <Icon className={`w-6 h-6 sm:w-7 sm:h-7 ${isSelected ? 'text-white' : 'text-[#FF91A4]'}`} />
+                          <span>{option.label}</span>
+                        </motion.button>
+                      );
+                    })}
                   </div>
                   {errors.serious && (
-                    <p className="text-xs text-red-600 mt-1">{errors.serious}</p>
+                    <motion.p
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-sm sm:text-base text-[#FF91A4] mt-2"
+                    >
+                      {errors.serious}
+                    </motion.p>
                   )}
                 </motion.div>
 
@@ -1207,34 +1402,48 @@ export default function OnboardingPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="mb-3 sm:mb-4"
+                  className="mb-4 sm:mb-5"
                 >
-                  <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                    Decision Making <span className="text-[#FF91A4]">*</span>
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF91A4]" />
+                    <label className="text-base sm:text-lg font-semibold text-[#212121]">
+                      Decision Making <span className="text-[#FF91A4]">*</span>
+                    </label>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
                     {[
-                      { value: 'quick', label: 'Quick Decider' },
-                      { value: 'thoughtful', label: 'Thoughtful' }
-                    ].map((option) => (
-                      <motion.button
-                        key={option.value}
-                        type="button"
-                        onClick={() => handleChange('personality', { ...formData.personality, decision: option.value })}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
-                          formData.personality.decision === option.value
-                            ? 'bg-[#FF91A4] text-white border-[#FF91A4] shadow-md'
-                            : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
-                        } ${errors.decision ? 'border-red-500' : ''}`}
-                      >
-                        {option.label}
-                      </motion.button>
-                    ))}
+                      { value: 'quick', label: 'Quick Decider', icon: Zap },
+                      { value: 'thoughtful', label: 'Thoughtful', icon: Coffee }
+                    ].map((option) => {
+                      const Icon = option.icon;
+                      const isSelected = formData.personality.decision === option.value;
+                      return (
+                        <motion.button
+                          key={option.value}
+                          type="button"
+                          onClick={() => handleChange('personality', { ...formData.personality, decision: option.value })}
+                          whileHover={{ scale: 1.02, y: -2 }}
+                          whileTap={{ scale: 0.98 }}
+                          className={`relative px-3 sm:px-4 py-3 sm:py-4 rounded-xl border-2 text-base sm:text-lg font-semibold transition-all flex flex-col items-center gap-1.5 ${
+                            isSelected
+                              ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white border-[#FF91A4] shadow-lg'
+                              : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4] hover:shadow-md'
+                          } ${errors.decision ? 'border-red-500' : ''}`}
+                        >
+                          <Icon className={`w-6 h-6 sm:w-7 sm:h-7 ${isSelected ? 'text-white' : 'text-[#FF91A4]'}`} />
+                          <span>{option.label}</span>
+                        </motion.button>
+                      );
+                    })}
                   </div>
                   {errors.decision && (
-                    <p className="text-xs text-red-600 mt-1">{errors.decision}</p>
+                    <motion.p
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-sm sm:text-base text-[#FF91A4] mt-2"
+                    >
+                      {errors.decision}
+                    </motion.p>
                   )}
                 </motion.div>
 
@@ -1243,34 +1452,48 @@ export default function OnboardingPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.45 }}
-                  className="mb-3 sm:mb-4"
+                  className="mb-4 sm:mb-5"
                 >
-                  <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                    Communication Style <span className="text-[#FF91A4]">*</span>
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center gap-2 mb-3">
+                    <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF91A4]" />
+                    <label className="text-base sm:text-lg font-semibold text-[#212121]">
+                      Communication Style <span className="text-[#FF91A4]">*</span>
+                    </label>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
                     {[
-                      { value: 'direct', label: 'Direct' },
-                      { value: 'subtle', label: 'Subtle' }
-                    ].map((option) => (
-                      <motion.button
-                        key={option.value}
-                        type="button"
-                        onClick={() => handleChange('personality', { ...formData.personality, communication: option.value })}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
-                          formData.personality.communication === option.value
-                            ? 'bg-[#FF91A4] text-white border-[#FF91A4] shadow-md'
-                            : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
-                        } ${errors.communication ? 'border-red-500' : ''}`}
-                      >
-                        {option.label}
-                      </motion.button>
-                    ))}
+                      { value: 'direct', label: 'Direct', icon: MessageSquare },
+                      { value: 'subtle', label: 'Subtle', icon: Heart }
+                    ].map((option) => {
+                      const Icon = option.icon;
+                      const isSelected = formData.personality.communication === option.value;
+                      return (
+                        <motion.button
+                          key={option.value}
+                          type="button"
+                          onClick={() => handleChange('personality', { ...formData.personality, communication: option.value })}
+                          whileHover={{ scale: 1.02, y: -2 }}
+                          whileTap={{ scale: 0.98 }}
+                          className={`relative px-3 sm:px-4 py-3 sm:py-4 rounded-xl border-2 text-base sm:text-lg font-semibold transition-all flex flex-col items-center gap-1.5 ${
+                            isSelected
+                              ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white border-[#FF91A4] shadow-lg'
+                              : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4] hover:shadow-md'
+                          } ${errors.communication ? 'border-red-500' : ''}`}
+                        >
+                          <Icon className={`w-6 h-6 sm:w-7 sm:h-7 ${isSelected ? 'text-white' : 'text-[#FF91A4]'}`} />
+                          <span>{option.label}</span>
+                        </motion.button>
+                      );
+                    })}
                   </div>
                   {errors.communication && (
-                    <p className="text-xs text-red-600 mt-1">{errors.communication}</p>
+                    <motion.p
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-sm sm:text-base text-[#FF91A4] mt-2"
+                    >
+                      {errors.communication}
+                    </motion.p>
                   )}
                 </motion.div>
               </div>
@@ -1292,7 +1515,7 @@ export default function OnboardingPage() {
                   onClick={handleBack}
                   whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-gradient-to-r from-[#757575] to-[#616161] hover:from-[#616161] hover:to-[#757575] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all flex items-center justify-center shadow-md hover:shadow-lg relative z-10"
+                  className="flex-1 bg-gradient-to-r from-[#757575] to-[#616161] hover:from-[#616161] hover:to-[#757575] text-white font-semibold py-2.5 sm:py-3 md:py-2 rounded-xl transition-all flex items-center justify-center shadow-md hover:shadow-lg relative z-10 text-sm md:text-sm"
                 >
                   <ArrowLeft className="w-4 h-4 mr-1.5 sm:mr-2" />
                   <span className="text-sm">Back</span>
@@ -1302,7 +1525,7 @@ export default function OnboardingPage() {
                   disabled={Object.values(formData.personality).some(v => v === '')}
                   whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm shadow-lg hover:shadow-xl disabled:shadow-none relative z-10"
+                  className="flex-1 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-bold py-3.5 sm:py-4 md:py-2.5 rounded-xl transition-all disabled:transform-none text-base sm:text-lg md:text-base shadow-xl hover:shadow-2xl disabled:shadow-none relative z-10"
                 >
                   Next →
                 </motion.button>
@@ -1318,54 +1541,58 @@ export default function OnboardingPage() {
               animate="animate"
               exit="exit"
               transition={pageTransition}
-              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 border border-[#FFB6C1]/20 relative"
+              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 md:p-4 border border-[#FFB6C1]/20 relative flex flex-col max-h-[calc(100vh-180px)] md:max-h-[calc(100vh-140px)]"
               style={{ zIndex: 1 }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent pointer-events-none"></div>
-              <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-2 sm:mb-3 relative">
-                Dealbreakers & Lifestyle
-              </h2>
-              <p className="text-xs sm:text-sm text-[#757575] mb-4 sm:mb-6">
+              <div className="flex items-center gap-2 mb-3 sm:mb-4 relative z-10">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-lg flex items-center justify-center shadow-md">
+                  <Home className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                </div>
+                <h2 className="text-base sm:text-lg font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent">
+                  Dealbreakers & Lifestyle
+                </h2>
+              </div>
+              <p className="text-xs sm:text-sm md:text-xs text-[#757575] mb-4 sm:mb-6 md:mb-2 relative z-10">
                 Tell us about your lifestyle preferences
               </p>
 
               {/* Dealbreakers Questions */}
-              <div className="space-y-3 sm:space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+              <div className="space-y-4 sm:space-y-5 md:space-y-2 max-h-[45vh] md:max-h-[50vh] overflow-y-auto pr-2 relative z-10 flex-1">
                 {/* Kids */}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="mb-3 sm:mb-4"
+                  className="mb-4 sm:mb-5 md:mb-2"
                 >
-                  <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                    Kids <span className="text-[#FF91A4]">*</span>
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
+                  <div className="flex items-center gap-2 mb-3 md:mb-1.5">
+                    <Baby className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 text-[#FF91A4]" />
+                    <label className="text-base sm:text-lg md:text-sm font-semibold text-[#212121]">
+                      Kids <span className="text-[#FF91A4]">*</span>
+                    </label>
+                  </div>
+                  <CustomDropdown
+                    options={[
+                      { value: '', label: 'Select an option' },
                       { value: 'have-kids', label: 'Have Kids' },
                       { value: 'want-kids', label: 'Want Kids' },
-                      { value: 'dont-want', label: "Don't Want" },
+                      { value: 'dont-want-kids', label: "Don't Want Kids" },
                       { value: 'not-sure', label: 'Not Sure' }
-                    ].map((option) => (
-                      <motion.button
-                        key={option.value}
-                        type="button"
-                        onClick={() => handleChange('dealbreakers', { ...formData.dealbreakers, kids: option.value })}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
-                          formData.dealbreakers.kids === option.value
-                            ? 'bg-[#FF91A4] text-white border-[#FF91A4] shadow-md'
-                            : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
-                        } ${errors.kids ? 'border-red-500' : ''}`}
-                      >
-                        {option.label}
-                      </motion.button>
-                    ))}
-                  </div>
+                    ]}
+                    value={formData.dealbreakers.kids}
+                    onChange={(value) => handleChange('dealbreakers', { ...formData.dealbreakers, kids: value })}
+                    placeholder="Select an option"
+                    error={!!errors.kids}
+                  />
                   {errors.kids && (
-                    <p className="text-xs text-red-600 mt-1">{errors.kids}</p>
+                    <motion.p
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-sm sm:text-base md:text-xs text-[#FF91A4] mt-2 md:mt-1"
+                    >
+                      {errors.kids}
+                    </motion.p>
                   )}
                 </motion.div>
 
@@ -1374,36 +1601,35 @@ export default function OnboardingPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 }}
-                  className="mb-3 sm:mb-4"
+                  className="mb-4 sm:mb-5 md:mb-2"
                 >
-                  <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                    Smoking <span className="text-[#FF91A4]">*</span>
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
+                  <div className="flex items-center gap-2 mb-3 md:mb-1.5">
+                    <Cigarette className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 text-[#FF91A4]" />
+                    <label className="text-base sm:text-lg md:text-sm font-semibold text-[#212121]">
+                      Smoking <span className="text-[#FF91A4]">*</span>
+                    </label>
+                  </div>
+                  <CustomDropdown
+                    options={[
+                      { value: '', label: 'Select an option' },
                       { value: 'smoker', label: 'Smoker' },
                       { value: 'non-smoker', label: 'Non-smoker' },
                       { value: 'social-smoker', label: 'Social Smoker' },
                       { value: 'prefer-non-smoker', label: 'Prefer Non-smoker' }
-                    ].map((option) => (
-                      <motion.button
-                        key={option.value}
-                        type="button"
-                        onClick={() => handleChange('dealbreakers', { ...formData.dealbreakers, smoking: option.value })}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
-                          formData.dealbreakers.smoking === option.value
-                            ? 'bg-[#FF91A4] text-white border-[#FF91A4] shadow-md'
-                            : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
-                        } ${errors.smoking ? 'border-red-500' : ''}`}
-                      >
-                        {option.label}
-                      </motion.button>
-                    ))}
-                  </div>
+                    ]}
+                    value={formData.dealbreakers.smoking}
+                    onChange={(value) => handleChange('dealbreakers', { ...formData.dealbreakers, smoking: value })}
+                    placeholder="Select an option"
+                    error={!!errors.smoking}
+                  />
                   {errors.smoking && (
-                    <p className="text-xs text-red-600 mt-1">{errors.smoking}</p>
+                    <motion.p
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-sm sm:text-base md:text-xs text-[#FF91A4] mt-2 md:mt-1"
+                    >
+                      {errors.smoking}
+                    </motion.p>
                   )}
                 </motion.div>
 
@@ -1412,36 +1638,35 @@ export default function OnboardingPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="mb-3 sm:mb-4"
+                  className="mb-4 sm:mb-5 md:mb-2"
                 >
-                  <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                    Pets <span className="text-[#FF91A4]">*</span>
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
+                  <div className="flex items-center gap-2 mb-3 md:mb-1.5">
+                    <Dog className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 text-[#FF91A4]" />
+                    <label className="text-base sm:text-lg md:text-sm font-semibold text-[#212121]">
+                      Pets <span className="text-[#FF91A4]">*</span>
+                    </label>
+                  </div>
+                  <CustomDropdown
+                    options={[
+                      { value: '', label: 'Select an option' },
                       { value: 'love-pets', label: 'Love Pets' },
                       { value: 'have-pets', label: 'Have Pets' },
                       { value: 'allergic', label: 'Allergic' },
                       { value: 'not-interested', label: 'Not Interested' }
-                    ].map((option) => (
-                      <motion.button
-                        key={option.value}
-                        type="button"
-                        onClick={() => handleChange('dealbreakers', { ...formData.dealbreakers, pets: option.value })}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
-                          formData.dealbreakers.pets === option.value
-                            ? 'bg-[#FF91A4] text-white border-[#FF91A4] shadow-md'
-                            : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
-                        } ${errors.pets ? 'border-red-500' : ''}`}
-                      >
-                        {option.label}
-                      </motion.button>
-                    ))}
-                  </div>
+                    ]}
+                    value={formData.dealbreakers.pets}
+                    onChange={(value) => handleChange('dealbreakers', { ...formData.dealbreakers, pets: value })}
+                    placeholder="Select an option"
+                    error={!!errors.pets}
+                  />
                   {errors.pets && (
-                    <p className="text-xs text-red-600 mt-1">{errors.pets}</p>
+                    <motion.p
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-sm sm:text-base md:text-xs text-[#FF91A4] mt-2 md:mt-1"
+                    >
+                      {errors.pets}
+                    </motion.p>
                   )}
                 </motion.div>
 
@@ -1450,36 +1675,35 @@ export default function OnboardingPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.25 }}
-                  className="mb-3 sm:mb-4"
+                  className="mb-4 sm:mb-5 md:mb-2"
                 >
-                  <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                    Drinking <span className="text-[#FF91A4]">*</span>
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
+                  <div className="flex items-center gap-2 mb-3 md:mb-1.5">
+                    <GlassWater className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 text-[#FF91A4]" />
+                    <label className="text-base sm:text-lg md:text-sm font-semibold text-[#212121]">
+                      Drinking <span className="text-[#FF91A4]">*</span>
+                    </label>
+                  </div>
+                  <CustomDropdown
+                    options={[
+                      { value: '', label: 'Select an option' },
                       { value: 'never', label: 'Never' },
                       { value: 'occasionally', label: 'Occasionally' },
                       { value: 'socially', label: 'Socially' },
                       { value: 'regularly', label: 'Regularly' }
-                    ].map((option) => (
-                      <motion.button
-                        key={option.value}
-                        type="button"
-                        onClick={() => handleChange('dealbreakers', { ...formData.dealbreakers, drinking: option.value })}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
-                          formData.dealbreakers.drinking === option.value
-                            ? 'bg-[#FF91A4] text-white border-[#FF91A4] shadow-md'
-                            : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
-                        } ${errors.drinking ? 'border-red-500' : ''}`}
-                      >
-                        {option.label}
-                      </motion.button>
-                    ))}
-                  </div>
+                    ]}
+                    value={formData.dealbreakers.drinking}
+                    onChange={(value) => handleChange('dealbreakers', { ...formData.dealbreakers, drinking: value })}
+                    placeholder="Select an option"
+                    error={!!errors.drinking}
+                  />
                   {errors.drinking && (
-                    <p className="text-xs text-red-600 mt-1">{errors.drinking}</p>
+                    <motion.p
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-sm sm:text-base md:text-xs text-[#FF91A4] mt-2 md:mt-1"
+                    >
+                      {errors.drinking}
+                    </motion.p>
                   )}
                 </motion.div>
 
@@ -1488,11 +1712,14 @@ export default function OnboardingPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="mb-3 sm:mb-4"
+                  className="mb-4 sm:mb-5 md:mb-2"
                 >
-                  <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5 sm:mb-2">
-                    Religion <span className="text-[#757575] text-xs">(Optional)</span>
-                  </label>
+                  <div className="flex items-center gap-2 mb-3 md:mb-1.5">
+                    <Heart className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 text-[#FF91A4]" />
+                    <label className="text-base sm:text-lg md:text-sm font-semibold text-[#212121]">
+                      Religion <span className="text-[#757575] text-xs md:text-[10px] font-normal">(Optional)</span>
+                    </label>
+                  </div>
                   <CustomDropdown
                     options={[
                       { value: '', label: 'Select religion (optional)' },
@@ -1514,14 +1741,14 @@ export default function OnboardingPage() {
               </div>
 
               {/* Navigation Buttons */}
-              <div className="flex gap-2 sm:gap-3 pt-4 sm:pt-6">
+              <div className="flex gap-2 sm:gap-3 pt-4 sm:pt-6 relative" style={{ zIndex: 1 }}>
                 <motion.button
                   onClick={handleBack}
                   whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-gradient-to-r from-[#757575] to-[#616161] hover:from-[#616161] hover:to-[#757575] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all flex items-center justify-center shadow-md hover:shadow-lg relative z-10"
+                  className="flex-1 bg-gradient-to-r from-[#757575] to-[#616161] hover:from-[#616161] hover:to-[#757575] text-white font-semibold py-2.5 sm:py-3 md:py-2 rounded-xl transition-all flex items-center justify-center shadow-md hover:shadow-lg text-sm md:text-sm"
                 >
-                  <ArrowLeft className="w-4 h-4 mr-1.5 sm:mr-2" />
+                  <ArrowLeft className="w-4 h-4 md:w-3 md:h-3 mr-1.5 sm:mr-2" />
                   <span className="text-sm">Back</span>
                 </motion.button>
                 <motion.button
@@ -1529,7 +1756,7 @@ export default function OnboardingPage() {
                   disabled={!formData.dealbreakers.kids || !formData.dealbreakers.smoking || !formData.dealbreakers.pets || !formData.dealbreakers.drinking}
                   whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all disabled:transform-none text-sm shadow-lg hover:shadow-xl disabled:shadow-none relative z-10"
+                  className="flex-1 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-bold py-3.5 sm:py-4 md:py-2.5 rounded-xl transition-all disabled:transform-none text-base sm:text-lg md:text-base shadow-xl hover:shadow-2xl disabled:shadow-none"
                 >
                   Next →
                 </motion.button>
@@ -1545,29 +1772,222 @@ export default function OnboardingPage() {
               animate="animate"
               exit="exit"
               transition={pageTransition}
-              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 border border-[#FFB6C1]/20 relative"
+              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 md:p-4 border border-[#FFB6C1]/20 relative flex flex-col max-h-[calc(100vh-180px)] md:max-h-[calc(100vh-140px)]"
               style={{ zIndex: 1 }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent pointer-events-none"></div>
-              <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-2 sm:mb-3 relative">
-                Optional Details
-              </h2>
-              <p className="text-xs sm:text-sm text-[#757575] mb-4 sm:mb-6">
+              <div className="flex items-center gap-2 mb-3 sm:mb-4 relative z-10">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-lg flex items-center justify-center shadow-md">
+                  <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                </div>
+                <h2 className="text-base sm:text-lg font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent">
+                  Answer Prompts
+                </h2>
+              </div>
+              <p className="text-[10px] sm:text-xs md:text-[10px] text-[#757575] mb-3 sm:mb-4 md:mb-2">
+                Select at least 3 prompts and answer them to help others know you better
+              </p>
+
+              {/* Prompts Section */}
+              <div className="space-y-4 sm:space-y-5 md:space-y-3 max-h-[45vh] md:max-h-[50vh] overflow-y-auto pr-2 relative z-10 flex-1">
+                {/* Prompt List */}
+                {[
+                  "What's the best way to ask you out?",
+                  "I'm a great +1 for...",
+                  "The way to my heart is...",
+                  "I'll fall for you if...",
+                  "My simple pleasures...",
+                  "I'm weirdly attracted to...",
+                  "The best way to ask me out is by...",
+                  "I'll know it's a match when...",
+                  "I'm looking for...",
+                  "My love language is...",
+                  "I'm a great +1 because...",
+                  "The quickest way to my heart is...",
+                  "We'll get along if...",
+                  "I'm the type of person who...",
+                  "My ideal first date...",
+                  "I'm weirdly attracted to people who...",
+                  "The way to win me over is...",
+                  "I'll fall for you if you...",
+                  "My biggest ick is...",
+                  "I'm looking for someone who..."
+                ].map((promptText, idx) => {
+                  const selectedPrompt = formData.prompts.find(p => p.prompt === promptText);
+                  const isSelected = !!selectedPrompt;
+                  
+                  return (
+                    <motion.div
+                      key={promptText}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      className="mb-3 sm:mb-4 md:mb-2"
+                    >
+                      <motion.button
+                        type="button"
+                        onClick={() => {
+                          const current = formData.prompts || [];
+                          let newPrompts;
+                          if (isSelected) {
+                            // Remove prompt
+                            newPrompts = current.filter(p => p.prompt !== promptText);
+                          } else {
+                            // Add prompt with empty answer
+                            newPrompts = [...current, { prompt: promptText, answer: '' }];
+                          }
+                          handleChange('prompts', newPrompts);
+                          // Clear error if at least 3 prompts are selected
+                          if (newPrompts.length >= 3 && errors.prompts) {
+                            setErrors(prev => {
+                              const newErrors = { ...prev };
+                              delete newErrors.prompts;
+                              return newErrors;
+                            });
+                          }
+                        }}
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                        className={`w-full text-left px-4 sm:px-5 md:px-3 py-3 sm:py-3.5 md:py-2.5 rounded-xl sm:rounded-2xl md:rounded-lg border-2 transition-all ${
+                          isSelected
+                            ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white border-[#FF91A4] shadow-md'
+                            : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4] hover:shadow-sm'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className={`w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                            isSelected
+                              ? 'border-white bg-white/20'
+                              : 'border-[#FF91A4] bg-transparent'
+                          }`}>
+                            {isSelected && <Check className="w-3 h-3 sm:w-4 sm:h-4 md:w-3 md:h-3 text-white" />}
+                          </div>
+                          <span className={`text-sm sm:text-base md:text-sm font-medium ${isSelected ? 'text-white' : 'text-[#212121]'}`}>
+                            {promptText}
+                          </span>
+                        </div>
+                      </motion.button>
+                      
+                      {/* Answer Input - Show when prompt is selected */}
+                      {isSelected && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="mt-2 sm:mt-3 md:mt-2"
+                        >
+                          <textarea
+                            value={selectedPrompt.answer || ''}
+                            onChange={(e) => {
+                              const updatedPrompts = formData.prompts.map(p =>
+                                p.prompt === promptText ? { ...p, answer: e.target.value } : p
+                              );
+                              handleChange('prompts', updatedPrompts);
+                            }}
+                            placeholder="Type your answer here..."
+                            rows={3}
+                            className="w-full px-4 md:px-3 py-2.5 sm:py-3 md:py-2 border-2 border-[#FFB6C1] rounded-xl sm:rounded-2xl md:rounded-lg text-sm sm:text-base md:text-sm text-[#212121] bg-white focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 focus:border-[#FF91A4] transition-all shadow-sm hover:shadow-md resize-none"
+                          />
+                        </motion.div>
+                      )}
+                    </motion.div>
+                  );
+                })}
+                
+                {/* Error Message */}
+                {errors.prompts && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-xs sm:text-sm md:text-[10px] text-red-600 mt-2 md:mt-1 font-medium"
+                  >
+                    {errors.prompts}
+                  </motion.p>
+                )}
+                
+                {/* Selected Count */}
+                {formData.prompts && formData.prompts.length > 0 && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`text-xs sm:text-sm md:text-[10px] mt-2 md:mt-1 font-medium ${
+                      formData.prompts.length >= 3 ? 'text-[#FF91A4]' : 'text-[#757575]'
+                    }`}
+                  >
+                    {formData.prompts.length >= 3 ? '✓ ' : ''}
+                    {formData.prompts.length} of 3+ prompts selected
+                    {formData.prompts.some(p => !p.answer || p.answer.trim() === '') && ' (Please answer all selected prompts)'}
+                  </motion.p>
+                )}
+              </div>
+
+              {/* Navigation Buttons */}
+              <div className="flex gap-2 sm:gap-3 pt-4 sm:pt-6 relative" style={{ zIndex: 1 }}>
+                <motion.button
+                  onClick={handleBack}
+                  whileHover={{ scale: 1.02, y: -1 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex-1 bg-gradient-to-r from-[#757575] to-[#616161] hover:from-[#616161] hover:to-[#757575] text-white font-semibold py-2.5 sm:py-3 md:py-2 rounded-xl transition-all flex items-center justify-center shadow-md hover:shadow-lg"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-1.5 sm:mr-2" />
+                  <span className="text-sm md:text-sm">Back</span>
+                </motion.button>
+                <motion.button
+                  onClick={handleNext}
+                  disabled={!formData.prompts || formData.prompts.length < 3 || formData.prompts.some(p => !p.answer || p.answer.trim() === '')}
+                  whileHover={{ scale: (!formData.prompts || formData.prompts.length < 3 || formData.prompts.some(p => !p.answer || p.answer.trim() === '')) ? 1 : 1.02, y: (!formData.prompts || formData.prompts.length < 3 || formData.prompts.some(p => !p.answer || p.answer.trim() === '')) ? 0 : -1 }}
+                  whileTap={{ scale: (!formData.prompts || formData.prompts.length < 3 || formData.prompts.some(p => !p.answer || p.answer.trim() === '')) ? 1 : 0.98 }}
+                  className={`flex-1 font-semibold py-2.5 sm:py-3 md:py-2 rounded-xl transition-all text-sm md:text-sm shadow-lg ${
+                    (!formData.prompts || formData.prompts.length < 3 || formData.prompts.some(p => !p.answer || p.answer.trim() === ''))
+                      ? 'bg-[#E0E0E0] text-[#9E9E9E] cursor-not-allowed shadow-none'
+                      : 'bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] text-white hover:shadow-xl'
+                  }`}
+                >
+                  Next →
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+
+          {currentStep === 7 && (
+            <motion.div
+              key="step7"
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={pageTransition}
+              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 md:p-4 border border-[#FFB6C1]/20 relative flex flex-col max-h-[calc(100vh-180px)] md:max-h-[calc(100vh-140px)]"
+              style={{ zIndex: 1 }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent pointer-events-none"></div>
+              <div className="flex items-center gap-2 mb-3 sm:mb-4 relative z-10">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-lg flex items-center justify-center shadow-md">
+                  <Settings className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                </div>
+                <h2 className="text-base sm:text-lg font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent">
+                  Optional Details
+                </h2>
+              </div>
+              <p className="text-[10px] sm:text-xs md:text-[10px] text-[#757575] mb-3 sm:mb-4 md:mb-2">
                 Share more about yourself (all fields are optional)
               </p>
 
               {/* Optional Details */}
-              <div className="space-y-3 sm:space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+              <div className="space-y-4 sm:space-y-5 md:space-y-2 max-h-[45vh] md:max-h-[50vh] overflow-y-auto pr-2 relative z-10 flex-1">
                 {/* Education */}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="mb-3 sm:mb-4"
+                  className="mb-4 sm:mb-5 md:mb-2"
                 >
-                  <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5 sm:mb-2">
-                    Education <span className="text-[#757575] text-xs">(Optional)</span>
-                  </label>
+                  <div className="flex items-center gap-2 mb-3 md:mb-1.5">
+                    <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 text-[#FF91A4]" />
+                    <label className="text-base sm:text-lg md:text-sm font-semibold text-[#212121]">
+                      Education <span className="text-[#757575] text-xs md:text-[10px] font-normal">(Optional)</span>
+                    </label>
+                  </div>
                   <CustomDropdown
                     options={[
                       { value: '', label: 'Select education (optional)' },
@@ -1592,17 +2012,20 @@ export default function OnboardingPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 }}
-                  className="mb-3 sm:mb-4"
+                  className="mb-4 sm:mb-5 md:mb-2"
                 >
-                  <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5 sm:mb-2">
-                    Profession <span className="text-[#757575] text-xs">(Optional)</span>
-                  </label>
+                  <div className="flex items-center gap-2 mb-3 md:mb-1.5">
+                    <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 text-[#FF91A4]" />
+                    <label className="text-base sm:text-lg md:text-sm font-semibold text-[#212121]">
+                      Profession <span className="text-[#757575] text-xs md:text-[10px] font-normal">(Optional)</span>
+                    </label>
+                  </div>
                   <input
                     type="text"
                     value={formData.optional.profession}
                     onChange={(e) => handleChange('optional', { ...formData.optional, profession: e.target.value })}
                     placeholder="e.g., Software Engineer, Doctor, Teacher"
-                    className="w-full px-4 py-2.5 sm:py-3 border-2 border-[#FFB6C1] rounded-xl sm:rounded-2xl text-sm sm:text-base text-[#212121] bg-white focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 focus:border-[#FF91A4] transition-all"
+                    className="w-full px-4 md:px-3 py-2.5 sm:py-3 md:py-2 border-2 border-[#FFB6C1] rounded-xl sm:rounded-2xl md:rounded-lg text-sm sm:text-base md:text-sm text-[#212121] bg-white focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 focus:border-[#FF91A4] transition-all shadow-sm hover:shadow-md"
                   />
                 </motion.div>
 
@@ -1611,34 +2034,47 @@ export default function OnboardingPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="mb-3 sm:mb-4"
+                  className="mb-4 sm:mb-5 md:mb-2"
                 >
-                  <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5 sm:mb-2">
-                    Languages <span className="text-[#757575] text-xs">(Optional)</span>
-                  </label>
-                  <p className="text-xs text-[#757575] mb-2">Select all languages you speak</p>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex items-center gap-2 mb-3 md:mb-1.5">
+                    <Languages className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 text-[#FF91A4]" />
+                    <label className="text-base sm:text-lg md:text-sm font-semibold text-[#212121]">
+                      Languages <span className="text-[#FF91A4] text-xs md:text-[10px] font-normal">*</span>
+                    </label>
+                  </div>
+                  <p className="text-xs sm:text-sm md:text-[10px] text-[#757575] mb-3 md:mb-2">Select at least one language you speak</p>
+                  <div className="flex flex-wrap gap-2.5 sm:gap-3 md:gap-2">
                     {['Hindi', 'English', 'Bengali', 'Telugu', 'Marathi', 'Tamil', 'Gujarati', 'Kannada', 'Malayalam', 'Punjabi', 'Urdu', 'Odia', 'Assamese', 'Sanskrit', 'Other'].map((language, idx) => (
                       <motion.button
                         key={language}
                         type="button"
                         onClick={() => {
                           const current = formData.optional.languages;
+                          let newLanguages;
                           if (current.includes(language)) {
-                            handleChange('optional', { ...formData.optional, languages: current.filter(l => l !== language) });
+                            newLanguages = current.filter(l => l !== language);
                           } else {
-                            handleChange('optional', { ...formData.optional, languages: [...current, language] });
+                            newLanguages = [...current, language];
+                          }
+                          handleChange('optional', { ...formData.optional, languages: newLanguages });
+                          // Clear error if at least one language is selected
+                          if (newLanguages.length > 0 && errors.languages) {
+                            setErrors(prev => {
+                              const newErrors = { ...prev };
+                              delete newErrors.languages;
+                              return newErrors;
+                            });
                           }
                         }}
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.2 + idx * 0.02 }}
-                        whileHover={{ scale: 1.05 }}
+                        whileHover={{ scale: 1.05, y: -2 }}
                         whileTap={{ scale: 0.95 }}
-                        className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
+                        className={`px-3 sm:px-4 md:px-2.5 py-2 sm:py-2.5 md:py-1.5 rounded-xl sm:rounded-2xl md:rounded-lg text-xs sm:text-sm md:text-[11px] font-semibold transition-all ${
                           formData.optional.languages.includes(language)
-                            ? 'bg-[#FF91A4] text-white border-2 border-[#FF91A4] shadow-md'
-                            : 'bg-white text-[#212121] border-2 border-[#FFB6C1] hover:border-[#FF91A4]'
+                            ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white border-2 border-[#FF91A4] shadow-md'
+                            : 'bg-white text-[#212121] border-2 border-[#FFB6C1] hover:border-[#FF91A4] hover:shadow-sm'
                         }`}
                       >
                         {language}
@@ -1647,11 +2083,20 @@ export default function OnboardingPage() {
                   </div>
                   {formData.optional.languages.length > 0 && (
                     <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="text-xs text-[#757575] mt-2"
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-xs sm:text-sm md:text-[10px] text-[#FF91A4] mt-3 md:mt-2 font-medium"
                     >
-                      {formData.optional.languages.length} language{formData.optional.languages.length > 1 ? 's' : ''} selected
+                      ✓ {formData.optional.languages.length} language{formData.optional.languages.length > 1 ? 's' : ''} selected
+                    </motion.p>
+                  )}
+                  {errors.languages && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-xs sm:text-sm md:text-[10px] text-red-600 mt-2 md:mt-1 font-medium"
+                    >
+                      {errors.languages}
                     </motion.p>
                   )}
                 </motion.div>
@@ -1661,26 +2106,29 @@ export default function OnboardingPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="mb-3 sm:mb-4"
+                  className="mb-4 sm:mb-5 md:mb-2"
                 >
-                  <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5 sm:mb-2">
-                    Horoscope <span className="text-[#757575] text-xs">(Optional)</span>
-                  </label>
+                  <div className="flex items-center gap-2 mb-3 md:mb-1.5">
+                    <Star className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 text-[#FF91A4]" />
+                    <label className="text-base sm:text-lg md:text-sm font-semibold text-[#212121]">
+                      Horoscope <span className="text-[#757575] text-xs md:text-[10px] font-normal">(Optional)</span>
+                    </label>
+                  </div>
                   <CustomDropdown
                     options={[
                       { value: '', label: 'Select horoscope sign (optional)' },
-                      { value: 'aries', label: 'Aries (मेष)' },
-                      { value: 'taurus', label: 'Taurus (वृषभ)' },
-                      { value: 'gemini', label: 'Gemini (मिथुन)' },
-                      { value: 'cancer', label: 'Cancer (कर्क)' },
-                      { value: 'leo', label: 'Leo (सिंह)' },
-                      { value: 'virgo', label: 'Virgo (कन्या)' },
-                      { value: 'libra', label: 'Libra (तुला)' },
-                      { value: 'scorpio', label: 'Scorpio (वृश्चिक)' },
-                      { value: 'sagittarius', label: 'Sagittarius (धनु)' },
-                      { value: 'capricorn', label: 'Capricorn (मकर)' },
-                      { value: 'aquarius', label: 'Aquarius (कुम्भ)' },
-                      { value: 'pisces', label: 'Pisces (मीन)' },
+                      { value: 'aries', label: 'Aries' },
+                      { value: 'taurus', label: 'Taurus' },
+                      { value: 'gemini', label: 'Gemini' },
+                      { value: 'cancer', label: 'Cancer' },
+                      { value: 'leo', label: 'Leo' },
+                      { value: 'virgo', label: 'Virgo' },
+                      { value: 'libra', label: 'Libra' },
+                      { value: 'scorpio', label: 'Scorpio' },
+                      { value: 'sagittarius', label: 'Sagittarius' },
+                      { value: 'capricorn', label: 'Capricorn' },
+                      { value: 'aquarius', label: 'Aquarius' },
+                      { value: 'pisces', label: 'Pisces' },
                       { value: 'prefer-not-to-say', label: 'Prefer not to say' }
                     ]}
                     value={formData.optional.horoscope}
@@ -1692,21 +2140,26 @@ export default function OnboardingPage() {
               </div>
 
               {/* Navigation Buttons */}
-              <div className="flex gap-2 sm:gap-3 pt-4 sm:pt-6">
+              <div className="flex gap-2 sm:gap-3 pt-4 sm:pt-6 relative" style={{ zIndex: 1 }}>
                 <motion.button
                   onClick={handleBack}
                   whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-gradient-to-r from-[#757575] to-[#616161] hover:from-[#616161] hover:to-[#757575] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all flex items-center justify-center shadow-md hover:shadow-lg relative z-10"
+                  className="flex-1 bg-gradient-to-r from-[#757575] to-[#616161] hover:from-[#616161] hover:to-[#757575] text-white font-semibold py-2.5 sm:py-3 md:py-2 rounded-xl transition-all flex items-center justify-center shadow-md hover:shadow-lg"
                 >
                   <ArrowLeft className="w-4 h-4 mr-1.5 sm:mr-2" />
-                  <span className="text-sm">Back</span>
+                  <span className="text-sm md:text-sm">Back</span>
                 </motion.button>
                 <motion.button
                   onClick={handleNext}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-[#FF91A4] hover:bg-[#FF69B4] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all text-sm"
+                  disabled={!formData.optional.languages || formData.optional.languages.length === 0}
+                  whileHover={{ scale: (!formData.optional.languages || formData.optional.languages.length === 0) ? 1 : 1.02, y: (!formData.optional.languages || formData.optional.languages.length === 0) ? 0 : -1 }}
+                  whileTap={{ scale: (!formData.optional.languages || formData.optional.languages.length === 0) ? 1 : 0.98 }}
+                  className={`flex-1 font-semibold py-2.5 sm:py-3 md:py-2 rounded-xl transition-all text-sm md:text-sm shadow-lg ${
+                    (!formData.optional.languages || formData.optional.languages.length === 0)
+                      ? 'bg-[#E0E0E0] text-[#9E9E9E] cursor-not-allowed shadow-none'
+                      : 'bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] text-white hover:shadow-xl'
+                  }`}
                 >
                   Next →
                 </motion.button>
@@ -1714,27 +2167,270 @@ export default function OnboardingPage() {
             </motion.div>
           )}
 
-          {currentStep === 7 && (
+          {currentStep === 8 && (
             <motion.div
-              key="step7"
+              key="step8"
               variants={pageVariants}
               initial="initial"
               animate="animate"
               exit="exit"
               transition={pageTransition}
-              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 border border-[#FFB6C1]/20 relative"
+              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl shadow-lg border border-[#FFB6C1]/20 relative flex flex-col"
+              style={{ zIndex: 1, maxHeight: 'calc(100vh - 200px)' }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent pointer-events-none"></div>
+              
+              {/* Header - Fixed */}
+              <div className="flex items-center gap-2 p-3 sm:p-4 md:p-5 pb-2 relative z-10 flex-shrink-0">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-lg flex items-center justify-center shadow-md">
+                  <Camera className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-base sm:text-lg font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent">
+                    Profile Setup
+                  </h2>
+                  <p className="text-[10px] sm:text-xs text-[#757575] mt-0.5">
+                    Upload your photos and write a bio to complete your profile
+                  </p>
+                </div>
+              </div>
+
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto px-3 sm:px-4 md:px-4 pb-2 relative z-10 scrollbar-hide min-h-0">
+
+              {/* Photo Upload Section */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="mb-4 sm:mb-5"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-md">
+                    <Camera className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs sm:text-sm font-bold text-[#212121]">
+                      Upload Your Photos <span className="text-[#FF91A4]">*</span>
+                    </label>
+                    <p className="text-[10px] sm:text-xs text-[#757575]">
+                      Add at least {minPhotos} photos
+                    </p>
+                  </div>
+                </div>
+                <PhotoUpload
+                  photos={formData.photos}
+                  onChange={(newPhotos) => handleChange('photos', newPhotos)}
+                  maxPhotos={maxPhotos}
+                  minPhotos={minPhotos}
+                />
+                {errors.photos && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-xs text-[#FF91A4] mt-2 font-medium"
+                  >
+                    {errors.photos}
+                  </motion.p>
+                )}
+                {formData.photos.length > 0 && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-[10px] sm:text-xs text-[#757575] mt-2"
+                  >
+                    ✓ {formData.photos.length} photo{formData.photos.length > 1 ? 's' : ''} uploaded
+                  </motion.p>
+                )}
+              </motion.div>
+
+              {/* Bio Section */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="mb-4 sm:mb-5"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-md">
+                    <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs sm:text-sm font-bold text-[#212121]">
+                      Write Your Bio <span className="text-[#757575] text-[10px] font-normal">(Optional)</span>
+                    </label>
+                    <p className="text-[10px] sm:text-xs text-[#757575]">
+                      Tell others about yourself
+                    </p>
+                  </div>
+                </div>
+                <textarea
+                  value={formData.bio}
+                  onChange={(e) => {
+                    if (e.target.value.length <= maxBioLength) {
+                      handleChange('bio', e.target.value);
+                    }
+                  }}
+                  placeholder="Tell others about yourself..."
+                  rows={4}
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-[#FFB6C1] rounded-xl text-xs sm:text-sm text-[#212121] bg-white focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 focus:border-[#FF91A4] transition-all resize-none shadow-sm"
+                />
+                <div className="flex justify-between items-center mt-2">
+                  <p className={`text-[10px] sm:text-xs font-medium ${
+                    formData.bio.length > maxBioLength * 0.9 
+                      ? 'text-[#FF91A4]' 
+                      : 'text-[#757575]'
+                  }`}>
+                    {formData.bio.length}/{maxBioLength} characters
+                  </p>
+                </div>
+              </motion.div>
+
+              </div>
+
+              {/* Navigation Buttons - Fixed at bottom */}
+              <div className="flex gap-2 sm:gap-3 p-3 sm:p-4 md:p-5 pt-3 relative z-10 flex-shrink-0 border-t border-[#FFB6C1]/20 bg-gradient-to-br from-white to-[#FFF0F5] rounded-b-xl sm:rounded-b-2xl">
+                <motion.button
+                  onClick={handleBack}
+                  whileHover={{ scale: 1.02, y: -1 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex-1 bg-gradient-to-r from-[#757575] to-[#616161] hover:from-[#616161] hover:to-[#757575] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all flex items-center justify-center shadow-md hover:shadow-lg"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-1.5 sm:mr-2" />
+                  <span className="text-xs sm:text-sm">Back</span>
+                </motion.button>
+                <motion.button
+                  onClick={handleNext}
+                  disabled={!formData.photos || formData.photos.length < minPhotos}
+                  whileHover={{ scale: (!formData.photos || formData.photos.length < minPhotos) ? 1 : 1.02, y: (!formData.photos || formData.photos.length < minPhotos) ? 0 : -1 }}
+                  whileTap={{ scale: (!formData.photos || formData.photos.length < minPhotos) ? 1 : 0.98 }}
+                  className={`flex-1 font-semibold py-2.5 sm:py-3 rounded-xl transition-all text-xs sm:text-sm shadow-lg ${
+                    (!formData.photos || formData.photos.length < minPhotos)
+                      ? 'bg-[#E0E0E0] text-[#9E9E9E] cursor-not-allowed shadow-none'
+                      : 'bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] text-white hover:shadow-xl'
+                  }`}
+                >
+                  Next →
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+
+          {currentStep === 9 && (
+            <motion.div
+              key="step9"
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={pageTransition}
+              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 md:p-4 border border-[#FFB6C1]/20 relative flex flex-col max-h-[calc(100vh-180px)] md:max-h-[calc(100vh-140px)]"
               style={{ zIndex: 1 }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent pointer-events-none"></div>
-              <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-2 sm:mb-3 relative">
-                Review Your Profile
-              </h2>
-              <p className="text-xs sm:text-sm text-[#757575] mb-4 sm:mb-6">
+              <div className="flex items-center gap-2 mb-3 sm:mb-4 relative z-10">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-lg flex items-center justify-center shadow-md">
+                  <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                </div>
+                <h2 className="text-base sm:text-lg font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent">
+                  Photo Verification
+                </h2>
+              </div>
+              <p className="text-[10px] sm:text-xs text-[#757575] mb-4 sm:mb-5">
+                Verify your profile to get a verified badge and increase trust
+              </p>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="border-2 border-[#FFB6C1] rounded-xl sm:rounded-2xl p-4 sm:p-5 bg-gradient-to-br from-white to-[#FFF0F5] shadow-md mb-4"
+              >
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-lg">
+                      <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                    </div>
+                    <div>
+                      <label className="block text-xs sm:text-sm font-bold text-[#212121] mb-1">
+                        Photo Verification
+                      </label>
+                      <p className="text-[10px] sm:text-xs text-[#757575]">
+                        Verify your profile to get a verified badge
+                      </p>
+                    </div>
+                  </div>
+                  <motion.button
+                    onClick={() => {
+                      handleChange('verified', true);
+                      navigate('/photo-verification');
+                    }}
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-3 sm:px-4 py-2 text-[10px] sm:text-xs font-semibold text-[#FF91A4] hover:text-white bg-white hover:bg-gradient-to-r hover:from-[#FF91A4] hover:to-[#FF69B4] border-2 border-[#FFB6C1] hover:border-[#FF91A4] rounded-xl transition-all whitespace-nowrap shadow-sm hover:shadow-md"
+                  >
+                    Verify Now
+                  </motion.button>
+                </div>
+              </motion.div>
+
+              <motion.button
+                onClick={handleNext}
+                whileHover={{ scale: 1.02, y: -1 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full mb-3 sm:mb-4 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl relative z-10"
+              >
+                <span className="text-xs sm:text-sm">Skip for Now</span>
+              </motion.button>
+
+              {/* Navigation Buttons */}
+              <div className="flex gap-2 sm:gap-3 pt-3 sm:pt-4">
+                <motion.button
+                  onClick={handleBack}
+                  whileHover={{ scale: 1.02, y: -1 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex-1 bg-gradient-to-r from-[#757575] to-[#616161] hover:from-[#616161] hover:to-[#757575] text-white font-semibold py-2.5 sm:py-3 md:py-2 rounded-xl transition-all flex items-center justify-center shadow-md hover:shadow-lg relative z-10 text-sm md:text-sm"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-1.5 sm:mr-2" />
+                  <span className="text-xs sm:text-sm">Back</span>
+                </motion.button>
+                <motion.button
+                  onClick={handleNext}
+                  whileHover={{ scale: 1.02, y: -1 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex-1 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all flex items-center justify-center shadow-lg hover:shadow-xl relative z-10"
+                >
+                  <span className="text-xs sm:text-sm">Next →</span>
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+
+          {currentStep === 10 && (
+            <motion.div
+              key="step10"
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={pageTransition}
+              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 md:p-4 border border-[#FFB6C1]/20 relative flex flex-col max-h-[calc(100vh-180px)] md:max-h-[calc(100vh-140px)]"
+              style={{ zIndex: 1 }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent pointer-events-none"></div>
+              <div className="flex items-center gap-2 mb-3 sm:mb-4 relative z-10">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-lg flex items-center justify-center shadow-md">
+                  <Check className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                </div>
+                <h2 className="text-base sm:text-lg font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent">
+                  Review Your Profile
+                </h2>
+              </div>
+              <p className="text-[10px] sm:text-xs text-[#757575] mb-3 sm:mb-4">
                 Please review your information before submitting
               </p>
 
               {/* Review Sections */}
-              <div className="space-y-3 sm:space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 max-h-[45vh] md:max-h-[50vh] overflow-y-auto pr-2">
                 {/* Step 1: Basic Info */}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -1877,7 +2573,38 @@ export default function OnboardingPage() {
                   </div>
                 </motion.div>
 
-                {/* Step 6: Optional Details */}
+                {/* Step 6: Prompts */}
+                {formData.prompts && formData.prompts.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl p-4 border border-[#FFB6C1]/20 shadow-md"
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <MessageSquare className="w-4 h-4 text-[#FF91A4]" />
+                      <h3 className="text-sm sm:text-base font-semibold text-[#212121]">Prompts</h3>
+                      <motion.button
+                        onClick={() => setCurrentStep(6)}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="ml-auto text-[#FF91A4] hover:text-[#FF69B4] transition-colors"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </motion.button>
+                    </div>
+                    <div className="space-y-2">
+                      {formData.prompts.slice(0, 3).map((prompt, idx) => (
+                        <div key={idx} className="text-xs text-[#757575]">
+                          <span className="font-semibold text-[#212121]">{prompt.prompt}</span>
+                          <p className="mt-1">{prompt.answer || 'No answer provided'}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Step 7: Optional Details */}
                 {(formData.optional.education || formData.optional.profession || formData.optional.languages.length > 0 || formData.optional.horoscope) && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
@@ -1888,7 +2615,7 @@ export default function OnboardingPage() {
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-sm sm:text-base font-semibold text-[#212121]">Additional Details</h3>
                       <motion.button
-                        onClick={() => setCurrentStep(6)}
+                        onClick={() => setCurrentStep(7)}
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         className="text-[#FF91A4] hover:text-[#FF69B4] transition-colors"
@@ -1912,6 +2639,32 @@ export default function OnboardingPage() {
                     </div>
                   </motion.div>
                 )}
+
+                {/* Step 8: Profile Setup */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="border-2 border-[#FFB6C1] rounded-xl sm:rounded-2xl p-3 sm:p-4"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm sm:text-base font-semibold text-[#212121]">Profile Setup</h3>
+                    <motion.button
+                      onClick={() => setCurrentStep(8)}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      className="text-[#FF91A4] hover:text-[#FF69B4] transition-colors"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </motion.button>
+                  </div>
+                  <div className="space-y-1.5 text-xs sm:text-sm text-[#757575]">
+                    <p><span className="font-medium text-[#212121]">Photos:</span> {formData.photos.length} photo{formData.photos.length !== 1 ? 's' : ''} uploaded</p>
+                    {formData.bio && (
+                      <p><span className="font-medium text-[#212121]">Bio:</span> {formData.bio.substring(0, 50)}{formData.bio.length > 50 ? '...' : ''}</p>
+                    )}
+                  </div>
+                </motion.div>
               </div>
 
               {/* Submit Button */}
@@ -1920,10 +2673,10 @@ export default function OnboardingPage() {
                   onClick={handleNext}
                   whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] text-white font-semibold py-3 sm:py-4 rounded-xl sm:rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+                  className="w-full bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] text-white font-semibold py-3 sm:py-4 md:py-2.5 rounded-xl sm:rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl text-sm sm:text-base md:text-sm"
                 >
-                  <Check className="w-5 h-5" />
-                  <span className="text-sm sm:text-base">Complete Profile</span>
+                  <Check className="w-5 h-5 md:w-4 md:h-4" />
+                  <span>Complete Profile</span>
                 </motion.button>
               </div>
 
@@ -1933,7 +2686,7 @@ export default function OnboardingPage() {
                   onClick={handleBack}
                   whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-gradient-to-r from-[#757575] to-[#616161] hover:from-[#616161] hover:to-[#757575] text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all flex items-center justify-center shadow-md hover:shadow-lg relative z-10"
+                  className="flex-1 bg-gradient-to-r from-[#757575] to-[#616161] hover:from-[#616161] hover:to-[#757575] text-white font-semibold py-2.5 sm:py-3 md:py-2 rounded-xl transition-all flex items-center justify-center shadow-md hover:shadow-lg relative z-10 text-sm md:text-sm"
                 >
                   <ArrowLeft className="w-4 h-4 mr-1.5 sm:mr-2" />
                   <span className="text-sm">Back</span>

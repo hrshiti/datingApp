@@ -306,45 +306,26 @@ export default function ProfileCard({
                 </>
               )}
 
-              {/* Match Score Badge - Top Left */}
-              {matchScore && (
+              {/* Distance Badge - Top Left (Figma Style) */}
+              {distance !== null && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="absolute top-4 left-4 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg z-10"
+                  className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm text-[#212121] px-3 py-1.5 rounded-full text-xs font-bold shadow-lg z-10"
                 >
-                  {matchScore}% Match
+                  {distance} km
                 </motion.div>
               )}
 
-              {/* Why Suggested Badges - Below Match Score (Top Left) */}
-              {reasons.length > 0 && (
-                <div className={`absolute ${matchScore ? 'top-16' : 'top-4'} left-4 flex flex-col gap-2 z-10`}>
-                  {reasons.slice(0, 2).map((reason, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="bg-white/95 backdrop-blur-sm text-[#212121] px-3 py-1.5 rounded-full text-xs font-semibold shadow-md flex items-center gap-1"
-                    >
-                      <Sparkles className="w-3 h-3 text-[#FF91A4]" />
-                      <span>{reason.text}</span>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-
-              {/* Name and Age Overlay - Bottom Left (Bumble Style) */}
-              <div className="absolute bottom-0 left-0 right-0 p-5 text-white z-10">
-                <h2 className="text-3xl sm:text-4xl font-bold mb-1 drop-shadow-lg">
+              {/* Name, Age & Profession Overlay - Bottom (Figma Style) */}
+              <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6 text-white z-10">
+                <h2 className="text-2xl sm:text-3xl font-bold mb-1 drop-shadow-lg">
                   {profile.name}, {profile.age}
                 </h2>
-                {distance !== null && profile.location?.city && (
-                  <div className="flex items-center text-white/90 text-sm">
-                    <MapPin className="w-4 h-4 mr-1" />
-                    <span>{distance} km away • {profile.location.city}</span>
-                  </div>
+                {profile.optional?.profession && (
+                  <p className="text-sm sm:text-base text-white/95 drop-shadow-md">
+                    {profile.optional.profession}
+                  </p>
                 )}
               </div>
             </>
@@ -480,33 +461,36 @@ export default function ProfileCard({
             )}
             </div>
 
-            {/* Action Buttons - Scrollable (Inside Content) */}
-            <div className="flex items-center justify-center gap-6 p-6 bg-white border-t border-[#FFB6C1]/20 pb-8">
+            {/* Action Buttons - Figma Style */}
+            <div className="flex items-center justify-center gap-4 sm:gap-6 p-4 sm:p-6 bg-white border-t border-[#FFB6C1]/20 pb-8">
+              {/* Pass Button - White circle with red X */}
               <motion.button
                 onClick={onPass}
                 whileHover={{ scale: 1.1, rotate: -5 }}
                 whileTap={{ scale: 0.9 }}
-                className="w-16 h-16 rounded-full bg-white border-2 border-[#E0E0E0] flex items-center justify-center shadow-md hover:border-[#757575] hover:bg-[#F5F5F5] transition-all"
+                className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white border-2 border-[#E0E0E0] flex items-center justify-center shadow-md hover:border-[#E94057] hover:bg-[#F5F5F5] transition-all"
               >
-                <X className="w-7 h-7 text-[#757575]" />
+                <X className="w-6 h-6 sm:w-7 sm:h-7 text-[#E94057]" strokeWidth={3} />
               </motion.button>
 
+              {/* Super Like Button - White circle with purple star */}
               <motion.button
                 onClick={onSuperLike}
                 whileHover={{ scale: 1.1, rotate: 5 }}
                 whileTap={{ scale: 0.9 }}
-                className="w-16 h-16 rounded-full bg-gradient-to-br from-[#FFD700] to-[#FFA500] flex items-center justify-center shadow-lg hover:shadow-xl transition-all"
+                className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white border-2 border-[#E0E0E0] flex items-center justify-center shadow-md hover:border-[#8A2387] hover:bg-[#F5F5F5] transition-all"
               >
-                <Star className="w-7 h-7 text-white fill-white" />
+                <Star className="w-6 h-6 sm:w-7 sm:h-7 text-[#8A2387] fill-[#8A2387]" />
               </motion.button>
 
+              {/* Like Button - Red circle with white heart */}
               <motion.button
                 onClick={onLike}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="w-16 h-16 rounded-full bg-gradient-to-br from-[#FF91A4] to-[#FF91A4] flex items-center justify-center shadow-lg hover:shadow-xl transition-all"
+                className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#E94057] flex items-center justify-center shadow-lg hover:shadow-xl transition-all"
               >
-                <Heart className="w-7 h-7 text-white fill-white" />
+                <Heart className="w-6 h-6 sm:w-7 sm:h-7 text-white fill-white" />
               </motion.button>
             </div>
           </div>
