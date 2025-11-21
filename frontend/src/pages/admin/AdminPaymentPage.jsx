@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   DollarSign, Search, Filter, CheckCircle, XCircle, RefreshCw, Eye,
   LayoutDashboard, Users, Camera, AlertTriangle, Crown, LogOut, Settings,
-  Ticket, FileText, Calendar, TrendingUp, CreditCard
+  Ticket, FileText, Calendar, TrendingUp, CreditCard, Menu, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mockProfiles } from '../../data/mockProfiles';
@@ -18,6 +18,8 @@ export default function AdminPaymentPage() {
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [showRefundModal, setShowRefundModal] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem('adminLoggedIn');
@@ -167,105 +169,182 @@ export default function AdminPaymentPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 flex relative">
+      {/* Mobile Overlay */}
+      {mobileMenuOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setMobileMenuOpen(false)}
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+        />
+      )}
+      
       {/* Left Sidebar */}
-      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-6 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
-          <p className="text-xs text-gray-500 mt-1">
-            {localStorage.getItem('adminUsername') || 'Admin'}
-          </p>
+      <div 
+        className={`${sidebarOpen ? 'w-64' : 'w-20'} fixed top-0 left-0 h-screen bg-white/80 backdrop-blur-lg border-r border-gray-200/50 flex flex-col transition-all duration-300 shadow-xl z-50 ${
+          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        }`}
+      >
+        <div className="p-6 border-b border-gray-200/50 sticky top-0 bg-white/80 backdrop-blur-lg z-10">
+          <div className="flex items-center justify-between">
+            <div className={`flex items-center gap-3 ${!sidebarOpen && 'justify-center w-full'}`}>
+              {sidebarOpen && (
+                <div>
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    Admin Panel
+                  </h1>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {localStorage.getItem('adminUsername') || 'Admin'}
+                  </p>
+                </div>
+              )}
+            </div>
+            {sidebarOpen && (
+              <motion.button
+                onClick={() => setSidebarOpen(false)}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <X className="w-4 h-4 text-gray-500" />
+              </motion.button>
+            )}
+            {!sidebarOpen && (
+              <motion.button
+                onClick={() => setSidebarOpen(true)}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <Menu className="w-5 h-5 text-gray-500" />
+              </motion.button>
+            )}
+          </div>
         </div>
 
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
             return (
               <motion.button
                 key={item.path}
-                onClick={() => navigate(item.path)}
-                whileHover={{ x: 4 }}
+                onClick={() => {
+                  navigate(item.path);
+                  setMobileMenuOpen(false);
+                }}
+                whileHover={{ x: 4, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all relative group ${
                   isActive
-                    ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-600'
-                    : 'text-gray-700 hover:bg-gray-50'
+                    ? 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-600 shadow-md'
+                    : 'text-gray-700 hover:bg-gray-50/80'
                 }`}
               >
-                <Icon className="w-5 h-5" />
-                <span className="font-medium">{item.label}</span>
+                <div className={`${isActive ? 'text-blue-600' : 'text-gray-500 group-hover:text-blue-500'} transition-colors`}>
+                  <Icon className="w-4 h-4" />
+                </div>
+                {sidebarOpen && <span className="font-medium whitespace-nowrap">{item.label}</span>}
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-purple-600 rounded-r-full"
+                    initial={false}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
+                )}
               </motion.button>
             );
           })}
         </nav>
 
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-gray-200/50">
           <motion.button
             onClick={handleLogout}
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.02, x: 4 }}
             whileTap={{ scale: 0.98 }}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-all"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50/80 transition-all group"
           >
-            <LogOut className="w-5 h-5" />
-            <span className="font-medium">Logout</span>
+            <LogOut className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+            {sidebarOpen && <span className="font-medium">Logout</span>}
           </motion.button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-6">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">Payments & Refunds</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              View payment history and process refunds
-            </p>
+      <div className="flex-1 overflow-y-auto md:ml-64">
+        {/* Top Header Bar */}
+        <div className="fixed top-0 right-0 left-0 md:left-64 z-10 bg-white/80 backdrop-blur-lg border-b border-gray-200/50 shadow-sm">
+          <div className="p-4 md:p-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {/* Mobile Menu Button */}
+              <motion.button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                whileTap={{ scale: 0.95 }}
+                className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <Menu className="w-6 h-6 text-gray-600" />
+              </motion.button>
+              <div>
+                <h1 className="text-xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                  Payments & Refunds
+                </h1>
+                <p className="text-xs md:text-sm text-gray-500 mt-1">
+                  View payment history and process refunds
+                </p>
+              </div>
+            </div>
           </div>
+        </div>
+        {/* Spacer for fixed header */}
+        <div className="h-20 md:h-24"></div>
+        <div className="p-4 md:p-6">
 
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
+            <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3 md:p-4 shadow-lg border border-gray-200/50">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Total Revenue</p>
-                  <p className="text-2xl font-bold text-green-600">₹{stats.totalRevenue.toLocaleString()}</p>
+                  <p className="text-xs md:text-sm text-gray-500">Total Revenue</p>
+                  <p className="text-lg md:text-2xl font-bold text-green-600">₹{stats.totalRevenue.toLocaleString()}</p>
                 </div>
-                <TrendingUp className="w-8 h-8 text-green-600" />
+                <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
               </div>
             </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+            <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3 md:p-4 shadow-lg border border-gray-200/50">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Successful Payments</p>
-                  <p className="text-2xl font-bold text-blue-600">{stats.totalPayments}</p>
+                  <p className="text-xs md:text-sm text-gray-500">Successful</p>
+                  <p className="text-lg md:text-2xl font-bold text-blue-600">{stats.totalPayments}</p>
                 </div>
-                <CheckCircle className="w-8 h-8 text-blue-600" />
+                <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
               </div>
             </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+            <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3 md:p-4 shadow-lg border border-gray-200/50">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Pending</p>
-                  <p className="text-2xl font-bold text-yellow-600">{stats.pendingPayments}</p>
+                  <p className="text-xs md:text-sm text-gray-500">Pending</p>
+                  <p className="text-lg md:text-2xl font-bold text-yellow-600">{stats.pendingPayments}</p>
                 </div>
-                <RefreshCw className="w-8 h-8 text-yellow-600" />
+                <RefreshCw className="w-5 h-5 md:w-6 md:h-6 text-yellow-600" />
               </div>
             </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+            <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3 md:p-4 shadow-lg border border-gray-200/50">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Total Refunds</p>
-                  <p className="text-2xl font-bold text-red-600">₹{stats.totalRefunds.toLocaleString()}</p>
+                  <p className="text-xs md:text-sm text-gray-500">Total Refunds</p>
+                  <p className="text-lg md:text-2xl font-bold text-red-600">₹{stats.totalRefunds.toLocaleString()}</p>
                 </div>
-                <RefreshCw className="w-8 h-8 text-red-600" />
+                <RefreshCw className="w-5 h-5 md:w-6 md:h-6 text-red-600" />
               </div>
             </div>
           </div>
 
           {/* Filters */}
-          <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3 md:p-4 shadow-lg border border-gray-200/50 mb-4 md:mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Search
@@ -277,7 +356,7 @@ export default function AdminPaymentPage() {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Search by user, transaction ID..."
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                   />
                 </div>
               </div>
@@ -289,7 +368,7 @@ export default function AdminPaymentPage() {
                 <select
                   value={filter}
                   onChange={(e) => setFilter(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                 >
                   <option value="all">All Payments</option>
                   <option value="success">Successful</option>
@@ -301,14 +380,16 @@ export default function AdminPaymentPage() {
             </div>
           </div>
 
-          {/* Payments Table */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
-            <div className="p-4 border-b border-gray-200">
-              <h2 className="text-lg font-bold text-gray-900">Payment History</h2>
+          {/* Payments - Desktop Table / Mobile Cards */}
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 overflow-hidden mb-4 md:mb-6">
+            <div className="p-3 md:p-4 border-b border-gray-200/50 bg-gradient-to-r from-gray-50 to-gray-100/50">
+              <h2 className="text-base md:text-lg font-bold text-gray-900">Payment History</h2>
             </div>
-            <div className="overflow-x-auto">
+            
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-800 text-white">
+                <thead className="bg-gradient-to-r from-gray-800 to-gray-900 text-white">
                   <tr>
                     <th className="px-4 py-3 text-left text-sm font-semibold">User</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold">Plan</th>
@@ -412,25 +493,108 @@ export default function AdminPaymentPage() {
                   </AnimatePresence>
                 </tbody>
               </table>
-              
-              {filteredPayments.length === 0 && (
-                <div className="text-center py-12">
-                  <CreditCard className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">No payments found</p>
-                </div>
-              )}
             </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden">
+              <AnimatePresence>
+                {filteredPayments.map((payment, index) => (
+                  <motion.div
+                    key={payment.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="p-4 border-b border-gray-200 last:border-b-0"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-900 text-sm mb-1">{payment.userName}</p>
+                        <p className="text-xs text-gray-500 mb-2">{payment.userEmail}</p>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-sm font-semibold text-gray-900">₹{payment.finalAmount}</span>
+                          {payment.discount > 0 && (
+                            <span className="text-xs text-gray-500 line-through">₹{payment.amount}</span>
+                          )}
+                          {payment.status === 'success' ? (
+                            <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+                              Success
+                            </span>
+                          ) : payment.status === 'pending' ? (
+                            <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">
+                              Pending
+                            </span>
+                          ) : payment.status === 'failed' ? (
+                            <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs font-semibold">
+                              Failed
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">
+                              Refunded
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-600 mb-1">Plan: {payment.plan}</p>
+                        {payment.promoCode && (
+                          <p className="text-xs text-gray-500 mb-1">Code: {payment.promoCode}</p>
+                        )}
+                        <p className="text-xs text-gray-500 mb-1">TXN: {payment.transactionId}</p>
+                        <p className="text-xs text-gray-500">
+                          {new Date(payment.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 ml-2">
+                        <motion.button
+                          onClick={() => {
+                            setSelectedPayment(payment);
+                            setShowDetails(true);
+                          }}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="View Details"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </motion.button>
+                        {payment.status === 'success' && (
+                          <motion.button
+                            onClick={() => {
+                              setSelectedPayment(payment);
+                              setShowRefundModal(true);
+                            }}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Process Refund"
+                          >
+                            <RefreshCw className="w-4 h-4" />
+                          </motion.button>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+              
+            {filteredPayments.length === 0 && (
+              <div className="text-center py-12">
+                <CreditCard className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500">No payments found</p>
+              </div>
+            )}
           </div>
 
           {/* Refunds Table */}
           {refunds.length > 0 && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="p-4 border-b border-gray-200">
-                <h2 className="text-lg font-bold text-gray-900">Refund History</h2>
+            <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 overflow-hidden">
+              <div className="p-3 md:p-4 border-b border-gray-200/50 bg-gradient-to-r from-gray-50 to-gray-100/50">
+                <h2 className="text-base md:text-lg font-bold text-gray-900">Refund History</h2>
               </div>
-              <div className="overflow-x-auto">
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-800 text-white">
+                  <thead className="bg-gradient-to-r from-gray-800 to-gray-900 text-white">
                     <tr>
                       <th className="px-4 py-3 text-left text-sm font-semibold">User</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold">Amount</th>
@@ -490,6 +654,51 @@ export default function AdminPaymentPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="md:hidden">
+                {refunds.map((refund, index) => (
+                  <motion.div
+                    key={refund.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="p-4 border-b border-gray-200 last:border-b-0"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-gray-900 mb-1">{refund.userName}</p>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-sm font-semibold text-gray-900">₹{refund.amount}</span>
+                          {refund.status === 'completed' ? (
+                            <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+                              Completed
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">
+                              Processing
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-600 mb-1">{refund.reason}</p>
+                        <p className="text-xs text-gray-500">
+                          {new Date(refund.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      {refund.status === 'processing' && (
+                        <motion.button
+                          onClick={() => processRefund(refund.id)}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-medium transition-all shadow-md"
+                        >
+                          Complete
+                        </motion.button>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
               </div>
             </div>
           )}

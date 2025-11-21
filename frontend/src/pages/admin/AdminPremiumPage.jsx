@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Crown, CheckCircle, XCircle, Eye, DollarSign, TrendingUp,
   LayoutDashboard, Users, Camera, AlertTriangle, LogOut, Calendar, Settings,
-  Ticket, FileText
+  Ticket, FileText, Menu, X, Sparkles, Bell
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mockProfiles } from '../../data/mockProfiles';
@@ -15,6 +15,8 @@ export default function AdminPremiumPage() {
   const [filter, setFilter] = useState('all'); // all, active, expired
   const [selectedUser, setSelectedUser] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem('adminLoggedIn');
@@ -165,17 +167,62 @@ export default function AdminPremiumPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 flex relative">
+      {/* Mobile Overlay */}
+      {mobileMenuOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setMobileMenuOpen(false)}
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+        />
+      )}
+      
       {/* Left Sidebar */}
-      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-6 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
-          <p className="text-xs text-gray-500 mt-1">
-            {localStorage.getItem('adminUsername') || 'Admin'}
-          </p>
+      <div 
+        className={`${sidebarOpen ? 'w-64' : 'w-20'} fixed top-0 left-0 h-screen bg-white/80 backdrop-blur-lg border-r border-gray-200/50 flex flex-col transition-all duration-300 shadow-xl z-50 ${
+          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        }`}
+      >
+        <div className="p-6 border-b border-gray-200/50">
+          <div className="flex items-center justify-between">
+            <div className={`flex items-center gap-3 ${!sidebarOpen && 'justify-center w-full'}`}>
+              {sidebarOpen && (
+                <div>
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    Admin Panel
+                  </h1>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {localStorage.getItem('adminUsername') || 'Admin'}
+                  </p>
+                </div>
+              )}
+            </div>
+            {sidebarOpen && (
+              <motion.button
+                onClick={() => setSidebarOpen(false)}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <X className="w-4 h-4 text-gray-500" />
+              </motion.button>
+            )}
+            {!sidebarOpen && (
+              <motion.button
+                onClick={() => setSidebarOpen(true)}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <Menu className="w-5 h-5 text-gray-500" />
+              </motion.button>
+            )}
+          </div>
         </div>
 
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -183,93 +230,119 @@ export default function AdminPremiumPage() {
               <motion.button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                whileHover={{ x: 4 }}
+                whileHover={{ x: 4, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all relative group ${
                   isActive
-                    ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-600'
-                    : 'text-gray-700 hover:bg-gray-50'
+                    ? 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-600 shadow-md'
+                    : 'text-gray-700 hover:bg-gray-50/80'
                 }`}
               >
-                <Icon className="w-5 h-5" />
-                <span className="font-medium">{item.label}</span>
+                <div className={`${isActive ? 'text-blue-600' : 'text-gray-500 group-hover:text-blue-500'} transition-colors`}>
+                  <Icon className="w-4 h-4" />
+                </div>
+                {sidebarOpen && <span className="font-medium whitespace-nowrap">{item.label}</span>}
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-purple-600 rounded-r-full"
+                    initial={false}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
+                )}
               </motion.button>
             );
           })}
         </nav>
 
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-gray-200/50">
           <motion.button
             onClick={handleLogout}
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.02, x: 4 }}
             whileTap={{ scale: 0.98 }}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-all"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50/80 transition-all group"
           >
-            <LogOut className="w-5 h-5" />
-            <span className="font-medium">Logout</span>
+            <LogOut className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+            {sidebarOpen && <span className="font-medium">Logout</span>}
           </motion.button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-6">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">Premium Management</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Manage premium subscriptions and grant/revoke access
-            </p>
+      <div className="flex-1 overflow-y-auto md:ml-64">
+        {/* Top Header Bar */}
+        <div className="fixed top-0 right-0 left-0 md:left-64 z-10 bg-white/80 backdrop-blur-lg border-b border-gray-200/50 shadow-sm">
+          <div className="p-4 md:p-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {/* Mobile Menu Button */}
+              <motion.button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                whileTap={{ scale: 0.95 }}
+                className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <Menu className="w-6 h-6 text-gray-600" />
+              </motion.button>
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                  Premium Management
+                </h1>
+                <p className="text-xs md:text-sm text-gray-500 mt-1">
+                  Manage subscriptions
+                </p>
+              </div>
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="relative p-2 md:p-2.5 rounded-xl bg-gray-50/50 hover:bg-gray-100/80 transition-colors"
+            >
+              <Bell className="w-5 h-5 text-gray-600" />
+            </motion.button>
           </div>
+        </div>
+
+        {/* Spacer for fixed header */}
+        <div className="h-20 md:h-24"></div>
+
+        <div className="p-4 md:p-6">
 
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Total Subscribers</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-                </div>
-                <Crown className="w-8 h-8 text-yellow-500" />
-              </div>
-            </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Active</p>
-                  <p className="text-2xl font-bold text-green-600">{stats.active}</p>
-                </div>
-                <CheckCircle className="w-8 h-8 text-green-600" />
-              </div>
-            </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Expired</p>
-                  <p className="text-2xl font-bold text-red-600">{stats.expired}</p>
-                </div>
-                <XCircle className="w-8 h-8 text-red-600" />
-              </div>
-            </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Revenue</p>
-                  <p className="text-2xl font-bold text-blue-600">₹{stats.revenue.toLocaleString()}</p>
-                </div>
-                <DollarSign className="w-8 h-8 text-blue-600" />
-              </div>
-            </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
+            {[
+              { label: 'Total Subscribers', value: stats.total, icon: Crown, color: 'from-yellow-500 to-yellow-600', textColor: 'text-gray-900', format: (v) => v },
+              { label: 'Active', value: stats.active, icon: CheckCircle, color: 'from-green-500 to-green-600', textColor: 'text-green-600', format: (v) => v },
+              { label: 'Expired', value: stats.expired, icon: XCircle, color: 'from-red-500 to-red-600', textColor: 'text-red-600', format: (v) => v },
+              { label: 'Revenue', value: stats.revenue, icon: DollarSign, color: 'from-blue-500 to-blue-600', textColor: 'text-blue-600', format: (v) => `₹${v.toLocaleString()}` },
+            ].map((stat, index) => {
+              const Icon = stat.icon;
+              return (
+                <motion.div
+                  key={stat.label}
+                  whileHover={{ y: -4, scale: 1.02 }}
+                  className="group relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50 hover:shadow-xl transition-all overflow-hidden"
+                >
+                  <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-5 transition-opacity`} />
+                  <div className="relative flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs md:text-sm font-semibold text-gray-600 mb-1">{stat.label}</p>
+                      <p className={`text-xl md:text-3xl font-bold ${stat.textColor}`}>{stat.format(stat.value)}</p>
+                    </div>
+                    <Icon className="w-4 h-4 md:w-5 md:h-5 text-gray-600 group-hover:scale-110 transition-transform flex-shrink-0" />
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
 
           {/* Filter */}
-          <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 mb-6">
-            <div className="flex items-center gap-4">
-              <span className="text-sm font-medium text-gray-700">Filter:</span>
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 md:p-6 shadow-lg border border-gray-200/50 mb-4 md:mb-6">
+            <div className="flex flex-wrap items-center gap-2 md:gap-4">
+              <span className="text-xs md:text-sm font-medium text-gray-700 w-full md:w-auto">Filter:</span>
               {['all', 'active', 'expired'].map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all flex-1 md:flex-none ${
                     filter === f
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -282,9 +355,9 @@ export default function AdminPremiumPage() {
           </div>
 
           {/* Premium Users Table */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 overflow-hidden">
+            <div className="overflow-x-auto -mx-4 md:mx-0">
+              <table className="w-full min-w-[700px]">
                 <thead className="bg-gray-800 text-white">
                   <tr>
                     <th className="px-4 py-3 text-left text-sm font-semibold">User</th>
@@ -299,17 +372,13 @@ export default function AdminPremiumPage() {
                 <tbody className="divide-y divide-gray-200">
                   <AnimatePresence>
                     {filteredUsers.map((user, index) => (
-                      <motion.tr
+                      <tr
                         key={user.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ delay: index * 0.05 }}
                         className="hover:bg-gray-50 transition-colors"
                       >
                         <td className="px-4 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
+                            <div className="w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
                               {user.photo ? (
                                 <img
                                   src={user.photo}
@@ -317,7 +386,7 @@ export default function AdminPremiumPage() {
                                   className="w-full h-full rounded-full object-cover"
                                 />
                               ) : (
-                                <Users className="w-5 h-5" />
+                                <Users className="w-4 h-4" />
                               )}
                             </div>
                             <div>
@@ -395,7 +464,7 @@ export default function AdminPremiumPage() {
                             )}
                           </div>
                         </td>
-                      </motion.tr>
+                      </tr>
                     ))}
                   </AnimatePresence>
                 </tbody>
@@ -403,7 +472,7 @@ export default function AdminPremiumPage() {
               
               {filteredUsers.length === 0 && (
                 <div className="text-center py-12">
-                  <Crown className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <Crown className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                   <p className="text-gray-500">No premium users found</p>
                 </div>
               )}
@@ -430,7 +499,7 @@ export default function AdminPremiumPage() {
               className="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
             >
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
+                <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
                   {selectedUser.photo ? (
                     <img
                       src={selectedUser.photo}
@@ -438,7 +507,7 @@ export default function AdminPremiumPage() {
                       className="w-full h-full rounded-full object-cover"
                     />
                   ) : (
-                    <Users className="w-8 h-8" />
+                    <Users className="w-6 h-6" />
                   )}
                 </div>
                 <div>

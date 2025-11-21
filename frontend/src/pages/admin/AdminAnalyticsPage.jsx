@@ -170,7 +170,7 @@ export default function AdminAnalyticsPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Left Sidebar */}
-      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+      <div className="w-64 fixed top-0 left-0 h-screen bg-white border-r border-gray-200 flex flex-col z-50">
         <div className="p-6 border-b border-gray-200">
           <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
           <p className="text-xs text-gray-500 mt-1">
@@ -194,8 +194,8 @@ export default function AdminAnalyticsPage() {
                     : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
-                <Icon className="w-5 h-5" />
-                <span className="font-medium">{item.label}</span>
+                <Icon className="w-4 h-4" />
+                <span className="font-medium whitespace-nowrap">{item.label}</span>
               </motion.button>
             );
           })}
@@ -208,21 +208,26 @@ export default function AdminAnalyticsPage() {
             whileTap={{ scale: 0.98 }}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-all"
           >
-            <LogOut className="w-5 h-5" />
+            <LogOut className="w-4 h-4" />
             <span className="font-medium">Logout</span>
           </motion.button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-6">
-          <div className="mb-6">
+      <div className="flex-1 overflow-y-auto ml-64">
+        {/* Top Header Bar */}
+        <div className="fixed top-0 right-0 left-64 z-10 bg-white border-b border-gray-200 shadow-sm">
+          <div className="p-6">
             <h1 className="text-3xl font-bold text-gray-900">Analytics</h1>
             <p className="text-sm text-gray-500 mt-1">
               View platform statistics and insights
             </p>
           </div>
+        </div>
+        {/* Spacer for fixed header */}
+        <div className="h-24"></div>
+        <div className="p-6">
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -237,8 +242,8 @@ export default function AdminAnalyticsPage() {
                   className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <div className={`w-12 h-12 rounded-lg ${stat.bgColor} flex items-center justify-center`}>
-                      <Icon className={`w-6 h-6 ${stat.color}`} />
+                      <div className={`w-10 h-10 rounded-lg ${stat.bgColor} flex items-center justify-center`}>
+                      <Icon className={`w-5 h-5 ${stat.color}`} />
                     </div>
                     <TrendingUp className="w-5 h-5 text-gray-400" />
                   </div>
@@ -256,7 +261,7 @@ export default function AdminAnalyticsPage() {
               <h3 className="text-lg font-bold text-gray-900 mb-4">User Growth</h3>
               <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
                 <div className="text-center">
-                  <BarChart3 className="w-16 h-16 text-gray-300 mx-auto mb-2" />
+                  <BarChart3 className="w-12 h-12 text-gray-300 mx-auto mb-2" />
                   <p className="text-sm text-gray-500">Chart will be displayed here</p>
                 </div>
               </div>
@@ -266,7 +271,7 @@ export default function AdminAnalyticsPage() {
               <h3 className="text-lg font-bold text-gray-900 mb-4">Match Rate</h3>
               <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
                 <div className="text-center">
-                  <Heart className="w-16 h-16 text-gray-300 mx-auto mb-2" />
+                  <Heart className="w-12 h-12 text-gray-300 mx-auto mb-2" />
                   <p className="text-sm text-gray-500">Chart will be displayed here</p>
                 </div>
               </div>
