@@ -141,8 +141,8 @@ class SMSIndiaHubService {
         throw new Error(`Invalid phone number format: ${phone}. Expected 10-digit Indian mobile number.`);
       }
 
-      // Use the exact template that works with SMSIndiaHub
-      const message = `Welcome to DatingApp powered by SMSINDIAHUB. Your OTP for registration is ${otp}.`;
+      // Use the exact template that works with SMSIndiaHub (from CreateBharat)
+      const message = `Welcome to the DatingApp powered by SMSINDIAHUB. Your OTP for registration is ${otp}`;
       
       console.log(`📨 SMS Message: ${message}`);
       console.log(`📞 Sending to: ${normalizedPhone}`);
@@ -186,7 +186,11 @@ class SMSIndiaHubService {
 
       console.log('SMSIndia Hub Response Status:', response.status);
       
-      // Check if response is OK
+      // Get response as text first (SMSIndiaHub may return JSON or text)
+      const responseText = await response.text();
+      console.log('SMSIndia Hub Response Text (raw):', responseText.substring(0, 500)); // Log first 500 chars
+      
+      // Check if response is OK (HTTP status)
       if (!response.ok) {
         if (response.status === 401) {
           throw new Error('SMSIndia Hub authentication failed. Please check your API key.');
@@ -197,43 +201,83 @@ class SMSIndiaHubService {
         } else if (response.status === 500) {
           throw new Error('SMSIndia Hub server error. Please try again later.');
         } else {
-          throw new Error(`SMSIndia Hub API error (${response.status})`);
+          throw new Error(`SMSIndia Hub API error (${response.status}): ${responseText.substring(0, 200)}`);
         }
       }
       
-      // Parse response as JSON
-      const responseData = await response.json();
-      console.log('SMSIndia Hub Response Data:', responseData);
+      // Try to parse as JSON, fallback to text if it fails
+      let responseData;
+      try {
+        responseData = JSON.parse(responseText);
+        console.log('SMSIndia Hub Response Data (parsed JSON):', JSON.stringify(responseData, null, 2));
+      } catch (parseError) {
+        // If not JSON, treat as text response
+        console.log('SMSIndia Hub Response is not JSON, treating as text');
+        responseData = responseText;
+      }
       
       // Check for success indicators in the response
-      if (responseData.ErrorCode === '000' && responseData.ErrorMessage === 'Done') {
-        const messageId = responseData.MessageData && responseData.MessageData[0] 
-          ? responseData.MessageData[0].MessageId 
-          : `sms_${Date.now()}`;
-          
-        return {
-          success: true,
-          messageId: messageId,
-          jobId: responseData.JobId,
-          status: 'sent',
-          to: normalizedPhone,
-          body: message,
-          provider: 'SMSIndia Hub',
-          response: responseData
-        };
-      } else if (responseData.ErrorCode && responseData.ErrorCode !== '000') {
-        throw new Error(`SMSIndia Hub API error: ${responseData.ErrorMessage} (Code: ${responseData.ErrorCode})`);
+      // Handle both JSON object and text response
+      if (typeof responseData === 'object' && responseData !== null) {
+        // JSON response
+        if (responseData.ErrorCode === '000' && responseData.ErrorMessage === 'Done') {
+          const messageId = responseData.MessageData && responseData.MessageData[0] 
+            ? responseData.MessageData[0].MessageId 
+            : `sms_${Date.now()}`;
+            
+          return {
+            success: true,
+            messageId: messageId,
+            jobId: responseData.JobId,
+            status: 'sent',
+            to: normalizedPhone,
+            body: message,
+            provider: 'SMSIndia Hub',
+            response: responseData
+          };
+        } else if (responseData.ErrorCode && responseData.ErrorCode !== '000') {
+          throw new Error(`SMSIndia Hub API error: ${responseData.ErrorMessage || 'Unknown error'} (Code: ${responseData.ErrorCode})`);
+        } else {
+          // Fallback for unexpected JSON format
+          return {
+            success: true,
+            messageId: `sms_${Date.now()}`,
+            status: 'sent',
+            to: normalizedPhone,
+            body: message,
+            provider: 'SMSIndia Hub',
+            response: responseData
+          };
+        }
       } else {
-        // Fallback for unexpected response format
-        return {
-          success: true,
-          messageId: `sms_${Date.now()}`,
-          status: 'sent',
-          to: normalizedPhone,
-          body: message,
-          provider: 'SMSIndia Hub',
-          response: responseData
-        };
+        // Text response - check for success/error indicators
+        const responseLower = responseText.toLowerCase();
+        if (responseLower.includes('error') || responseLower.includes('failed') || responseLower.includes('invalid')) {
+          throw new Error(`SMSIndia Hub API error: ${responseText}`);
+        } else if (responseLower.includes('success') || responseLower.includes('sent') || responseLower.includes('done') || responseLower.includes('accepted')) {
+          // Success indicators found in text
+          return {
+            success: true,
+            messageId: `sms_${Date.now()}`,
+            status: 'sent',
+            to: normalizedPhone,
+            body: message,
+            provider: 'SMSIndia Hub',
+            response: responseText
+          };
+        } else {
+          // Unknown format, assume success (SMSIndiaHub sometimes returns empty or unexpected formats)
+          console.warn('SMSIndia Hub returned unexpected response format, assuming success');
+          return {
+            success: true,
+            messageId: `sms_${Date.now()}`,
+            status: 'sent',
+            to: normalizedPhone,
+            body: message,
+            provider: 'SMSIndia Hub',
+            response: responseText
+          };
+        }
       }
 
     } catch (error) {
@@ -241,7 +285,18 @@ class SMSIndiaHubService {
       if (error.message && error.message.includes('SMSIndia Hub')) {
         throw error;
       }
+      
+      // Handle fetch-specific errors
+      if (error.name === 'AbortError') {
+        throw new Error('SMSIndia Hub request timeout. Please try again.');
+      } else if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
+        throw new Error('Unable to connect to SMSIndia Hub service. Please check your internet connection.');
+      } else if (error.code === 'ECONNRESET') {
+        throw new Error('SMSIndia Hub connection was reset. Please try again.');
+      }
+      
       // Handle other errors
+      console.error('SMSIndia Hub sendOTP error:', error);
       throw new Error(`SMSIndia Hub error: ${error.message}`);
     }
   }
