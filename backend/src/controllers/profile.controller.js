@@ -267,11 +267,17 @@ export const updateOnboardingStep = async (req, res) => {
     const step = req.params.step;
     const stepData = req.body;
 
+    console.log(`📝 Updating onboarding step ${step} for user: ${userId}`);
+    console.log(`📤 Step ${step} data received:`, JSON.stringify(stepData, null, 2));
+
     let profile = await Profile.findOne({ userId: userId });
 
     if (!profile) {
       profile = await Profile.create({ userId: userId });
       await User.findByIdAndUpdate(userId, { profile: profile._id });
+      console.log('📄 Created new profile');
+    } else {
+      console.log('📄 Found existing profile');
     }
 
     // Update based on step number
@@ -302,7 +308,23 @@ export const updateOnboardingStep = async (req, res) => {
         profile.interests = stepData.interests || [];
         break;
       case '4':
-        profile.personality = { ...profile.personality, ...stepData.personality };
+        console.log('📤 Step 4 - Personality data received:', JSON.stringify(stepData.personality, null, 2));
+        console.log('📤 Step 4 - Current profile personality:', JSON.stringify(profile.personality || {}, null, 2));
+        
+        // Merge personality data - ensure we have a valid object
+        if (stepData.personality) {
+          const currentPersonality = profile.personality || {};
+          profile.personality = { ...currentPersonality, ...stepData.personality };
+          
+          // Ensure all fields are strings (handle any undefined/null values)
+          Object.keys(profile.personality).forEach(key => {
+            if (profile.personality[key] === null || profile.personality[key] === undefined) {
+              profile.personality[key] = '';
+            }
+          });
+        }
+        
+        console.log('📤 Step 4 - Merged personality:', JSON.stringify(profile.personality, null, 2));
         break;
       case '5':
         profile.dealbreakers = { ...profile.dealbreakers, ...stepData.dealbreakers };
@@ -317,7 +339,9 @@ export const updateOnboardingStep = async (req, res) => {
         });
     }
 
+    console.log(`💾 Attempting to save step ${step}...`);
     await profile.save();
+    console.log(`✅ Step ${step} saved successfully`);
 
     res.status(200).json({
       success: true,
@@ -325,10 +349,69 @@ export const updateOnboardingStep = async (req, res) => {
       profile: profile
     });
   } catch (error) {
-    console.error('Update onboarding step error:', error);
+    console.error('❌ Update onboarding step error:', error);
+    console.error('❌ Error details:', {
+      step: req.params.step,
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      errors: error.errors
+    });
+    
+    // If it's a validation error, provide more details
+    if (error.name === 'ValidationError') {
+      const validationErrors = {};
+      Object.keys(error.errors).forEach(key => {
+        validationErrors[key] = error.errors[key].message;
+      });
+      console.error('❌ Validation errors:', validationErrors);
+      
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        error: error.message,
+        validationErrors: validationErrors
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Error saving step',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Update bio
+// @route   PUT /api/profile/bio
+// @access  Private
+export const updateBio = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { bio } = req.body;
+
+    let profile = await Profile.findOne({ userId: userId });
+
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        message: 'Profile not found'
+      });
+    }
+
+    profile.bio = bio ? bio.trim() : '';
+    await profile.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Bio updated successfully',
+      profile: profile
+    });
+  } catch (error) {
+    console.error('Update bio error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating bio',
       error: error.message
     });
   }

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import PhotoUpload from '../components/PhotoUpload';
 import CustomDropdown from '../components/CustomDropdown';
 import CustomDatePicker from '../components/CustomDatePicker';
+import { profileService } from '../services/profileService';
 
 export default function EditProfileInfoPage() {
   const navigate = useNavigate();
@@ -93,50 +94,164 @@ export default function EditProfileInfoPage() {
       setActiveTab('preview');
     }
 
-    // Load existing profile setup data
-    const savedData = localStorage.getItem('profileSetup');
-    if (savedData) {
+    // Load profile data from backend API
+    const loadProfileFromBackend = async () => {
       try {
-        const parsed = JSON.parse(savedData);
-        setPhotos(parsed.photos || []);
-        setBio(parsed.bio || '');
-      } catch (e) {
-        console.error('Error loading saved data:', e);
-      }
-    }
-
-    // Load all onboarding data
-    const onboardingData = localStorage.getItem('onboardingData');
-    if (onboardingData) {
-      try {
-        const parsed = JSON.parse(onboardingData);
-        // Handle backward compatibility: if lookingFor is an array, take first item
-        let lookingFor = parsed.step1?.lookingFor || '';
-        if (Array.isArray(lookingFor) && lookingFor.length > 0) {
-          lookingFor = lookingFor[0];
+        console.log('📥 Loading profile from backend API...');
+        const response = await profileService.getMyProfile();
+        
+        if (response.success && response.profile) {
+          const profile = response.profile;
+          console.log('✅ Profile loaded from backend:', profile);
+          
+          // Only set fields that have actual data (not empty/null/undefined)
+          const updatedFormData = { ...formData };
+          
+          // Basic Info - only if exists
+          if (profile.name) updatedFormData.name = profile.name;
+          if (profile.dob) {
+            // Convert date to YYYY-MM-DD format
+            const dobDate = new Date(profile.dob);
+            updatedFormData.dob = dobDate.toISOString().split('T')[0];
+          }
+          if (profile.gender) {
+            updatedFormData.gender = profile.gender;
+            if (profile.gender === 'other' && profile.customGender) {
+              updatedFormData.customGender = profile.customGender;
+              setShowCustomGender(true);
+            }
+          }
+          if (profile.orientation) {
+            updatedFormData.orientation = profile.orientation;
+            if (profile.orientation === 'other' && profile.customOrientation) {
+              updatedFormData.customOrientation = profile.customOrientation;
+              setShowCustomOrientation(true);
+            }
+          }
+          if (profile.lookingFor && profile.lookingFor.length > 0) {
+            // If lookingFor is array, take first item, otherwise use as is
+            updatedFormData.lookingFor = Array.isArray(profile.lookingFor) 
+              ? profile.lookingFor[0] 
+              : profile.lookingFor;
+          }
+          
+          // Location - only if exists
+          if (profile.location && profile.location.city) {
+            updatedFormData.city = profile.location.city;
+          }
+          if (profile.ageRange) {
+            if (profile.ageRange.min) updatedFormData.ageRange.min = profile.ageRange.min;
+            if (profile.ageRange.max) updatedFormData.ageRange.max = profile.ageRange.max;
+          }
+          if (profile.distancePref) {
+            updatedFormData.distancePref = profile.distancePref;
+          }
+          
+          // Interests - only if exists and has items
+          if (profile.interests && profile.interests.length > 0) {
+            updatedFormData.interests = profile.interests;
+          }
+          
+          // Personality - only if exists and has values
+          if (profile.personality) {
+            Object.keys(profile.personality).forEach(key => {
+              if (profile.personality[key] && profile.personality[key] !== '') {
+                updatedFormData.personality[key] = profile.personality[key];
+              }
+            });
+          }
+          
+          // Dealbreakers - only if exists and has values
+          if (profile.dealbreakers) {
+            Object.keys(profile.dealbreakers).forEach(key => {
+              if (profile.dealbreakers[key] && profile.dealbreakers[key] !== '') {
+                updatedFormData.dealbreakers[key] = profile.dealbreakers[key];
+              }
+            });
+          }
+          
+          // Optional - only if exists
+          if (profile.optional) {
+            if (profile.optional.education) updatedFormData.optional.education = profile.optional.education;
+            if (profile.optional.profession) updatedFormData.optional.profession = profile.optional.profession;
+            if (profile.optional.languages && profile.optional.languages.length > 0) {
+              updatedFormData.optional.languages = profile.optional.languages;
+            }
+            if (profile.optional.horoscope) updatedFormData.optional.horoscope = profile.optional.horoscope;
+          }
+          
+          // Photos - only if exists
+          if (profile.photos && profile.photos.length > 0) {
+            setPhotos(profile.photos.map(photo => ({
+              id: photo._id || photo.id,
+              preview: photo.url,
+              url: photo.url,
+              isMain: photo.isMain || false,
+              order: photo.order || 0
+            })));
+          }
+          
+          // Bio - only if exists
+          if (profile.bio) {
+            setBio(profile.bio);
+          }
+          
+          setFormData(updatedFormData);
+          console.log('✅ Form data updated with backend data');
+        } else {
+          console.log('⚠️ No profile found in response');
+        }
+      } catch (error) {
+        console.error('❌ Error loading profile from backend:', error);
+        // Fallback to localStorage if API fails
+        console.log('📦 Falling back to localStorage...');
+        
+        const savedData = localStorage.getItem('profileSetup');
+        const onboardingData = localStorage.getItem('onboardingData');
+        
+        if (savedData) {
+          try {
+            const parsed = JSON.parse(savedData);
+            setPhotos(parsed.photos || []);
+            setBio(parsed.bio || '');
+          } catch (e) {
+            console.error('Error loading saved data:', e);
+          }
         }
         
-        setFormData({
-          ...parsed.step1,
-          lookingFor: lookingFor,
-          ...parsed.step2,
-          ...parsed.step3,
-          personality: parsed.step4?.personality || formData.personality,
-          dealbreakers: parsed.step5?.dealbreakers || formData.dealbreakers,
-          prompts: parsed.step6?.prompts || [],
-          optional: parsed.step7?.optional || formData.optional
-        });
-        
-        if (parsed.step1?.gender === 'other') {
-          setShowCustomGender(true);
+        if (onboardingData) {
+          try {
+            const parsed = JSON.parse(onboardingData);
+            let lookingFor = parsed.step1?.lookingFor || '';
+            if (Array.isArray(lookingFor) && lookingFor.length > 0) {
+              lookingFor = lookingFor[0];
+            }
+            
+            setFormData({
+              ...parsed.step1,
+              lookingFor: lookingFor,
+              ...parsed.step2,
+              ...parsed.step3,
+              personality: parsed.step4?.personality || formData.personality,
+              dealbreakers: parsed.step5?.dealbreakers || formData.dealbreakers,
+              prompts: parsed.step6?.prompts || [],
+              optional: parsed.step7?.optional || formData.optional
+            });
+            
+            if (parsed.step1?.gender === 'other') {
+              setShowCustomGender(true);
+            }
+            if (parsed.step1?.orientation === 'other') {
+              setShowCustomOrientation(true);
+            }
+          } catch (e) {
+            console.error('Error loading onboarding data:', e);
+          }
         }
-        if (parsed.step1?.orientation === 'other') {
-          setShowCustomOrientation(true);
-        }
-      } catch (e) {
-        console.error('Error loading onboarding data:', e);
       }
-    }
+    };
+    
+    loadProfileFromBackend();
   }, [location.state]);
 
   // Reset photo index when tab changes to preview

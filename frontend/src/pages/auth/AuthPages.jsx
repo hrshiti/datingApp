@@ -164,8 +164,21 @@ export default function AuthPages() {
         console.log('✅ ==========================================');
         console.log('✅ OTP SENT SUCCESSFULLY');
         console.log('✅ OTP sent to registered number:', fullPhoneNumber);
-        console.log('✅ Please check your SMS for the OTP');
+        console.log('✅ User exists:', response.userExists);
+        console.log('✅ Has basic info:', response.hasBasicInfo);
+        console.log('✅ Auth flow:', authFlow);
         console.log('✅ ==========================================');
+        
+        // Check if user already exists and has basic info (signup flow)
+        if (authFlow === 'signup' && response.userExists && response.hasBasicInfo) {
+          console.log('⚠️ User already registered with this number');
+          setErrors(prev => ({ 
+            ...prev, 
+            phone: 'This number is already registered. Please use Login instead.',
+            showLoginLink: true
+          }));
+          return;
+        }
         
         // In development, OTP is returned in response
         if (response.otp) {
@@ -246,12 +259,21 @@ export default function AuthPages() {
         console.log('✅ OTP VERIFIED SUCCESSFULLY');
         console.log('✅ Phone Number:', fullPhoneNumber);
         console.log('✅ User authenticated:', response.user);
+        console.log('✅ Has basic info:', response.user.hasBasicInfo);
+        console.log('✅ Auth flow:', authFlow);
         console.log('✅ Token received and stored');
         console.log('✅ ==========================================');
         
-        // After OTP verification, always navigate to people page
-        // People page will check if basic info is needed and redirect accordingly
-        navigate('/people');
+        // Navigate based on auth flow and basic info status
+        if (authFlow === 'signup' || !response.user.hasBasicInfo) {
+          // Signup flow or user doesn't have basic info - go to basic info page
+          console.log('📝 Navigating to basic info page (signup flow)');
+          navigate('/basic-info', { replace: true });
+        } else {
+          // Login flow and user has basic info - go to people page
+          console.log('👤 Navigating to people page (login flow)');
+          navigate('/people', { replace: true });
+        }
       } else {
         console.error('❌ ==========================================');
         console.error('❌ OTP VERIFICATION FAILED');
@@ -505,13 +527,46 @@ export default function AuthPages() {
                   />
                 </div>
                 {errors.phone && (
-                  <motion.p 
+                  <motion.div
                     initial={{ opacity: 0, y: -5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-sm text-red-600 mt-2 ml-1"
+                    className="mt-2 ml-1"
                   >
-                    {errors.phone}
-                  </motion.p>
+                    <p className="text-sm text-red-600 mb-2">
+                      {errors.phone}
+                    </p>
+                    {errors.showLoginLink && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setAuthFlow('login');
+                          setErrors({ phone: '' });
+                          // Retry sending OTP with login flow
+                          setIsLoading(true);
+                          try {
+                            const response = await authService.sendOTP(phone, countryCode);
+                            if (response.success) {
+                              if (response.otp) {
+                                setReceivedOtp(response.otp);
+                              }
+                              setCurrentPage('otp');
+                              setOtpTimer(60);
+                              setCanResend(false);
+                              setOtp(['', '', '', '', '', '']);
+                              navigate('/verify-otp');
+                            }
+                          } catch (error) {
+                            setErrors(prev => ({ ...prev, phone: error.message || 'Failed to send OTP. Please try again.' }));
+                          } finally {
+                            setIsLoading(false);
+                          }
+                        }}
+                        className="text-sm text-[#FF91A4] hover:text-[#FF69B4] font-semibold underline underline-offset-2 transition-colors"
+                      >
+                        Click here to Login instead
+                      </button>
+                    )}
+                  </motion.div>
                 )}
                 {!errors.phone && phone.length > 0 && (
                   <p className="text-xs text-[#757575] mt-2 ml-1">

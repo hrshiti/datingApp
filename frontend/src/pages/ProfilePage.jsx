@@ -8,36 +8,37 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mockProfiles } from '../data/mockProfiles';
+import { profileService } from '../services/profileService';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [userProfile, setUserProfile] = useState(null);
-  const [onboardingData, setOnboardingData] = useState(null);
-  const [profileSetup, setProfileSetup] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load user profile data
-    const savedOnboarding = localStorage.getItem('onboardingData');
-    const savedProfileSetup = localStorage.getItem('profileSetup');
-    
-    if (savedOnboarding) {
+    // Load user profile data from backend API
+    const loadProfileFromBackend = async () => {
       try {
-        const parsed = JSON.parse(savedOnboarding);
-        setOnboardingData(parsed);
-      } catch (e) {
-        console.error('Error loading onboarding data:', e);
+        setIsLoading(true);
+        console.log('📥 Loading profile from backend API...');
+        const response = await profileService.getMyProfile();
+        
+        if (response.success && response.profile) {
+          const profile = response.profile;
+          console.log('✅ Profile loaded from backend:', profile);
+          setUserProfile(profile);
+        } else {
+          console.log('⚠️ No profile found in response');
+        }
+      } catch (error) {
+        console.error('❌ Error loading profile from backend:', error);
+      } finally {
+        setIsLoading(false);
       }
-    }
+    };
     
-    if (savedProfileSetup) {
-      try {
-        const parsed = JSON.parse(savedProfileSetup);
-        setProfileSetup(parsed);
-      } catch (e) {
-        console.error('Error loading profile setup:', e);
-      }
-    }
+    loadProfileFromBackend();
   }, []);
 
   // Format dealbreakers for display
@@ -86,7 +87,7 @@ export default function ProfilePage() {
 
 
 
-  if (!onboardingData) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#FFF0F5] via-[#FFE4E1] to-[#FFF0F5] flex items-center justify-center">
         <motion.div
@@ -101,12 +102,71 @@ export default function ProfilePage() {
     );
   }
 
-  const step1 = onboardingData.step1 || {};
-  const step2 = onboardingData.step2 || {};
-  const step3 = onboardingData.step3 || {};
-  const step4 = onboardingData.step4 || {};
-  const step5 = onboardingData.step5 || {};
-  const step6 = onboardingData.step6 || {};
+  if (!userProfile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#FFF0F5] via-[#FFE4E1] to-[#FFF0F5] flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center"
+        >
+          <p className="text-[#212121] font-medium mb-4">No profile found</p>
+          <button
+            onClick={() => navigate('/basic-info')}
+            className="px-6 py-3 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] text-white rounded-xl font-semibold"
+          >
+            Create Profile
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Extract data from backend profile
+  const step1 = {
+    name: userProfile.name || '',
+    dob: userProfile.dob || '',
+    age: userProfile.age || null,
+    gender: userProfile.gender || '',
+    customGender: userProfile.customGender || '',
+    orientation: userProfile.orientation || '',
+    customOrientation: userProfile.customOrientation || '',
+    lookingFor: userProfile.lookingFor || []
+  };
+
+  const step2 = {
+    city: userProfile.location?.city || '',
+    location: userProfile.location || null,
+    ageRange: userProfile.ageRange || { min: 18, max: '' },
+    distancePref: userProfile.distancePref || 25
+  };
+
+  const step3 = {
+    interests: userProfile.interests || []
+  };
+
+  const step4 = {
+    personality: userProfile.personality || {}
+  };
+
+  const step5 = {
+    dealbreakers: userProfile.dealbreakers || {}
+  };
+
+  const step6 = {
+    prompts: userProfile.prompts || [],
+    optional: userProfile.optional || {}
+  };
+
+  const profileSetup = {
+    photos: userProfile.photos ? userProfile.photos.map(photo => ({
+      ...photo,
+      preview: photo.url || photo.preview,
+      id: photo._id || photo.id
+    })) : [],
+    bio: userProfile.bio || '',
+    verified: userProfile.isVerified || false
+  };
 
   // Calculate profile completion percentage
   const calculateProfileCompletion = () => {
@@ -339,7 +399,7 @@ export default function ProfilePage() {
                   <div className="absolute inset-2 rounded-full overflow-hidden">
                     {profileSetup?.photos && profileSetup.photos.length > 0 ? (
                       <img
-                        src={profileSetup.photos[0].preview || `https://ui-avatars.com/api/?name=${step1.name || 'User'}&background=FF1744&color=fff&size=200`}
+                        src={profileSetup.photos[0].url || profileSetup.photos[0].preview || `https://ui-avatars.com/api/?name=${step1.name || 'User'}&background=FF1744&color=fff&size=200`}
                         alt="Profile"
                         className="w-full h-full rounded-full object-cover"
                       />

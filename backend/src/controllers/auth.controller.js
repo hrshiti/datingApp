@@ -35,8 +35,18 @@ export const sendOTP = async (req, res) => {
     const fullPhone = `${countryCode}${phone}`;
     console.log('📱 Full phone number:', fullPhone);
 
+    // Test phone numbers - use default OTP 123456 and skip SMS
+    const testPhoneNumbers = ['6264560457', '9685974247'];
+    const isTestNumber = testPhoneNumbers.includes(phone);
+    
+    if (isTestNumber) {
+      console.log('🧪 Test phone number detected - using default OTP: 123456');
+    }
+
     // Find or create user
     let user = await User.findOne({ phone: fullPhone });
+    let isNewUser = false;
+    let hasBasicInfo = false;
 
     if (!user) {
       console.log('👤 Creating new user...');
@@ -45,12 +55,37 @@ export const sendOTP = async (req, res) => {
         countryCode: countryCode
       });
       console.log('✅ New user created with ID:', user._id);
+      isNewUser = true;
     } else {
       console.log('👤 Existing user found with ID:', user._id);
+      
+      // Check if user has basic info (profile exists with name, gender, etc.)
+      if (user.profile) {
+        const profile = await Profile.findOne({ userId: user._id });
+        if (profile && profile.name && profile.gender && profile.orientation && profile.lookingFor) {
+          hasBasicInfo = true;
+          console.log('✅ User has completed basic information');
+        } else {
+          console.log('⚠️ User exists but basic info is incomplete');
+        }
+      } else {
+        console.log('⚠️ User exists but no profile found');
+      }
     }
 
-    // Generate OTP
-    const otp = user.generateOTP();
+    // Generate OTP (use default 123456 for test numbers)
+    let otp;
+    if (isTestNumber) {
+      // Set default OTP for test numbers
+      otp = '123456';
+      user.otp = {
+        code: otp,
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
+      };
+    } else {
+      // Generate random OTP for other numbers
+      otp = user.generateOTP();
+    }
     await user.save();
     
     console.log('🔐 OTP Generated:', otp);
@@ -58,10 +93,13 @@ export const sendOTP = async (req, res) => {
     console.log('✅ OTP saved to database');
     console.log(`\n📨 ==========================================`);
     console.log(`📨 OTP for ${fullPhone}: ${otp}`);
+    if (isTestNumber) {
+      console.log(`🧪 Test number - SMS will NOT be sent`);
+    }
     console.log(`📨 ==========================================\n`);
 
-    // Send OTP via SMSIndia Hub (if configured)
-    if (smsIndiaHubService && smsIndiaHubService.isConfigured()) {
+    // Send OTP via SMSIndia Hub (skip for test numbers)
+    if (!isTestNumber && smsIndiaHubService && smsIndiaHubService.isConfigured()) {
       try {
         console.log(`\n📤 Sending OTP via SMS to: ${fullPhone}`);
         const smsResult = await smsIndiaHubService.sendOTP(phone, otp, countryCode);
@@ -75,6 +113,9 @@ export const sendOTP = async (req, res) => {
         console.log('📨 OTP will be logged to console instead');
         console.log(`📨 OTP for ${fullPhone}: ${otp}`);
       }
+    } else if (isTestNumber) {
+      console.log('🧪 Test number - SMS sending skipped');
+      console.log(`📨 OTP for ${fullPhone}: ${otp} (default test OTP)`);
     } else {
       console.warn('⚠️ SMSIndia Hub not configured. OTP logged to console.');
       console.log(`📨 OTP for ${fullPhone}: ${otp}`);
@@ -83,8 +124,11 @@ export const sendOTP = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'OTP sent successfully',
-      // Only return OTP in development if SMSIndia Hub is not configured
-      ...(process.env.NODE_ENV === 'development' && !smsIndiaHubService.isConfigured() && { otp: otp })
+      isNewUser: isNewUser,
+      userExists: !isNewUser,
+      hasBasicInfo: hasBasicInfo,
+      // Return OTP in development if SMSIndia Hub is not configured OR if it's a test number
+      ...(process.env.NODE_ENV === 'development' && (!smsIndiaHubService.isConfigured() || isTestNumber) && { otp: otp })
     });
     
     console.log('=== SEND OTP SUCCESS ===\n');
@@ -166,10 +210,12 @@ export const verifyOTP = async (req, res) => {
     await user.save();
     console.log('✅ User updated: OTP cleared, phone verified');
 
-    // Check if user has completed onboarding
+    // Check if user has completed onboarding and basic info
     const profile = await Profile.findOne({ userId: user._id });
     const hasCompletedOnboarding = profile && profile.onboardingCompleted;
+    const hasBasicInfo = profile && profile.name && profile.gender && profile.orientation && profile.lookingFor;
     console.log('📄 Profile found:', !!profile);
+    console.log('📄 Has basic info:', hasBasicInfo);
     console.log('📄 Onboarding completed:', hasCompletedOnboarding);
 
     // Generate JWT token
@@ -185,6 +231,7 @@ export const verifyOTP = async (req, res) => {
         phone: user.phone,
         isPhoneVerified: user.isPhoneVerified,
         hasProfile: !!profile,
+        hasBasicInfo: hasBasicInfo,
         hasCompletedOnboarding: hasCompletedOnboarding
       }
     });
@@ -225,6 +272,14 @@ export const resendOTP = async (req, res) => {
     const fullPhone = `${countryCode}${phone}`;
     console.log('📱 Full phone number:', fullPhone);
     
+    // Test phone numbers - use default OTP 123456 and skip SMS
+    const testPhoneNumbers = ['6264560457', '9685974247'];
+    const isTestNumber = testPhoneNumbers.includes(phone);
+    
+    if (isTestNumber) {
+      console.log('🧪 Test phone number detected - using default OTP: 123456');
+    }
+    
     const user = await User.findOne({ phone: fullPhone });
 
     if (!user) {
@@ -238,8 +293,19 @@ export const resendOTP = async (req, res) => {
     console.log('👤 User found with ID:', user._id);
     console.log('🔄 Previous OTP:', user.otp?.code || 'None');
 
-    // Generate new OTP
-    const otp = user.generateOTP();
+    // Generate new OTP (use default 123456 for test numbers)
+    let otp;
+    if (isTestNumber) {
+      // Set default OTP for test numbers
+      otp = '123456';
+      user.otp = {
+        code: otp,
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
+      };
+    } else {
+      // Generate random OTP for other numbers
+      otp = user.generateOTP();
+    }
     await user.save();
     
     console.log('🔐 New OTP Generated:', otp);
@@ -247,10 +313,13 @@ export const resendOTP = async (req, res) => {
     console.log('✅ New OTP saved to database');
     console.log(`\n📨 ==========================================`);
     console.log(`📨 Resent OTP for ${fullPhone}: ${otp}`);
+    if (isTestNumber) {
+      console.log(`🧪 Test number - SMS will NOT be sent`);
+    }
     console.log(`📨 ==========================================\n`);
 
-    // Send OTP via SMSIndia Hub (if available and configured)
-    if (smsIndiaHubService) {
+    // Send OTP via SMSIndia Hub (skip for test numbers)
+    if (!isTestNumber && smsIndiaHubService) {
       try {
         if (smsIndiaHubService.isConfigured()) {
           const smsResult = await smsIndiaHubService.sendOTP(phone, otp, countryCode);
@@ -262,13 +331,16 @@ export const resendOTP = async (req, res) => {
         console.error('❌ Error resending OTP via SMS:', smsError.message);
         console.log('📨 OTP will be logged to console instead');
       }
+    } else if (isTestNumber) {
+      console.log('🧪 Test number - SMS sending skipped');
+      console.log(`📨 OTP for ${fullPhone}: ${otp} (default test OTP)`);
     }
 
     res.status(200).json({
       success: true,
       message: 'OTP resent successfully',
-      // Only return OTP in development if SMSIndia Hub is not configured
-      ...(process.env.NODE_ENV === 'development' && !smsIndiaHubService.isConfigured() && { otp: otp })
+      // Return OTP in development if SMSIndia Hub is not configured OR if it's a test number
+      ...(process.env.NODE_ENV === 'development' && (!smsIndiaHubService.isConfigured() || isTestNumber) && { otp: otp })
     });
     
     console.log('=== RESEND OTP SUCCESS ===\n');

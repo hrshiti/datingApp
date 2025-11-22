@@ -3,9 +3,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Filter, Crown, Sparkles, MessageCircle, User, Heart, Users, UserCircle, Eye, ArrowLeft, X, Star, MapPin, GraduationCap, Languages, Coffee, Briefcase, BookOpen, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProfileCard from '../components/ProfileCard';
-import { discoveryService } from '../services/discoveryService';
-import { profileService } from '../services/profileService';
+import { mockProfiles, calculateMatchScore, calculateDistance } from '../data/mockProfiles';
 import { authService } from '../services/authService';
+import { profileService } from '../services/profileService';
 
 export default function DiscoveryFeedPage() {
   const navigate = useNavigate();
@@ -27,112 +27,94 @@ export default function DiscoveryFeedPage() {
   const [matchedProfile, setMatchedProfile] = useState(null);
   const [dragX, setDragX] = useState(0);
   const [showCompleteDetailsModal, setShowCompleteDetailsModal] = useState(false);
-  const [profileCompletionStatus, setProfileCompletionStatus] = useState(null);
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
+  const [profileCompletionStatus, setProfileCompletionStatus] = useState(null);
   const dragStartPos = useRef({ x: 0, y: 0 });
   const dragDistance = useRef(0);
   const isDragging = useRef(false);
 
   const DAILY_LIKE_LIMIT = 20;
 
-  // Check if user is authenticated
+  // Check if user is authenticated and load profile completion status
   useEffect(() => {
     if (!authService.isAuthenticated()) {
       navigate('/welcome');
       return;
     }
-  }, [navigate]);
-
-  // Load discovery feed and check profile completion
-  useEffect(() => {
-    const loadDiscoveryFeed = async () => {
+    
+    // Load profile completion status from backend
+    const loadProfileCompletion = async () => {
       try {
-        console.log('🔄 Loading discovery feed...');
-        
-        // Check profile completion first
-        const completionStatus = await profileService.checkProfileCompletion();
-        console.log('✅ Profile completion status:', completionStatus);
-        setProfileCompletionStatus(completionStatus);
-
-        if (!completionStatus || !completionStatus.hasBasicInfo) {
-          // User doesn't have basic info - redirect to basic info page
-          console.log('⚠️ No basic info, redirecting to basic-info');
-          navigate('/basic-info');
-          return;
-        }
-
-        // Load discovery feed
-        setIsLoadingProfiles(true);
-        console.log('📡 Fetching discovery feed from API...');
-        const feedResponse = await discoveryService.getDiscoveryFeed();
-        console.log('📥 Discovery feed response:', feedResponse);
-        
-        if (feedResponse && feedResponse.success) {
-          const profilesArray = feedResponse.profiles || [];
-          console.log('✅ Received', profilesArray.length, 'profiles');
-          
-          if (profilesArray.length > 0) {
-            // Transform backend profiles to frontend format
-            const transformedProfiles = profilesArray.map(profile => {
-              // Handle both populated and non-populated userId
-              const profileId = profile._id || profile.userId?._id || profile.userId;
-              
-              return {
-                id: profileId,
-                name: profile.name || 'Unknown',
-                age: profile.age || 0,
-                photos: profile.photos?.map(p => (typeof p === 'string' ? p : p.url)) || [],
-                bio: profile.bio || '',
-                location: {
-                  city: profile.location?.city || '',
-                  lat: profile.location?.coordinates?.[1] || 0,
-                  lng: profile.location?.coordinates?.[0] || 0
-                },
-                interests: profile.interests || [],
-                personality: profile.personality || {},
-                dealbreakers: profile.dealbreakers || {},
-                optional: profile.optional || {},
-                matchScore: profile.matchScore || 0,
-                distance: profile.distance || 0
-              };
-            });
-            
-            console.log('✅ Transformed profiles:', transformedProfiles.length);
-            setProfiles(transformedProfiles);
-          } else {
-            // No profiles available
-            console.log('ℹ️ No profiles available');
-            console.log('Profile completion status:', completionStatus);
-            
-            // Show people page even if no profiles - user can browse
-            // They'll be prompted to complete profile when they try to swipe
-            setProfiles([]);
-          }
-        } else {
-          console.log('⚠️ API response not successful:', feedResponse);
-          setProfiles([]);
+        const response = await profileService.checkProfileCompletion();
+        if (response.success) {
+          setProfileCompletionStatus(response);
         }
       } catch (error) {
-        console.error('❌ Error loading discovery feed:', error);
-        console.error('Error details:', {
-          message: error.message,
-          status: error.status,
-          data: error.data
-        });
-        
-        if (error.status === 400 && error.data?.requiresBasicInfo) {
-          navigate('/basic-info');
-        } else {
-          setProfiles([]);
+        console.error('Error loading profile completion:', error);
+      }
+    };
+    
+    loadProfileCompletion();
+  }, [navigate]);
+
+  // Load user profile and discovery feed from localStorage/mock data
+  useEffect(() => {
+    // Load user actions (likes, passes, matches, premium status)
+    loadUserActions();
+    checkDailyLikesReset();
+      
+    const loadUserProfile = () => {
+      const savedProfile = localStorage.getItem('userProfile');
+      if (savedProfile) {
+        try {
+          const profile = JSON.parse(savedProfile);
+          setCurrentUserProfile(profile);
+          if (profile.location) {
+            setCurrentUserLocation(profile.location);
+          }
+        } catch (e) {
+          console.error('Error loading user profile:', e);
         }
-      } finally {
-        console.log('✅ Finished loading discovery feed');
-        setIsLoadingProfiles(false);
       }
     };
 
-    loadDiscoveryFeed();
-  }, [navigate]);
+    const loadProfiles = () => {
+      setIsLoadingProfiles(true);
+      
+      // Load user profile first
+      loadUserProfile();
+      
+      // Load saved likes and passes
+      const savedLikes = localStorage.getItem('discoveryLikes');
+      const savedPasses = localStorage.getItem('discoveryPasses');
+      const loadedLikes = savedLikes ? JSON.parse(savedLikes) : [];
+      const loadedPasses = savedPasses ? JSON.parse(savedPasses) : [];
+      
+      // Get user profile for filtering
+      const savedProfile = localStorage.getItem('userProfile');
+      const userProfile = savedProfile ? JSON.parse(savedProfile) : null;
+      
+      if (userProfile && Object.keys(userProfile).length > 0) {
+        setCurrentUserProfile(userProfile);
+        if (userProfile.location) {
+          setCurrentUserLocation(userProfile.location);
+        }
+        // Filter and score profiles
+        const filteredProfiles = filterAndScoreProfiles(mockProfiles, userProfile, loadedLikes, loadedPasses);
+        setProfiles(filteredProfiles);
+      } else {
+        // If no user profile, show all profiles (excluding liked/passed)
+        const availableProfiles = mockProfiles.filter(
+          profile => !loadedLikes.includes(profile.id) && !loadedPasses.includes(profile.id)
+        );
+        setProfiles(availableProfiles);
+      }
+      
+      setIsLoadingProfiles(false);
+    };
+
+    loadProfiles();
+  }, []);
 
   // Handle navigation from chat to show specific user profile
   useEffect(() => {
@@ -377,9 +359,10 @@ export default function DiscoveryFeedPage() {
     }
   };
 
-  const handleLike = () => {
-    // Check if onboarding is complete
-    if (!isOnboardingComplete()) {
+  const handleLike = async () => {
+    // Check if profile is complete using backend API
+    const isComplete = await checkProfileCompletion();
+    if (!isComplete) {
       setShowCompleteDetailsModal(true);
       return;
     }
@@ -429,44 +412,22 @@ export default function DiscoveryFeedPage() {
   };
 
   const handlePass = async () => {
-    const currentProfile = profiles[currentIndex];
-    if (!currentProfile) return;
-
-    // Check profile completion before swiping
-    if (!profileCompletionStatus?.isComplete) {
+    // Check if profile is complete using backend API
+    const isComplete = await checkProfileCompletion();
+    if (!isComplete) {
       setShowCompleteDetailsModal(true);
       return;
     }
 
-    try {
-      // Start swipe animation
-      setSwipeDirection('left');
+    const currentProfile = profiles[currentIndex];
+    if (!currentProfile) return;
 
-      // Call backend API to pass profile
-      const response = await discoveryService.passProfile(currentProfile.id);
+    // Start swipe animation
+    setSwipeDirection('left');
 
-      if (response.success) {
-        const newPasses = [...passes, currentProfile.id];
-        setPasses(newPasses);
-      } else if (response.requiresProfileCompletion) {
-        // Profile incomplete - show modal
-        setShowCompleteDetailsModal(true);
-        setSwipeDirection(null);
-        return;
-      }
-    } catch (error) {
-      console.error('Error passing profile:', error);
-      
-      // Check if profile completion is required
-      if (error.data?.requiresProfileCompletion) {
-        setShowCompleteDetailsModal(true);
-        setSwipeDirection(null);
-        return;
-      }
-      
-      // Reset swipe on error
-      setSwipeDirection(null);
-    }
+    const newPasses = [...passes, currentProfile.id];
+    setPasses(newPasses);
+    localStorage.setItem('discoveryPasses', JSON.stringify(newPasses));
     
     // Wait for exit animation to complete before showing next card
     setTimeout(() => {
@@ -477,17 +438,38 @@ export default function DiscoveryFeedPage() {
     }, 350); // Wait for exit animation (300ms) + small buffer
   };
 
-  // Check if profile is complete for swiping (using backend status)
-  const isProfileComplete = () => {
-    return profileCompletionStatus?.isComplete || false;
+  // Check if profile is complete (using backend API)
+  const checkProfileCompletion = async () => {
+    try {
+      const response = await profileService.checkProfileCompletion();
+      if (response.success) {
+        setProfileCompletionStatus(response);
+        return response.isComplete;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error checking profile completion:', error);
+      return false;
+    }
+  };
+
+  // Check if onboarding is complete (using backend API)
+  const isOnboardingComplete = () => {
+    // If we have cached status, use it
+    if (profileCompletionStatus) {
+      return profileCompletionStatus.isComplete;
+    }
+    // Otherwise return false (will trigger API call)
+    return false;
   };
 
   // Handle card swipe (Tinder-style)
-  const handleCardSwipe = (direction) => {
+  const handleCardSwipe = async (direction) => {
     if (!currentProfile) return;
     
-    // Check if profile is complete
-    if (!isProfileComplete()) {
+    // Check if profile is complete using backend API
+    const isComplete = await checkProfileCompletion();
+    if (!isComplete) {
       setShowCompleteDetailsModal(true);
       return;
     }
@@ -548,39 +530,8 @@ export default function DiscoveryFeedPage() {
     );
   }
 
-  // Show empty state if no profiles
-  // But allow user to stay on people page - they can complete profile when they try to swipe
-  if (!isLoadingProfiles && profiles.length === 0) {
-    return (
-      <div className="h-screen heart-background flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto px-4">
-          <div className="text-6xl mb-4">👋</div>
-          <h2 className="text-2xl font-bold text-[#212121] mb-2">Welcome!</h2>
-          <p className="text-[#757575] mb-6">
-            {profileCompletionStatus && !profileCompletionStatus.isComplete
-              ? "Complete your profile to start seeing people and swiping!"
-              : "There are no profiles to show right now. Check back later!"}
-          </p>
-          <div className="flex flex-col gap-3">
-            {profileCompletionStatus && !profileCompletionStatus.isComplete ? (
-              <button
-                onClick={() => navigate('/onboarding')}
-                className="px-6 py-3 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] text-white rounded-xl font-semibold hover:shadow-lg transition-all"
-              >
-                Complete Profile
-              </button>
-            ) : null}
-            <button
-              onClick={() => navigate('/profile')}
-              className="px-6 py-3 bg-white border-2 border-[#FF91A4] text-[#FF91A4] rounded-xl font-semibold hover:bg-[#FFF0F5] transition-all"
-            >
-              Go to Profile
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Don't show empty state - always show the people page interface
+  // Even if no profiles, show the page structure (user can see filters, navigation, etc.)
 
   return (
     <div className="h-screen flex flex-col relative overflow-hidden bg-gradient-to-br from-[#FFF0F5] via-[#FFE4E1] to-[#FFF0F5]">
@@ -715,7 +666,8 @@ export default function DiscoveryFeedPage() {
       <div className="flex-1 relative z-10 overflow-y-auto pb-0 pt-0 md:pt-[90px] md:ml-16">
         <div className="min-h-full w-full md:max-w-md lg:max-w-lg md:mx-auto px-0 sm:px-0 flex flex-col items-start md:items-center justify-start md:justify-start relative pb-32">
           {/* Card Stack - Show only current card */}
-          {profiles.length > 0 && currentProfile ? (
+          {profiles.length > 0 ? (
+            currentProfile ? (
             <>
               {/* Current Card (Front) - Fully Visible - Simple Image Card */}
               <AnimatePresence mode="wait">
@@ -1312,91 +1264,22 @@ export default function DiscoveryFeedPage() {
 
             </>
           ) : (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-3xl shadow-2xl p-8 sm:p-12 text-center max-w-md mx-auto border border-[#FFB6C1]/20 relative overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent"></div>
-            <motion.div 
-              animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
-              className="w-28 h-28 bg-gradient-to-br from-[#FFE4E1] via-[#FFF0F5] to-[#FFE4E1] rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg relative z-10"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent rounded-full"></div>
-              <User className="w-14 h-14 text-[#FF91A4] relative z-10" />
-            </motion.div>
-            <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-3 relative z-10">
-              No more profiles
-            </h2>
-            <p className="text-[#757575] mb-8 relative z-10">
-              You've seen all available profiles. Check back later for new matches!
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 relative z-10">
-              <motion.button
-                onClick={() => {
-                  // Remove all filters
-                  localStorage.removeItem('discoveryFilters');
-                  // Remove all passes
-                  setPasses([]);
-                  localStorage.removeItem('discoveryPasses');
-                  // Remove all likes
-                  setLikes([]);
-                  localStorage.removeItem('discoveryLikes');
-                  // Reload profiles without filters
-                  if (currentUserProfile) {
-                    let filteredProfiles = filterAndScoreProfiles(mockProfiles, currentUserProfile, [], []);
-                    
-                    // Add dummy prompts to profiles if they don't have any
-                    const profilesWithPrompts = filteredProfiles.map(profile => {
-                      if (!profile.prompts || profile.prompts.length === 0) {
-                        return {
-                          ...profile,
-                          prompts: [
-                            {
-                              prompt: "What's the best way to ask you out?",
-                              answer: "Just be yourself and ask me directly! I appreciate honesty and straightforwardness."
-                            },
-                            {
-                              prompt: "I'm a great +1 for...",
-                              answer: "Concerts, food festivals, and any adventure that involves trying something new!"
-                            },
-                            {
-                              prompt: "The way to my heart is...",
-                              answer: "Through good conversation, shared laughter, and genuine connection."
-                            }
-                          ]
-                        };
-                      }
-                      return profile;
-                    });
-                    
-                    setProfiles(profilesWithPrompts);
+              // Profiles exist but currentProfile is not set - ensure index is valid
+              (() => {
+                if (profiles.length > 0 && currentIndex >= profiles.length) {
                     setCurrentIndex(0);
-                  } else {
-                    window.location.reload();
-                  }
-                }}
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                className="flex-1 px-6 py-3.5 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] text-white rounded-xl font-semibold hover:shadow-xl transition-all shadow-lg"
-              >
-                Reset & See Again
-              </motion.button>
-              {matches.length > 0 && (
-                <motion.button
-                  onClick={() => setShowMatches(true)}
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex-1 px-6 py-3.5 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] text-[#FF91A4] rounded-xl font-semibold hover:from-[#FF91A4] hover:to-[#FF69B4] hover:text-white transition-all border-2 border-[#FF91A4] shadow-md"
-                >
-                  View Matches ({matches.length})
-                </motion.button>
-              )}
+                }
+                return (
+                  <div className="flex items-center justify-center min-h-[400px] w-full">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF91A4] mx-auto mb-4"></div>
+                      <p className="text-[#757575]">Loading profile...</p>
             </div>
-          </motion.div>
-          )}
+                  </div>
+                );
+              })()
+            )
+          ) : null}
         </div>
       </div>
 
@@ -1689,7 +1572,7 @@ export default function DiscoveryFeedPage() {
                         state: { 
                           startFromStep: 2,
                           skipBasicInfo: true 
-                        } 
+                        }
                       });
                     }}
                     whileHover={{ scale: 1.05, y: -2 }}

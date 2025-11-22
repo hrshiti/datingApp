@@ -160,7 +160,17 @@ const profileSchema = new mongoose.Schema({
     horoscope: {
       type: String,
       trim: true
-    }
+    },
+    prompts: [{
+      prompt: {
+        type: String,
+        trim: true
+      },
+      answer: {
+        type: String,
+        trim: true
+      }
+    }]
   },
   
   // Step 7: Photos & Bio

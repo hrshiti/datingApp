@@ -38,6 +38,12 @@ export const profileService = {
     return response;
   },
 
+  // Update bio
+  updateBio: async (bio) => {
+    const response = await api.put('/profile/bio', { bio });
+    return response;
+  },
+
   // Complete onboarding
   completeOnboarding: async () => {
     const response = await api.post(API_ENDPOINTS.PROFILE.COMPLETE_ONBOARDING);

@@ -6,7 +6,8 @@ import {
   updateOnboardingStep,
   completeOnboarding,
   saveBasicInfo,
-  checkProfileCompletion
+  checkProfileCompletion,
+  updateBio
 } from '../controllers/profile.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
 
@@ -21,6 +22,7 @@ router.get('/me', getMyProfile);
 router.get('/check-completion', checkProfileCompletion);
 router.get('/:id', getProfileById);
 router.put('/onboarding/:step', updateOnboardingStep);
+router.put('/bio', updateBio);
 router.post('/complete-onboarding', completeOnboarding);
 
 export default router;

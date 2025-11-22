@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import CustomDropdown from '../components/CustomDropdown';
 import CustomDatePicker from '../components/CustomDatePicker';
 import PhotoUpload from '../components/PhotoUpload';
+import { profileService } from '../services/profileService';
+import { uploadService } from '../services/uploadService';
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
@@ -73,6 +75,7 @@ export default function OnboardingPage() {
   const [errors, setErrors] = useState({});
   const [showCustomGender, setShowCustomGender] = useState(false);
   const [showCustomOrientation, setShowCustomOrientation] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   const maxBioLength = 200;
   const minPhotos = 4;
@@ -477,7 +480,9 @@ export default function OnboardingPage() {
   };
 
   // Handle next button
-  const handleNext = () => {
+  const handleNext = async () => {
+    if (isSaving) return; // Prevent multiple clicks
+
     if (currentStep === 1) {
       if (validateStep1()) {
         saveProgress();
@@ -487,38 +492,186 @@ export default function OnboardingPage() {
       }
     } else if (currentStep === 2) {
       if (validateStep2()) {
-        saveProgress();
-        setCurrentStep(3);
+        setIsSaving(true);
+        try {
+          const step2Data = {
+            location: {
+              city: formData.city,
+              coordinates: [0, 0]
+            },
+            ageRange: {
+              min: formData.ageRange.min || 18,
+              max: formData.ageRange.max || 100
+            },
+            distancePref: formData.distancePref || 25
+          };
+
+          const response = await profileService.updateOnboardingStep(2, step2Data);
+          if (response.success) {
+            saveProgress();
+            setCurrentStep(3);
+          } else {
+            alert('Failed to save location and preferences. Please try again.');
+          }
+        } catch (error) {
+          console.error('Error saving step 2:', error);
+          alert('Error saving location and preferences. Please try again.');
+        } finally {
+          setIsSaving(false);
+        }
       }
     } else if (currentStep === 3) {
       if (validateStep3()) {
-        saveProgress();
-        setCurrentStep(4);
+        setIsSaving(true);
+        try {
+          const step3Data = {
+            interests: formData.interests || []
+          };
+
+          const response = await profileService.updateOnboardingStep(3, step3Data);
+          if (response.success) {
+            saveProgress();
+            setCurrentStep(4);
+          } else {
+            alert('Failed to save interests. Please try again.');
+          }
+        } catch (error) {
+          console.error('Error saving step 3:', error);
+          alert('Error saving interests. Please try again.');
+        } finally {
+          setIsSaving(false);
+        }
       }
     } else if (currentStep === 4) {
       if (validateStep4()) {
-        saveProgress();
-        setCurrentStep(5);
+        setIsSaving(true);
+        try {
+          // Clean personality data - remove empty strings and ensure valid values
+          const cleanedPersonality = {};
+          Object.keys(formData.personality).forEach(key => {
+            const value = formData.personality[key];
+            // Only include non-empty values
+            if (value && value.trim && value.trim() !== '') {
+              cleanedPersonality[key] = value.trim();
+            } else if (value && !value.trim) {
+              // If it's not a string, include as is
+              cleanedPersonality[key] = value;
+            }
+          });
+
+          const step4Data = {
+            personality: cleanedPersonality
+          };
+
+          console.log('📤 Step 4 - Sending personality data:', step4Data);
+          const response = await profileService.updateOnboardingStep(4, step4Data);
+          console.log('📥 Step 4 - Response:', response);
+          
+          if (response.success) {
+            saveProgress();
+            setCurrentStep(5);
+          } else {
+            console.error('❌ Step 4 - Failed:', response);
+            alert(response.message || 'Failed to save personality. Please try again.');
+          }
+        } catch (error) {
+          console.error('❌ Step 4 - Error:', error);
+          console.error('❌ Step 4 - Error details:', {
+            message: error.message,
+            response: error.response,
+            data: error.data
+          });
+          alert(error.message || 'Error saving personality. Please try again.');
+        } finally {
+          setIsSaving(false);
+        }
       }
     } else if (currentStep === 5) {
       if (validateStep5()) {
-        saveProgress();
-        setCurrentStep(6);
+        setIsSaving(true);
+        try {
+          const step5Data = {
+            dealbreakers: formData.dealbreakers
+          };
+
+          const response = await profileService.updateOnboardingStep(5, step5Data);
+          if (response.success) {
+            saveProgress();
+            setCurrentStep(6);
+          } else {
+            alert('Failed to save dealbreakers. Please try again.');
+          }
+        } catch (error) {
+          console.error('Error saving step 5:', error);
+          alert('Error saving dealbreakers. Please try again.');
+        } finally {
+          setIsSaving(false);
+        }
       }
     } else if (currentStep === 6) {
       if (validateStep6()) {
+        // Step 6 (Prompts) - Save to localStorage only, will be combined with Step 7
         saveProgress();
         setCurrentStep(7);
       }
     } else if (currentStep === 7) {
       if (validateStep7()) {
-        saveProgress();
-        setCurrentStep(8);
+        setIsSaving(true);
+        try {
+          const step6Data = {
+            optional: {
+              education: formData.optional.education || '',
+              profession: formData.optional.profession || '',
+              languages: formData.optional.languages || [],
+              horoscope: formData.optional.horoscope || '',
+              prompts: formData.prompts || []
+            }
+          };
+
+          const response = await profileService.updateOnboardingStep(6, step6Data);
+          if (response.success) {
+            saveProgress();
+            setCurrentStep(8);
+          } else {
+            alert('Failed to save optional information. Please try again.');
+          }
+        } catch (error) {
+          console.error('Error saving step 7:', error);
+          alert('Error saving optional information. Please try again.');
+        } finally {
+          setIsSaving(false);
+        }
       }
     } else if (currentStep === 8) {
       if (validateStep8()) {
-        saveProgress();
-        setCurrentStep(9);
+        setIsSaving(true);
+        try {
+          // Upload photos to Cloudinary
+          const photoFiles = formData.photos
+            .filter(photo => photo && photo.file instanceof File)
+            .map(photo => photo.file);
+
+          if (photoFiles.length > 0) {
+            const uploadResponse = await uploadService.uploadPhotos(photoFiles);
+            if (!uploadResponse.success) {
+              throw new Error(uploadResponse.message || 'Failed to upload photos');
+            }
+          }
+
+          // Save bio to backend
+          const bioResponse = await profileService.updateBio(formData.bio.trim());
+          if (!bioResponse.success) {
+            throw new Error(bioResponse.message || 'Failed to save bio');
+          }
+
+          saveProgress();
+          setCurrentStep(9);
+        } catch (error) {
+          console.error('Error saving photos and bio:', error);
+          alert('Error saving photos and bio. Please try again.');
+        } finally {
+          setIsSaving(false);
+        }
       }
     } else if (currentStep === 9) {
       if (validateStep9()) {
@@ -1024,12 +1177,12 @@ export default function OnboardingPage() {
                 </motion.button>
                 <motion.button
                   onClick={handleNext}
-                  disabled={!formData.city || formData.city.trim() === '' || (formData.ageRange.max !== '' && formData.ageRange.min >= formData.ageRange.max)}
-                  whileHover={{ scale: 1.02, y: -1 }}
-                  whileTap={{ scale: 0.98 }}
+                  disabled={isSaving || !formData.city || formData.city.trim() === '' || (formData.ageRange.max !== '' && formData.ageRange.min >= formData.ageRange.max)}
+                  whileHover={{ scale: isSaving ? 1 : 1.02, y: isSaving ? 0 : -1 }}
+                  whileTap={{ scale: isSaving ? 1 : 0.98 }}
                   className="flex-1 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-bold py-3.5 sm:py-4 md:py-2.5 rounded-xl transition-all disabled:transform-none text-base sm:text-lg md:text-base shadow-xl hover:shadow-2xl disabled:shadow-none relative z-10"
                 >
-                  Next →
+                  {isSaving ? 'Saving...' : 'Next →'}
                 </motion.button>
               </div>
             </motion.div>
@@ -1127,12 +1280,12 @@ export default function OnboardingPage() {
               <div className="pt-4">
                 <motion.button
                   onClick={handleNext}
-                  disabled={formData.interests.length < 3}
-                  whileHover={{ scale: formData.interests.length >= 3 ? 1.02 : 1 }}
-                  whileTap={{ scale: formData.interests.length >= 3 ? 0.98 : 1 }}
+                  disabled={isSaving || formData.interests.length < 3}
+                  whileHover={{ scale: (isSaving || formData.interests.length < 3) ? 1 : 1.02 }}
+                  whileTap={{ scale: (isSaving || formData.interests.length < 3) ? 1 : 0.98 }}
                   className="w-full bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-semibold py-4 sm:py-5 md:py-3 rounded-2xl transition-all text-base sm:text-lg md:text-base shadow-lg hover:shadow-xl disabled:shadow-none relative z-10"
                 >
-                  Continue
+                  {isSaving ? 'Saving...' : 'Continue'}
                 </motion.button>
               </div>
             </motion.div>
@@ -1589,12 +1742,12 @@ export default function OnboardingPage() {
                 </motion.button>
                 <motion.button
                   onClick={handleNext}
-                  disabled={Object.values(formData.personality).some(v => v === '')}
-                  whileHover={{ scale: 1.02, y: -1 }}
-                  whileTap={{ scale: 0.98 }}
+                  disabled={isSaving || Object.values(formData.personality).some(v => v === '')}
+                  whileHover={{ scale: isSaving ? 1 : 1.02, y: isSaving ? 0 : -1 }}
+                  whileTap={{ scale: isSaving ? 1 : 0.98 }}
                   className="flex-1 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-bold py-3.5 sm:py-4 md:py-2.5 rounded-xl transition-all disabled:transform-none text-base sm:text-lg md:text-base shadow-xl hover:shadow-2xl disabled:shadow-none relative z-10"
                 >
-                  Next →
+                  {isSaving ? 'Saving...' : 'Next →'}
                 </motion.button>
               </div>
             </motion.div>
@@ -1820,12 +1973,12 @@ export default function OnboardingPage() {
                 </motion.button>
                 <motion.button
                   onClick={handleNext}
-                  disabled={!formData.dealbreakers.kids || !formData.dealbreakers.smoking || !formData.dealbreakers.pets || !formData.dealbreakers.drinking}
-                  whileHover={{ scale: 1.02, y: -1 }}
-                  whileTap={{ scale: 0.98 }}
+                  disabled={isSaving || !formData.dealbreakers.kids || !formData.dealbreakers.smoking || !formData.dealbreakers.pets || !formData.dealbreakers.drinking}
+                  whileHover={{ scale: isSaving ? 1 : 1.02, y: isSaving ? 0 : -1 }}
+                  whileTap={{ scale: isSaving ? 1 : 0.98 }}
                   className="flex-1 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-bold py-3.5 sm:py-4 md:py-2.5 rounded-xl transition-all disabled:transform-none text-base sm:text-lg md:text-base shadow-xl hover:shadow-2xl disabled:shadow-none"
                 >
-                  Next →
+                  {isSaving ? 'Saving...' : 'Next →'}
                 </motion.button>
               </div>
             </motion.div>
@@ -2219,16 +2372,16 @@ export default function OnboardingPage() {
                 </motion.button>
                 <motion.button
                   onClick={handleNext}
-                  disabled={!formData.optional.languages || formData.optional.languages.length === 0}
-                  whileHover={{ scale: (!formData.optional.languages || formData.optional.languages.length === 0) ? 1 : 1.02, y: (!formData.optional.languages || formData.optional.languages.length === 0) ? 0 : -1 }}
-                  whileTap={{ scale: (!formData.optional.languages || formData.optional.languages.length === 0) ? 1 : 0.98 }}
+                  disabled={isSaving || !formData.optional.languages || formData.optional.languages.length === 0}
+                  whileHover={{ scale: (isSaving || !formData.optional.languages || formData.optional.languages.length === 0) ? 1 : 1.02, y: (isSaving || !formData.optional.languages || formData.optional.languages.length === 0) ? 0 : -1 }}
+                  whileTap={{ scale: (isSaving || !formData.optional.languages || formData.optional.languages.length === 0) ? 1 : 0.98 }}
                   className={`flex-1 font-semibold py-2.5 sm:py-3 md:py-2 rounded-xl transition-all text-sm md:text-sm shadow-lg ${
-                    (!formData.optional.languages || formData.optional.languages.length === 0)
+                    (isSaving || !formData.optional.languages || formData.optional.languages.length === 0)
                       ? 'bg-[#E0E0E0] text-[#9E9E9E] cursor-not-allowed shadow-none'
                       : 'bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] text-white hover:shadow-xl'
                   }`}
                 >
-                  Next →
+                  {isSaving ? 'Saving...' : 'Next →'}
                 </motion.button>
               </div>
             </motion.div>
@@ -2368,16 +2521,16 @@ export default function OnboardingPage() {
                 </motion.button>
                 <motion.button
                   onClick={handleNext}
-                  disabled={!formData.photos || formData.photos.length < minPhotos}
-                  whileHover={{ scale: (!formData.photos || formData.photos.length < minPhotos) ? 1 : 1.02, y: (!formData.photos || formData.photos.length < minPhotos) ? 0 : -1 }}
-                  whileTap={{ scale: (!formData.photos || formData.photos.length < minPhotos) ? 1 : 0.98 }}
+                  disabled={isSaving || !formData.photos || formData.photos.length < minPhotos}
+                  whileHover={{ scale: (isSaving || !formData.photos || formData.photos.length < minPhotos) ? 1 : 1.02, y: (isSaving || !formData.photos || formData.photos.length < minPhotos) ? 0 : -1 }}
+                  whileTap={{ scale: (isSaving || !formData.photos || formData.photos.length < minPhotos) ? 1 : 0.98 }}
                   className={`flex-1 font-semibold py-2.5 sm:py-3 rounded-xl transition-all text-xs sm:text-sm shadow-lg ${
-                    (!formData.photos || formData.photos.length < minPhotos)
+                    (isSaving || !formData.photos || formData.photos.length < minPhotos)
                       ? 'bg-[#E0E0E0] text-[#9E9E9E] cursor-not-allowed shadow-none'
                       : 'bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] text-white hover:shadow-xl'
                   }`}
                 >
-                  Next →
+                  {isSaving ? 'Uploading...' : 'Next →'}
                 </motion.button>
               </div>
             </motion.div>
