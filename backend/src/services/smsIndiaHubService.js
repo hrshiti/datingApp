@@ -1,4 +1,5 @@
-import axios from 'axios';
+// Using native fetch API (available in Node.js 18+)
+// No need for axios dependency
 
 /**
  * SMSIndia Hub SMS Service for Dating App
@@ -6,13 +7,51 @@ import axios from 'axios';
  */
 class SMSIndiaHubService {
   constructor() {
-    this.apiKey = process.env.SMSINDIAHUB_API_KEY;
-    this.senderId = process.env.SMSINDIAHUB_SENDER_ID;
+    // Don't load env vars in constructor - load them lazily when needed
+    // This ensures dotenv.config() has been called first
     this.baseUrl = 'http://cloud.smsindiahub.in/vendorsms/pushsms.aspx';
+    this._apiKey = null;
+    this._senderId = null;
+    this._initialized = false;
+  }
+
+  /**
+   * Initialize credentials from environment variables
+   * Called lazily to ensure dotenv.config() has run
+   */
+  _initialize() {
+    if (this._initialized) return;
     
-    if (!this.apiKey || !this.senderId) {
-      console.warn('SMSIndia Hub credentials not configured. SMS functionality will be disabled.');
+    this._apiKey = process.env.SMSINDIAHUB_API_KEY;
+    this._senderId = process.env.SMSINDIAHUB_SENDER_ID;
+    this._initialized = true;
+    
+    console.log('🔍 SMSIndia Hub Configuration Check:');
+    console.log('   API Key:', this._apiKey ? `${this._apiKey.substring(0, 5)}...` : 'NOT SET');
+    console.log('   Sender ID:', this._senderId || 'NOT SET');
+    
+    if (!this._apiKey || !this._senderId) {
+      console.warn('⚠️ SMSIndia Hub credentials not configured. SMS functionality will be disabled.');
+      console.warn('   Please set SMSINDIAHUB_API_KEY and SMSINDIAHUB_SENDER_ID in your .env file');
+    } else {
+      console.log('✅ SMSIndia Hub credentials found. SMS functionality enabled.');
     }
+  }
+
+  /**
+   * Get API key (lazy initialization)
+   */
+  get apiKey() {
+    this._initialize();
+    return this._apiKey;
+  }
+
+  /**
+   * Get sender ID (lazy initialization)
+   */
+  get senderId() {
+    this._initialize();
+    return this._senderId;
   }
 
   /**
@@ -20,11 +59,19 @@ class SMSIndiaHubService {
    * @returns {boolean}
    */
   isConfigured() {
-    // Load credentials dynamically in case they weren't available during construction
-    const apiKey = this.apiKey || process.env.SMSINDIAHUB_API_KEY;
-    const senderId = this.senderId || process.env.SMSINDIAHUB_SENDER_ID;
+    // Initialize if not already done
+    this._initialize();
     
-    return !!(apiKey && senderId);
+    // Check if credentials are available
+    const isConfigured = !!(this._apiKey && this._senderId);
+    
+    if (!isConfigured) {
+      console.log('⚠️ SMSIndia Hub not configured - checking env vars:');
+      console.log('   SMSINDIAHUB_API_KEY:', process.env.SMSINDIAHUB_API_KEY ? 'EXISTS' : 'MISSING');
+      console.log('   SMSINDIAHUB_SENDER_ID:', process.env.SMSINDIAHUB_SENDER_ID ? 'EXISTS' : 'MISSING');
+    }
+    
+    return isConfigured;
   }
 
   /**
@@ -74,9 +121,12 @@ class SMSIndiaHubService {
    */
   async sendOTP(phone, otp, countryCode = '+91') {
     try {
-      // Load credentials dynamically
-      const apiKey = this.apiKey || process.env.SMSINDIAHUB_API_KEY;
-      const senderId = this.senderId || process.env.SMSINDIAHUB_SENDER_ID;
+      // Initialize credentials (lazy loading)
+      this._initialize();
+      
+      // Load credentials
+      const apiKey = this._apiKey || process.env.SMSINDIAHUB_API_KEY;
+      const senderId = this._senderId || process.env.SMSINDIAHUB_SENDER_ID;
       
       if (!apiKey || !senderId) {
         throw new Error('SMSIndia Hub not configured. Please check your environment variables.');
@@ -84,13 +134,18 @@ class SMSIndiaHubService {
 
       const normalizedPhone = this.normalizePhoneNumber(phone, countryCode);
       
+      console.log(`📱 Normalized phone number: ${normalizedPhone} (from input: ${phone} with code: ${countryCode})`);
+      
       // Validate phone number (should be 12 digits with country code)
       if (normalizedPhone.length !== 12 || !normalizedPhone.startsWith('91')) {
         throw new Error(`Invalid phone number format: ${phone}. Expected 10-digit Indian mobile number.`);
       }
 
       // Use the exact template that works with SMSIndiaHub
-      const message = `Welcome to DatingApp powered by SMSINDIAHUB. Your OTP for registration is ${otp}. Valid for 10 minutes.`;
+      const message = `Welcome to DatingApp powered by SMSINDIAHUB. Your OTP for registration is ${otp}.`;
+      
+      console.log(`📨 SMS Message: ${message}`);
+      console.log(`📞 Sending to: ${normalizedPhone}`);
       
       // Build the API URL with query parameters
       const params = new URLSearchParams({
@@ -105,20 +160,50 @@ class SMSIndiaHubService {
 
       const apiUrl = `${this.baseUrl}?${params.toString()}`;
 
-      // Make GET request to SMSIndia Hub API
-      const response = await axios.get(apiUrl, {
-        headers: {
-          'User-Agent': 'DatingApp/1.0',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-        },
-        timeout: 15000 // 15 second timeout
-      });
+      // Make GET request to SMSIndia Hub API using native fetch
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+      
+      let response;
+      try {
+        response = await fetch(apiUrl, {
+          method: 'GET',
+          headers: {
+            'User-Agent': 'DatingApp/1.0',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+          },
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        if (fetchError.name === 'AbortError') {
+          throw new Error('SMSIndia Hub request timeout. Please try again.');
+        }
+        throw new Error('Unable to connect to SMSIndia Hub service. Please check your internet connection.');
+      }
 
       console.log('SMSIndia Hub Response Status:', response.status);
-      console.log('SMSIndia Hub Response Data:', response.data);
-
-      // SMSIndia Hub returns JSON response
-      const responseData = response.data;
+      
+      // Check if response is OK
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('SMSIndia Hub authentication failed. Please check your API key.');
+        } else if (response.status === 400) {
+          throw new Error('SMSIndia Hub request error: Invalid request parameters');
+        } else if (response.status === 429) {
+          throw new Error('SMSIndia Hub rate limit exceeded. Please try again later.');
+        } else if (response.status === 500) {
+          throw new Error('SMSIndia Hub server error. Please try again later.');
+        } else {
+          throw new Error(`SMSIndia Hub API error (${response.status})`);
+        }
+      }
+      
+      // Parse response as JSON
+      const responseData = await response.json();
+      console.log('SMSIndia Hub Response Data:', responseData);
       
       // Check for success indicators in the response
       if (responseData.ErrorCode === '000' && responseData.ErrorMessage === 'Done') {
@@ -152,30 +237,12 @@ class SMSIndiaHubService {
       }
 
     } catch (error) {
-      // Handle specific error cases
-      if (error.response) {
-        const errorData = error.response.data;
-        
-        if (error.response.status === 401) {
-          throw new Error('SMSIndia Hub authentication failed. Please check your API key.');
-        } else if (error.response.status === 400) {
-          throw new Error(`SMSIndia Hub request error: Invalid request parameters`);
-        } else if (error.response.status === 429) {
-          throw new Error('SMSIndia Hub rate limit exceeded. Please try again later.');
-        } else if (error.response.status === 500) {
-          throw new Error('SMSIndia Hub server error. Please try again later.');
-        } else {
-          throw new Error(`SMSIndia Hub API error (${error.response.status}): ${errorData}`);
-        }
-      } else if (error.code === 'ECONNABORTED') {
-        throw new Error('SMSIndia Hub request timeout. Please try again.');
-      } else if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
-        throw new Error('Unable to connect to SMSIndia Hub service. Please check your internet connection.');
-      } else if (error.code === 'ECONNRESET') {
-        throw new Error('SMSIndia Hub connection was reset. Please try again.');
+      // Re-throw if already formatted
+      if (error.message && error.message.includes('SMSIndia Hub')) {
+        throw error;
       }
-      
-      throw error;
+      // Handle other errors
+      throw new Error(`SMSIndia Hub error: ${error.message}`);
     }
   }
 
@@ -188,9 +255,12 @@ class SMSIndiaHubService {
    */
   async sendCustomSMS(phone, message, countryCode = '+91') {
     try {
-      // Load credentials dynamically
-      const apiKey = this.apiKey || process.env.SMSINDIAHUB_API_KEY;
-      const senderId = this.senderId || process.env.SMSINDIAHUB_SENDER_ID;
+      // Initialize credentials (lazy loading)
+      this._initialize();
+      
+      // Load credentials
+      const apiKey = this._apiKey || process.env.SMSINDIAHUB_API_KEY;
+      const senderId = this._senderId || process.env.SMSINDIAHUB_SENDER_ID;
       
       if (!apiKey || !senderId) {
         throw new Error('SMSIndia Hub not configured. Please check your environment variables.');
@@ -216,16 +286,35 @@ class SMSIndiaHubService {
 
       const apiUrl = `${this.baseUrl}?${params.toString()}`;
 
-      // Make GET request to SMSIndia Hub API
-      const response = await axios.get(apiUrl, {
-        headers: {
-          'User-Agent': 'DatingApp/1.0',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-        },
-        timeout: 15000 // 15 second timeout
-      });
-
-      const responseText = response.data.toString();
+      // Make GET request to SMSIndia Hub API using native fetch
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+      
+      let response;
+      try {
+        response = await fetch(apiUrl, {
+          method: 'GET',
+          headers: {
+            'User-Agent': 'DatingApp/1.0',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+          },
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        if (fetchError.name === 'AbortError') {
+          throw new Error('SMSIndia Hub request timeout. Please try again.');
+        }
+        throw new Error('Unable to connect to SMSIndia Hub service. Please check your internet connection.');
+      }
+      
+      if (!response.ok) {
+        throw new Error(`SMSIndia Hub API error (${response.status})`);
+      }
+      
+      const responseText = await response.text();
       
       // Check for success indicators in the response
       if (responseText.includes('success') || responseText.includes('sent') || responseText.includes('accepted')) {
@@ -253,7 +342,10 @@ class SMSIndiaHubService {
       }
 
     } catch (error) {
-      throw error;
+      if (error.message && error.message.includes('SMSIndia Hub')) {
+        throw error;
+      }
+      throw new Error(`SMSIndia Hub error: ${error.message}`);
     }
   }
 
@@ -263,8 +355,11 @@ class SMSIndiaHubService {
    */
   async getBalance() {
     try {
-      // Load credentials dynamically
-      const apiKey = this.apiKey || process.env.SMSINDIAHUB_API_KEY;
+      // Initialize credentials (lazy loading)
+      this._initialize();
+      
+      // Load credentials
+      const apiKey = this._apiKey || process.env.SMSINDIAHUB_API_KEY;
       
       if (!apiKey) {
         throw new Error('SMSIndia Hub not configured.');
@@ -273,15 +368,35 @@ class SMSIndiaHubService {
       // SMSIndia Hub balance API endpoint
       const balanceUrl = `http://cloud.smsindiahub.in/vendorsms/checkbalance.aspx?APIKey=${apiKey}`;
       
-      const response = await axios.get(balanceUrl, {
-        headers: {
-          'User-Agent': 'DatingApp/1.0',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-        },
-        timeout: 10000
-      });
-
-      const responseText = response.data.toString();
+      // Make GET request using native fetch
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      let response;
+      try {
+        response = await fetch(balanceUrl, {
+          method: 'GET',
+          headers: {
+            'User-Agent': 'DatingApp/1.0',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+          },
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        if (fetchError.name === 'AbortError') {
+          throw new Error('SMSIndia Hub request timeout.');
+        }
+        throw new Error('Unable to connect to SMSIndia Hub service.');
+      }
+      
+      if (!response.ok) {
+        throw new Error(`SMSIndia Hub API error (${response.status})`);
+      }
+      
+      const responseText = await response.text();
 
       // Parse balance from response (SMSIndia Hub typically returns balance as text)
       const balanceMatch = responseText.match(/(\d+\.?\d*)/);

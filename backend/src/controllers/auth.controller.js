@@ -1,6 +1,8 @@
 import User from '../models/User.model.js';
 import Profile from '../models/Profile.model.js';
 import { generateToken } from '../utils/generateToken.js';
+
+// Import SMS service (uses native fetch, no external dependencies needed)
 import smsIndiaHubService from '../services/smsIndiaHubService.js';
 
 // @desc    Send OTP to phone number
@@ -58,20 +60,24 @@ export const sendOTP = async (req, res) => {
     console.log(`📨 OTP for ${fullPhone}: ${otp}`);
     console.log(`📨 ==========================================\n`);
 
-    // Send OTP via SMSIndia Hub
-    try {
-      if (smsIndiaHubService.isConfigured()) {
+    // Send OTP via SMSIndia Hub (if configured)
+    if (smsIndiaHubService && smsIndiaHubService.isConfigured()) {
+      try {
+        console.log(`\n📤 Sending OTP via SMS to: ${fullPhone}`);
         const smsResult = await smsIndiaHubService.sendOTP(phone, otp, countryCode);
-        console.log('OTP sent via SMSIndia Hub:', smsResult);
-      } else {
-        console.warn('SMSIndia Hub not configured. OTP logged to console.');
-        console.log(`OTP for ${fullPhone}: ${otp}`);
+        console.log('✅ OTP sent successfully via SMSIndia Hub');
+        console.log('   Message ID:', smsResult.messageId);
+        console.log('   Status:', smsResult.status);
+        console.log('   To:', smsResult.to);
+        console.log('   Provider:', smsResult.provider);
+      } catch (smsError) {
+        console.error('❌ Error sending OTP via SMS:', smsError.message);
+        console.log('📨 OTP will be logged to console instead');
+        console.log(`📨 OTP for ${fullPhone}: ${otp}`);
       }
-    } catch (smsError) {
-      console.error('Error sending OTP via SMS:', smsError.message);
-      // Still return success but log the error
-      // In production, you might want to handle this differently
-      console.log(`OTP for ${fullPhone}: ${otp} (SMS failed, using fallback)`);
+    } else {
+      console.warn('⚠️ SMSIndia Hub not configured. OTP logged to console.');
+      console.log(`📨 OTP for ${fullPhone}: ${otp}`);
     }
 
     res.status(200).json({
@@ -243,19 +249,19 @@ export const resendOTP = async (req, res) => {
     console.log(`📨 Resent OTP for ${fullPhone}: ${otp}`);
     console.log(`📨 ==========================================\n`);
 
-    // Send OTP via SMSIndia Hub
-    try {
-      if (smsIndiaHubService.isConfigured()) {
-        const smsResult = await smsIndiaHubService.sendOTP(phone, otp, countryCode);
-        console.log('OTP resent via SMSIndia Hub:', smsResult);
-      } else {
-        console.warn('SMSIndia Hub not configured. OTP logged to console.');
-        console.log(`Resent OTP for ${fullPhone}: ${otp}`);
+    // Send OTP via SMSIndia Hub (if available and configured)
+    if (smsIndiaHubService) {
+      try {
+        if (smsIndiaHubService.isConfigured()) {
+          const smsResult = await smsIndiaHubService.sendOTP(phone, otp, countryCode);
+          console.log('✅ OTP resent via SMSIndia Hub:', smsResult);
+        } else {
+          console.warn('⚠️ SMSIndia Hub not configured. OTP logged to console.');
+        }
+      } catch (smsError) {
+        console.error('❌ Error resending OTP via SMS:', smsError.message);
+        console.log('📨 OTP will be logged to console instead');
       }
-    } catch (smsError) {
-      console.error('Error resending OTP via SMS:', smsError.message);
-      // Still return success but log the error
-      console.log(`Resent OTP for ${fullPhone}: ${otp} (SMS failed, using fallback)`);
     }
 
     res.status(200).json({

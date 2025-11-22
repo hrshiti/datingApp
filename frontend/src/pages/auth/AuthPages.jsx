@@ -150,15 +150,30 @@ export default function AuthPages() {
     
     setIsLoading(true);
     try {
+      const fullPhoneNumber = `${countryCode}${phone}`;
+      console.log('📤 ==========================================');
+      console.log('📤 SEND OTP REQUEST');
+      console.log('📤 Phone Number:', fullPhoneNumber);
+      console.log('📤 Country Code:', countryCode);
+      console.log('📤 Phone (10 digits):', phone);
+      console.log('📤 ==========================================');
+      
       const response = await authService.sendOTP(phone, countryCode);
       
       if (response.success) {
+        console.log('✅ ==========================================');
+        console.log('✅ OTP SENT SUCCESSFULLY');
+        console.log('✅ OTP sent to registered number:', fullPhoneNumber);
+        console.log('✅ Please check your SMS for the OTP');
+        console.log('✅ ==========================================');
+        
         // In development, OTP is returned in response
         if (response.otp) {
-          console.log('📨 OTP:', response.otp);
+          console.log('📨 OTP (dev mode):', response.otp);
           setReceivedOtp(response.otp); // Store for display
         }
         
+        // Navigate to OTP verification page
         setCurrentPage('otp');
         setOtpTimer(60);
         setCanResend(false);
@@ -168,7 +183,10 @@ export default function AuthPages() {
         setErrors(prev => ({ ...prev, phone: response.message || 'Failed to send OTP' }));
       }
     } catch (error) {
-      console.error('Error sending OTP:', error);
+      console.error('❌ ==========================================');
+      console.error('❌ ERROR SENDING OTP');
+      console.error('❌ Error:', error.message);
+      console.error('❌ ==========================================');
       setErrors(prev => ({ ...prev, phone: error.message || 'Failed to send OTP. Please try again.' }));
     } finally {
       setIsLoading(false);
@@ -211,23 +229,41 @@ export default function AuthPages() {
       return;
     }
     
+    const fullPhoneNumber = `${countryCode}${phone}`;
+    console.log('🔐 ==========================================');
+    console.log('🔐 VERIFY OTP REQUEST');
+    console.log('🔐 Phone Number:', fullPhoneNumber);
+    console.log('🔐 OTP Entered:', otpCode);
+    console.log('🔐 ==========================================');
+    
     setIsLoading(true);
     try {
       const response = await authService.verifyOTP(phone, countryCode, otpCode);
       
       if (response.success && response.token) {
         // Token is stored in authService.verifyOTP
-        console.log('✅ OTP verified successfully');
-        console.log('User data:', response.user);
+        console.log('✅ ==========================================');
+        console.log('✅ OTP VERIFIED SUCCESSFULLY');
+        console.log('✅ Phone Number:', fullPhoneNumber);
+        console.log('✅ User authenticated:', response.user);
+        console.log('✅ Token received and stored');
+        console.log('✅ ==========================================');
         
         // After OTP verification, always navigate to people page
         // People page will check if basic info is needed and redirect accordingly
         navigate('/people');
       } else {
+        console.error('❌ ==========================================');
+        console.error('❌ OTP VERIFICATION FAILED');
+        console.error('❌ Error:', response.message);
+        console.error('❌ ==========================================');
         setErrors(prev => ({ ...prev, otp: response.message || 'Invalid OTP. Please try again.' }));
       }
     } catch (error) {
-      console.error('Error verifying OTP:', error);
+      console.error('❌ ==========================================');
+      console.error('❌ ERROR VERIFYING OTP');
+      console.error('❌ Error:', error.message);
+      console.error('❌ ==========================================');
       setErrors(prev => ({ ...prev, otp: error.message || 'Invalid OTP. Please try again.' }));
     } finally {
       setIsLoading(false);
@@ -537,9 +573,14 @@ export default function AuthPages() {
             className="text-center mb-6 sm:mb-8"
           >
             <h1 className="text-2xl sm:text-3xl font-bold text-[#212121] mb-2">Verify OTP</h1>
-            <p className="text-sm sm:text-base text-[#757575]">
-              We've sent a code to<br />
-              <span className="font-semibold text-[#212121]">{countryCode} {phone}</span>
+            <p className="text-sm sm:text-base text-[#757575] mb-2">
+              We've sent a verification code to your registered number:
+            </p>
+            <p className="text-base sm:text-lg font-bold text-[#FF91A4] mb-1">
+              {countryCode} {phone}
+            </p>
+            <p className="text-xs text-[#757575]">
+              Please enter the 6-digit OTP received on this number
             </p>
             
             {/* Development Mode - Show OTP */}

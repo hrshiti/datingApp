@@ -29,7 +29,7 @@ SMSINDIAHUB_SENDER_ID=SMSHUB
 
 2. OTP Message Format:
    ```
-   Welcome to DatingApp powered by SMSINDIAHUB. Your OTP for registration is {OTP}. Valid for 10 minutes.
+   Welcome to DatingApp powered by SMSINDIAHUB. Your OTP for registration is {OTP}.
    ```
 
 3. Phone Number Normalization:
