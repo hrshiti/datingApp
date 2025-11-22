@@ -4,7 +4,9 @@ import {
   getMyProfile,
   getProfileById,
   updateOnboardingStep,
-  completeOnboarding
+  completeOnboarding,
+  saveBasicInfo,
+  checkProfileCompletion
 } from '../controllers/profile.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
 
@@ -14,7 +16,9 @@ const router = express.Router();
 router.use(protect);
 
 router.post('/', createOrUpdateProfile);
+router.post('/basic-info', saveBasicInfo);
 router.get('/me', getMyProfile);
+router.get('/check-completion', checkProfileCompletion);
 router.get('/:id', getProfileById);
 router.put('/onboarding/:step', updateOnboardingStep);
 router.post('/complete-onboarding', completeOnboarding);

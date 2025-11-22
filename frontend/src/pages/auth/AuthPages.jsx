@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Heart, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { authService } from '../../services/authService';
 
 export default function AuthPages() {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ export default function AuthPages() {
   const [otpTimer, setOtpTimer] = useState(60); // 60 seconds timer
   const [canResend, setCanResend] = useState(false);
   const [authFlow, setAuthFlow] = useState('signup'); // 'signup' or 'login'
+  const [receivedOtp, setReceivedOtp] = useState(''); // Store OTP received from API (dev mode)
   const countryDropdownRef = useRef(null);
 
   // Common country codes
@@ -135,7 +137,7 @@ export default function AuthPages() {
     }
   };
 
-  const handleSendOtp = () => {
+  const handleSendOtp = async () => {
     // Validate phone number
     const phoneError = validatePhone(phone);
     if (phoneError) {
@@ -147,60 +149,89 @@ export default function AuthPages() {
     setErrors(prev => ({ ...prev, phone: '' }));
     
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      const response = await authService.sendOTP(phone, countryCode);
+      
+      if (response.success) {
+        // In development, OTP is returned in response
+        if (response.otp) {
+          console.log('📨 OTP:', response.otp);
+          setReceivedOtp(response.otp); // Store for display
+        }
+        
+        setCurrentPage('otp');
+        setOtpTimer(60);
+        setCanResend(false);
+        setOtp(['', '', '', '', '', '']); // Reset OTP
+        navigate('/verify-otp');
+      } else {
+        setErrors(prev => ({ ...prev, phone: response.message || 'Failed to send OTP' }));
+      }
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+      setErrors(prev => ({ ...prev, phone: error.message || 'Failed to send OTP. Please try again.' }));
+    } finally {
       setIsLoading(false);
-      setCurrentPage('otp');
-      setOtpTimer(60);
-      setCanResend(false);
-      setOtp(['', '', '', '', '', '']); // Reset OTP
-      navigate('/verify-otp');
-    }, 1500);
+    }
   };
 
-  const handleResendOtp = () => {
+  const handleResendOtp = async () => {
     if (!canResend) return;
     
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      const response = await authService.resendOTP(phone, countryCode);
+      
+      if (response.success) {
+        // In development, OTP is returned in response
+        if (response.otp) {
+          console.log('📨 Resent OTP:', response.otp);
+          setReceivedOtp(response.otp); // Store for display
+        }
+        
+        setOtpTimer(60);
+        setCanResend(false);
+        setOtp(['', '', '', '', '', '']); // Reset OTP
+      } else {
+        setErrors(prev => ({ ...prev, otp: response.message || 'Failed to resend OTP' }));
+      }
+    } catch (error) {
+      console.error('Error resending OTP:', error);
+      setErrors(prev => ({ ...prev, otp: error.message || 'Failed to resend OTP. Please try again.' }));
+    } finally {
       setIsLoading(false);
-      setOtpTimer(60);
-      setCanResend(false);
-      setOtp(['', '', '', '', '', '']); // Reset OTP
-    }, 1500);
+    }
   };
 
-  const handleVerifyOtp = () => {
+  const handleVerifyOtp = async () => {
+    const otpCode = otp.join('');
+    
+    if (otpCode.length !== 6) {
+      setErrors(prev => ({ ...prev, otp: 'Please enter complete OTP' }));
+      return;
+    }
+    
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const response = await authService.verifyOTP(phone, countryCode, otpCode);
       
-      // Store phone number with country code
-      localStorage.setItem('authData', JSON.stringify({
-        phone: phone,
-        countryCode: countryCode
-      }));
-      
-      // Route based on auth flow (signup or login)
-      if (authFlow === 'signup') {
-        // Signup flow → Go to onboarding (profile creation) - start from step 1
-        // Clear any partial onboarding data to start fresh
-        const freshOnboardingData = {
-          step1: {},
-          step2: {},
-          step3: {},
-          step4: {},
-          step5: {},
-          step6: {},
-          currentStep: 1,
-          completed: false
-        };
-        localStorage.setItem('onboardingData', JSON.stringify(freshOnboardingData));
-        navigate('/onboarding');
-      } else {
-        // Login flow → Go directly to people page (skip onboarding)
+      if (response.success && response.token) {
+        // Token is stored in authService.verifyOTP
+        console.log('✅ OTP verified successfully');
+        console.log('User data:', response.user);
+        
+        // After OTP verification, always navigate to people page
+        // People page will check if basic info is needed and redirect accordingly
         navigate('/people');
+      } else {
+        setErrors(prev => ({ ...prev, otp: response.message || 'Invalid OTP. Please try again.' }));
       }
-    }, 1500);
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+      setErrors(prev => ({ ...prev, otp: error.message || 'Invalid OTP. Please try again.' }));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Splash/Welcome Screen
@@ -510,6 +541,24 @@ export default function AuthPages() {
               We've sent a code to<br />
               <span className="font-semibold text-[#212121]">{countryCode} {phone}</span>
             </p>
+            
+            {/* Development Mode - Show OTP */}
+            {import.meta.env.DEV && receivedOtp && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-4 p-4 bg-yellow-50 border-2 border-yellow-200 rounded-xl"
+              >
+                <p className="text-xs font-semibold text-yellow-800 mb-2">🔧 Development Mode</p>
+                <p className="text-sm text-yellow-700 mb-1">OTP Code (for testing):</p>
+                <p className="text-2xl font-bold text-yellow-900 text-center tracking-widest">
+                  {receivedOtp}
+                </p>
+                <p className="text-xs text-yellow-600 mt-2 text-center">
+                  Check backend console for more details
+                </p>
+              </motion.div>
+            )}
           </motion.div>
 
           <motion.div 

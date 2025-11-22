@@ -18,7 +18,7 @@ export const createOrUpdateProfile = async (req, res) => {
         if (profileData[key] !== undefined) {
           if (key === 'personality' || key === 'dealbreakers' || key === 'optional') {
             profile[key] = { ...profile[key], ...profileData[key] };
-          } else if (key === 'location' && profileData[key].coordinates) {
+          } else if (key === 'location' && profileData[key] && profileData[key].coordinates) {
             profile[key] = {
               ...profile[key],
               ...profileData[key],
@@ -27,6 +27,9 @@ export const createOrUpdateProfile = async (req, res) => {
                 coordinates: profileData[key].coordinates
               }
             };
+          } else if (key === 'location' && profileData[key] && !profileData[key].coordinates) {
+            // Update location without coordinates
+            profile[key] = { ...profile[key], ...profileData[key] };
           } else {
             profile[key] = profileData[key];
           }
@@ -69,6 +72,120 @@ export const createOrUpdateProfile = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error saving profile',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Save basic info only (name, gender, age, orientation, lookingFor)
+// @route   POST /api/profile/basic-info
+// @access  Private
+export const saveBasicInfo = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { name, dob, gender, customGender, orientation, customOrientation, lookingFor } = req.body;
+
+    // Validate required fields
+    if (!name || !dob || !gender || !orientation || !lookingFor) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name, date of birth, gender, orientation, and looking for are required'
+      });
+    }
+
+    // Check if profile exists
+    let profile = await Profile.findOne({ userId: userId });
+
+    if (profile) {
+      // Update basic info
+      profile.name = name;
+      profile.dob = dob;
+      profile.gender = gender;
+      profile.customGender = customGender || '';
+      profile.orientation = orientation;
+      profile.customOrientation = customOrientation || '';
+      profile.lookingFor = Array.isArray(lookingFor) ? lookingFor : [lookingFor];
+      profile.calculateAge();
+    } else {
+      // Create new profile with basic info only
+      profile = await Profile.create({
+        userId: userId,
+        name: name,
+        dob: dob,
+        gender: gender,
+        customGender: customGender || '',
+        orientation: orientation,
+        customOrientation: customOrientation || '',
+        lookingFor: Array.isArray(lookingFor) ? lookingFor : [lookingFor]
+      });
+      profile.calculateAge();
+
+      // Link profile to user
+      await User.findByIdAndUpdate(userId, { profile: profile._id });
+    }
+
+    await profile.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Basic information saved successfully',
+      profile: profile
+    });
+  } catch (error) {
+    console.error('Save basic info error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error saving basic information',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Check if profile is complete for swiping
+// @route   GET /api/profile/check-completion
+// @access  Private
+export const checkProfileCompletion = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const profile = await Profile.findOne({ userId: userId });
+
+    if (!profile) {
+      return res.status(200).json({
+        success: true,
+        isComplete: false,
+        hasBasicInfo: false,
+        missingFields: ['name', 'dob', 'gender', 'orientation', 'lookingFor', 'location', 'interests', 'personality', 'dealbreakers', 'photos', 'bio']
+      });
+    }
+
+    // Check basic info
+    const hasBasicInfo = !!(profile.name && profile.dob && profile.gender && profile.orientation && profile.lookingFor && profile.lookingFor.length > 0);
+
+    // Check if profile is complete for swiping (needs location, preferences, interests, personality, dealbreakers, photos, bio)
+    const missingFields = [];
+    
+    if (!profile.location || !profile.location.city) missingFields.push('location');
+    if (!profile.ageRange || !profile.ageRange.min || !profile.ageRange.max) missingFields.push('preferences');
+    if (!profile.interests || profile.interests.length < 3) missingFields.push('interests');
+    if (!profile.personality || Object.keys(profile.personality).length < 8) missingFields.push('personality');
+    if (!profile.dealbreakers || Object.keys(profile.dealbreakers).length < 4) missingFields.push('dealbreakers');
+    if (!profile.photos || profile.photos.length < 4) missingFields.push('photos');
+    if (!profile.bio || profile.bio.trim().length === 0) missingFields.push('bio');
+
+    const isComplete = missingFields.length === 0;
+
+    res.status(200).json({
+      success: true,
+      isComplete: isComplete,
+      hasBasicInfo: hasBasicInfo,
+      missingFields: missingFields,
+      completionPercentage: profile.completionPercentage || 0
+    });
+  } catch (error) {
+    console.error('Check profile completion error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error checking profile completion',
       error: error.message
     });
   }

@@ -7,9 +7,13 @@ import { generateToken } from '../utils/generateToken.js';
 // @access  Public
 export const sendOTP = async (req, res) => {
   try {
+    console.log('\n=== SEND OTP REQUEST ===');
+    console.log('Request body:', req.body);
+    
     const { phone, countryCode } = req.body;
 
     if (!phone || !countryCode) {
+      console.log('❌ Error: Phone number or country code missing');
       return res.status(400).json({
         success: false,
         message: 'Phone number and country code are required'
@@ -18,6 +22,7 @@ export const sendOTP = async (req, res) => {
 
     // Validate phone number (10 digits)
     if (!/^\d{10}$/.test(phone)) {
+      console.log('❌ Error: Invalid phone format -', phone);
       return res.status(400).json({
         success: false,
         message: 'Phone number must be exactly 10 digits'
@@ -25,33 +30,49 @@ export const sendOTP = async (req, res) => {
     }
 
     const fullPhone = `${countryCode}${phone}`;
+    console.log('📱 Full phone number:', fullPhone);
 
     // Find or create user
     let user = await User.findOne({ phone: fullPhone });
 
     if (!user) {
+      console.log('👤 Creating new user...');
       user = await User.create({
         phone: fullPhone,
         countryCode: countryCode
       });
+      console.log('✅ New user created with ID:', user._id);
+    } else {
+      console.log('👤 Existing user found with ID:', user._id);
     }
 
     // Generate OTP
     const otp = user.generateOTP();
     await user.save();
+    
+    console.log('🔐 OTP Generated:', otp);
+    console.log('⏰ OTP Expires at:', user.otp.expiresAt);
+    console.log('✅ OTP saved to database');
+    console.log(`\n📨 ==========================================`);
+    console.log(`📨 OTP for ${fullPhone}: ${otp}`);
+    console.log(`📨 ==========================================\n`);
 
     // In production, send OTP via SMS service (Twilio, AWS SNS, etc.)
     // For now, we'll return it in development
-    console.log(`OTP for ${fullPhone}: ${otp}`);
-
     res.status(200).json({
       success: true,
       message: 'OTP sent successfully',
       // Remove this in production
       ...(process.env.NODE_ENV === 'development' && { otp: otp })
     });
+    
+    console.log('=== SEND OTP SUCCESS ===\n');
   } catch (error) {
-    console.error('Send OTP error:', error);
+    console.error('\n❌ === SEND OTP ERROR ===');
+    console.error('Error details:', error);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('========================\n');
     res.status(500).json({
       success: false,
       message: 'Error sending OTP',
@@ -65,9 +86,17 @@ export const sendOTP = async (req, res) => {
 // @access  Public
 export const verifyOTP = async (req, res) => {
   try {
+    console.log('\n=== VERIFY OTP REQUEST ===');
+    console.log('Request body:', { 
+      phone: req.body.phone, 
+      countryCode: req.body.countryCode,
+      otp: req.body.otp ? '***' : 'missing' 
+    });
+    
     const { phone, countryCode, otp } = req.body;
 
     if (!phone || !countryCode || !otp) {
+      console.log('❌ Error: Missing required fields');
       return res.status(400).json({
         success: false,
         message: 'Phone number, country code, and OTP are required'
@@ -75,19 +104,34 @@ export const verifyOTP = async (req, res) => {
     }
 
     const fullPhone = `${countryCode}${phone}`;
+    console.log('📱 Full phone number:', fullPhone);
+    console.log('🔐 OTP received:', otp);
+
     const user = await User.findOne({ phone: fullPhone });
 
     if (!user) {
+      console.log('❌ Error: User not found for phone:', fullPhone);
       return res.status(404).json({
         success: false,
         message: 'User not found. Please request OTP first.'
       });
     }
 
+    console.log('👤 User found with ID:', user._id);
+    console.log('📋 Stored OTP in DB:', user.otp?.code || 'No OTP found');
+    console.log('⏰ OTP Expires at:', user.otp?.expiresAt || 'N/A');
+    console.log('🕐 Current time:', new Date());
+
     // Verify OTP
     const isValid = user.verifyOTP(otp);
+    console.log('✅ OTP Verification result:', isValid ? 'VALID ✓' : 'INVALID ✗');
 
     if (!isValid) {
+      console.log('❌ OTP verification failed');
+      console.log('   Expected OTP:', user.otp?.code);
+      console.log('   Received OTP:', otp);
+      console.log('   OTP Match:', user.otp?.code === otp);
+      console.log('   OTP Expired:', user.otp?.expiresAt ? (new Date() > user.otp.expiresAt) : 'N/A');
       return res.status(400).json({
         success: false,
         message: 'Invalid or expired OTP'
@@ -99,13 +143,17 @@ export const verifyOTP = async (req, res) => {
     user.isPhoneVerified = true;
     user.lastActiveAt = new Date();
     await user.save();
+    console.log('✅ User updated: OTP cleared, phone verified');
 
     // Check if user has completed onboarding
     const profile = await Profile.findOne({ userId: user._id });
     const hasCompletedOnboarding = profile && profile.onboardingCompleted;
+    console.log('📄 Profile found:', !!profile);
+    console.log('📄 Onboarding completed:', hasCompletedOnboarding);
 
     // Generate JWT token
     const token = generateToken(user._id);
+    console.log('🔑 JWT Token generated');
 
     res.status(200).json({
       success: true,
@@ -119,8 +167,14 @@ export const verifyOTP = async (req, res) => {
         hasCompletedOnboarding: hasCompletedOnboarding
       }
     });
+    
+    console.log('=== VERIFY OTP SUCCESS ===\n');
   } catch (error) {
-    console.error('Verify OTP error:', error);
+    console.error('\n❌ === VERIFY OTP ERROR ===');
+    console.error('Error details:', error);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('==========================\n');
     res.status(500).json({
       success: false,
       message: 'Error verifying OTP',
@@ -134,9 +188,13 @@ export const verifyOTP = async (req, res) => {
 // @access  Public
 export const resendOTP = async (req, res) => {
   try {
+    console.log('\n=== RESEND OTP REQUEST ===');
+    console.log('Request body:', req.body);
+    
     const { phone, countryCode } = req.body;
 
     if (!phone || !countryCode) {
+      console.log('❌ Error: Phone number or country code missing');
       return res.status(400).json({
         success: false,
         message: 'Phone number and country code are required'
@@ -144,30 +202,47 @@ export const resendOTP = async (req, res) => {
     }
 
     const fullPhone = `${countryCode}${phone}`;
+    console.log('📱 Full phone number:', fullPhone);
+    
     const user = await User.findOne({ phone: fullPhone });
 
     if (!user) {
+      console.log('❌ Error: User not found for phone:', fullPhone);
       return res.status(404).json({
         success: false,
         message: 'User not found'
       });
     }
 
+    console.log('👤 User found with ID:', user._id);
+    console.log('🔄 Previous OTP:', user.otp?.code || 'None');
+
     // Generate new OTP
     const otp = user.generateOTP();
     await user.save();
+    
+    console.log('🔐 New OTP Generated:', otp);
+    console.log('⏰ OTP Expires at:', user.otp.expiresAt);
+    console.log('✅ New OTP saved to database');
+    console.log(`\n📨 ==========================================`);
+    console.log(`📨 Resent OTP for ${fullPhone}: ${otp}`);
+    console.log(`📨 ==========================================\n`);
 
     // In production, send OTP via SMS service
-    console.log(`Resent OTP for ${fullPhone}: ${otp}`);
-
     res.status(200).json({
       success: true,
       message: 'OTP resent successfully',
       // Remove this in production
       ...(process.env.NODE_ENV === 'development' && { otp: otp })
     });
+    
+    console.log('=== RESEND OTP SUCCESS ===\n');
   } catch (error) {
-    console.error('Resend OTP error:', error);
+    console.error('\n❌ === RESEND OTP ERROR ===');
+    console.error('Error details:', error);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('===========================\n');
     res.status(500).json({
       success: false,
       message: 'Error resending OTP',

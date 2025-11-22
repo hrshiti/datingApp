@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, MapPin, Check, Edit2, Camera, ShoppingBag, User, Plane, Mic, Dumbbell, ChefHat, Activity, Palette, Mountain, Music, Wine, Gamepad2, Waves, UserCircle, MapPin as MapPinIcon, Heart, Smile, Home, Settings, Users, Calendar, Sun, Moon, Zap, MessageSquare, Sparkles, Coffee, Baby, Cigarette, Dog, GlassWater, GraduationCap, Briefcase, Languages, Star, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CustomDropdown from '../components/CustomDropdown';
@@ -8,8 +8,12 @@ import PhotoUpload from '../components/PhotoUpload';
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const totalSteps = 10;
-  const [currentStep, setCurrentStep] = useState(1);
+  
+  // Check if we should start from step 2 (after basic info)
+  const startStep = location.state?.startFromStep || location.state?.skipBasicInfo ? 2 : 1;
+  const [currentStep, setCurrentStep] = useState(startStep);
   // Ensure progress percentage is clamped between 0-100 and never exceeds 100%
   const progressPercentage = Math.min(Math.round((currentStep / totalSteps) * 100), 100);
 
@@ -74,10 +78,71 @@ export default function OnboardingPage() {
   const minPhotos = 4;
   const maxPhotos = 6;
 
-  // Load saved data from localStorage
+  // Load saved data from localStorage and check if coming from "Complete Details"
   useEffect(() => {
     const savedData = localStorage.getItem('onboardingData');
     const isEditingOnboarding = localStorage.getItem('editingOnboarding') === 'true';
+    const shouldSkipBasicInfo = location.state?.skipBasicInfo || location.state?.startFromStep === 2;
+    
+    // If coming from "Complete Details" button, load basic info from backend and start from step 2
+    if (shouldSkipBasicInfo) {
+      const loadBasicInfo = async () => {
+        try {
+          const { profileService } = await import('../services/profileService');
+          const response = await profileService.getMyProfile();
+          
+          if (response.success && response.profile) {
+            const profile = response.profile;
+            setFormData(prev => ({
+              ...prev,
+              // Step 1 data (already filled, but load for display)
+              name: profile.name || '',
+              dob: profile.dob ? new Date(profile.dob).toISOString().split('T')[0] : '',
+              gender: profile.gender || '',
+              customGender: profile.customGender || '',
+              orientation: profile.orientation || '',
+              customOrientation: profile.customOrientation || '',
+              lookingFor: Array.isArray(profile.lookingFor) ? profile.lookingFor[0] : profile.lookingFor || '',
+              // Step 2 data (if exists)
+              city: profile.location?.city || '',
+              ageRange: profile.ageRange || { min: 18, max: '' },
+              distancePref: profile.distancePref || 25,
+              // Step 3 data
+              interests: profile.interests || [],
+              // Step 4 data
+              personality: profile.personality || prev.personality,
+              // Step 5 data
+              dealbreakers: profile.dealbreakers || prev.dealbreakers,
+              // Step 6 data
+              prompts: profile.prompts || [],
+              // Step 7 data
+              optional: profile.optional || prev.optional,
+              // Step 8 data
+              photos: profile.photos?.map(p => (typeof p === 'string' ? p : p.url)) || [],
+              bio: profile.bio || ''
+            }));
+            
+            // Set custom gender/orientation visibility
+            if (profile.gender === 'other') {
+              setShowCustomGender(true);
+            }
+            if (profile.orientation === 'other') {
+              setShowCustomOrientation(true);
+            }
+            
+            // Start from step 2 (after basic info)
+            setCurrentStep(2);
+          }
+        } catch (error) {
+          console.error('Error loading profile data:', error);
+          // If error, still start from step 2
+          setCurrentStep(2);
+        }
+      };
+      
+      loadBasicInfo();
+      return; // Don't process localStorage data when coming from Complete Details
+    }
     
     if (savedData) {
       try {
@@ -124,9 +189,11 @@ export default function OnboardingPage() {
         }
         
         // Onboarding not completed - load saved progress
+        // Check if coming from "Complete Details" button (should start from step 2)
+        const shouldSkipBasicInfo = location.state?.skipBasicInfo || location.state?.startFromStep === 2;
+        const defaultStep = shouldSkipBasicInfo ? 2 : (parsed.currentStep || 1);
         // Clamp currentStep to valid range (1-9)
-        const step = parsed.currentStep || 1;
-        const validStep = Math.min(Math.max(step, 1), 9);
+        const validStep = Math.min(Math.max(defaultStep, 1), 9);
         
         setFormData(prev => {
           // Handle backward compatibility: if lookingFor is an array, take first item

@@ -101,14 +101,34 @@ const calculateMatchScore = (userProfile, otherProfile) => {
 export const getDiscoveryFeed = async (req, res) => {
   try {
     const userId = req.user._id;
-    const { page = 1, limit = 20 } = req.query;
+    
+    // Parse and validate page and limit
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 20;
+    
+    // Ensure valid values
+    const validPage = page > 0 ? page : 1;
+    const validLimit = limit > 0 && limit <= 100 ? limit : 20;
+
+    console.log('=== GET DISCOVERY FEED ===');
+    console.log('User ID:', userId);
+    console.log('Page:', validPage, 'Limit:', validLimit);
 
     // Get user's profile
     const userProfile = await Profile.findOne({ userId: userId });
     if (!userProfile) {
       return res.status(404).json({
         success: false,
-        message: 'Profile not found. Please complete your profile first.'
+        message: 'Profile not found. Please complete basic information first.'
+      });
+    }
+
+    // Check if user has at least basic info (name, gender, age, orientation, lookingFor)
+    if (!userProfile.name || !userProfile.gender || !userProfile.orientation || !userProfile.lookingFor || userProfile.lookingFor.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please complete your basic information first',
+        requiresBasicInfo: true
       });
     }
 
@@ -119,20 +139,28 @@ export const getDiscoveryFeed = async (req, res) => {
       ...interactions.map(i => i.toUser)
     ];
 
-    // Build query
+    // Build query - allow users with at least basic info to see feed
+    // Show profiles that have at least basic info (onboardingCompleted is optional)
     let query = {
       userId: { $nin: excludedUserIds },
       isActive: true,
       isVisible: true,
-      onboardingCompleted: true
+      // Ensure profiles have basic info
+      name: { $exists: true, $ne: null },
+      gender: { $exists: true, $ne: null },
+      orientation: { $exists: true, $ne: null },
+      lookingFor: { $exists: true, $ne: [] }
     };
+    
+    console.log('Query before filters:', JSON.stringify(query, null, 2));
 
     // Age range filter
-    if (userProfile.ageRange) {
+    if (userProfile.ageRange && userProfile.ageRange.min && userProfile.ageRange.max) {
       query.age = {
-        $gte: userProfile.ageRange.min,
-        $lte: userProfile.ageRange.max
+        $gte: Number(userProfile.ageRange.min),
+        $lte: Number(userProfile.ageRange.max)
       };
+      console.log('Age filter:', query.age);
     }
 
     // Gender filter (lookingFor)
@@ -151,23 +179,41 @@ export const getDiscoveryFeed = async (req, res) => {
 
     // Location filter (if coordinates available)
     if (userProfile.location?.coordinates && userProfile.distancePref) {
-      query['location.coordinates'] = {
-        $near: {
-          $geometry: {
-            type: 'Point',
-            coordinates: userProfile.location.coordinates
-          },
-          $maxDistance: userProfile.distancePref * 1000 // Convert km to meters
-        }
-      };
+      const coordinates = userProfile.location.coordinates;
+      const distancePref = Number(userProfile.distancePref) || 25;
+      
+      // Validate coordinates are numbers
+      if (Array.isArray(coordinates) && coordinates.length === 2 && 
+          typeof coordinates[0] === 'number' && typeof coordinates[1] === 'number') {
+        query['location.coordinates'] = {
+          $near: {
+            $geometry: {
+              type: 'Point',
+              coordinates: coordinates
+            },
+            $maxDistance: distancePref * 1000 // Convert km to meters
+          }
+        };
+        console.log('Location filter applied:', distancePref, 'km');
+      } else {
+        console.log('⚠️ Invalid coordinates format, skipping location filter');
+      }
     }
 
     // Get profiles
-    const profiles = await Profile.find(query)
+    let profiles = await Profile.find(query)
       .populate('userId', 'isPremium lastActiveAt')
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
+      .limit(validLimit)
+      .skip((validPage - 1) * validLimit)
       .sort({ createdAt: -1 });
+    
+    console.log('Found profiles:', profiles.length);
+    
+    // If no profiles found and user just has basic info, return empty array
+    // Frontend will handle redirect to onboarding
+    if (profiles.length === 0) {
+      console.log('No profiles found - user may need to complete profile or wait for more users');
+    }
 
     // Calculate match scores
     const profilesWithScores = profiles.map(profile => {
@@ -192,13 +238,20 @@ export const getDiscoveryFeed = async (req, res) => {
     // Sort by match score
     profilesWithScores.sort((a, b) => b.matchScore - a.matchScore);
 
+    console.log('=== DISCOVERY FEED SUCCESS ===');
+    console.log('Returning', profilesWithScores.length, 'profiles\n');
+
     res.status(200).json({
       success: true,
       count: profilesWithScores.length,
       profiles: profilesWithScores
     });
   } catch (error) {
-    console.error('Get discovery feed error:', error);
+    console.error('\n❌ === GET DISCOVERY FEED ERROR ===');
+    console.error('Error details:', error);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('===================================\n');
     res.status(500).json({
       success: false,
       message: 'Error fetching discovery feed',
@@ -226,6 +279,35 @@ export const likeProfile = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Cannot like your own profile'
+      });
+    }
+
+    // Check if user's profile is complete for swiping
+    const userProfile = await Profile.findOne({ userId: userId });
+    if (!userProfile) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please complete your basic information first',
+        requiresBasicInfo: true
+      });
+    }
+
+    // Check if profile has required fields for swiping
+    const missingFields = [];
+    if (!userProfile.location || !userProfile.location.city) missingFields.push('location');
+    if (!userProfile.ageRange || !userProfile.ageRange.min || !userProfile.ageRange.max) missingFields.push('preferences');
+    if (!userProfile.interests || userProfile.interests.length < 3) missingFields.push('interests');
+    if (!userProfile.personality || Object.keys(userProfile.personality).length < 8) missingFields.push('personality');
+    if (!userProfile.dealbreakers || Object.keys(userProfile.dealbreakers).length < 4) missingFields.push('dealbreakers');
+    if (!userProfile.photos || userProfile.photos.length < 4) missingFields.push('photos');
+    if (!userProfile.bio || userProfile.bio.trim().length === 0) missingFields.push('bio');
+
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please complete your profile to start swiping',
+        requiresProfileCompletion: true,
+        missingFields: missingFields
       });
     }
 
@@ -297,6 +379,35 @@ export const passProfile = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Target user ID is required'
+      });
+    }
+
+    // Check if user's profile is complete for swiping
+    const userProfile = await Profile.findOne({ userId: userId });
+    if (!userProfile) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please complete your basic information first',
+        requiresBasicInfo: true
+      });
+    }
+
+    // Check if profile has required fields for swiping
+    const missingFields = [];
+    if (!userProfile.location || !userProfile.location.city) missingFields.push('location');
+    if (!userProfile.ageRange || !userProfile.ageRange.min || !userProfile.ageRange.max) missingFields.push('preferences');
+    if (!userProfile.interests || userProfile.interests.length < 3) missingFields.push('interests');
+    if (!userProfile.personality || Object.keys(userProfile.personality).length < 8) missingFields.push('personality');
+    if (!userProfile.dealbreakers || Object.keys(userProfile.dealbreakers).length < 4) missingFields.push('dealbreakers');
+    if (!userProfile.photos || userProfile.photos.length < 4) missingFields.push('photos');
+    if (!userProfile.bio || userProfile.bio.trim().length === 0) missingFields.push('bio');
+
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please complete your profile to start swiping',
+        requiresProfileCompletion: true,
+        missingFields: missingFields
       });
     }
 

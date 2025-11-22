@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import AuthPages from './pages/auth/AuthPages';
+import BasicInfoPage from './pages/BasicInfoPage';
 import OnboardingPage from './pages/OnboardingPage';
 import ProfileSetupPage from './pages/ProfileSetupPage';
 import PhotoVerificationPage from './pages/PhotoVerificationPage';
@@ -48,6 +49,7 @@ function App() {
         <Route path="/welcome" element={<AuthPages />} />
         <Route path="/phone" element={<AuthPages />} />
         <Route path="/verify-otp" element={<AuthPages />} />
+        <Route path="/basic-info" element={<BasicInfoPage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/profile-setup" element={<ProfileSetupPage />} />
         <Route path="/photo-verification" element={<PhotoVerificationPage />} />
