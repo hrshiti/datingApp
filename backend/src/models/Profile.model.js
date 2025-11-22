@@ -87,7 +87,7 @@ const profileSchema = new mongoose.Schema({
   personality: {
     social: {
       type: String,
-      enum: ['introvert', 'extrovert', 'ambivert', '']
+      enum: ['social', 'introvert', 'extrovert', 'ambivert', '']
     },
     planning: {
       type: String,
@@ -99,11 +99,11 @@ const profileSchema = new mongoose.Schema({
     },
     morning: {
       type: String,
-      enum: ['morning-person', 'night-owl', 'balanced', '']
+      enum: ['morning', 'night', 'morning-person', 'night-owl', 'balanced', '']
     },
     homebody: {
       type: String,
-      enum: ['homebody', 'adventurer', 'balanced', '']
+      enum: ['homebody', 'outgoing', 'adventurer', 'balanced', '']
     },
     serious: {
       type: String,
@@ -111,7 +111,7 @@ const profileSchema = new mongoose.Schema({
     },
     decision: {
       type: String,
-      enum: ['decisive', 'indecisive', 'balanced', '']
+      enum: ['quick', 'thoughtful', 'decisive', 'indecisive', 'balanced', '']
     },
     communication: {
       type: String,
