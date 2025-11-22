@@ -357,15 +357,10 @@ export default function ProfilePage() {
             {/* Profile Photo */}
             <div className="flex flex-col items-center mb-6">
               <motion.div 
-                className="relative cursor-pointer"
+                className="relative"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 300 }}
-                onClick={() => {
-                  if (profileSetup?.photos && profileSetup.photos.length > 0) {
-                    navigate('/edit-profile-info', { state: { activeTab: 'preview' } });
-                  }
-                }}
               >
                 {/* Circular Progress Ring */}
                 <div className="relative w-28 h-28 sm:w-32 sm:h-32">
@@ -409,12 +404,30 @@ export default function ProfilePage() {
                       </div>
                     )}
                   </div>
+                  {/* Edit Icon Button - Top Right */}
+                  <motion.button
+                    onClick={() => {
+                      navigate('/edit-profile-info', { state: { activeTab: 'edit' } });
+                    }}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="absolute top-0 right-0 w-8 h-8 sm:w-9 sm:h-9 bg-white rounded-full flex items-center justify-center shadow-lg border-2 border-[#FF91A4] z-20 cursor-pointer"
+                  >
+                    <Edit2 className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF91A4]" />
+                    {/* Red dot indicator */}
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
+                  </motion.button>
                   {/* Percentage Text */}
-                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-white rounded-full px-2.5 py-1 shadow-lg border-2" style={{ borderColor: borderColor }}>
-                    <span className="text-xs font-bold" style={{ color: borderColor }}>
-                      {profileCompletion}%
-                    </span>
-                  </div>
+                  {profileCompletion < 100 && (
+                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-white to-[#FFF0F5] rounded-full px-3 py-1.5 shadow-lg border-2 flex items-center gap-1.5" style={{ borderColor: borderColor }}>
+                      <span className="text-xs sm:text-sm font-bold" style={{ color: borderColor }}>
+                        {profileCompletion}%
+                      </span>
+                      <span className="text-[9px] sm:text-[10px] font-semibold text-[#757575] uppercase tracking-wide">
+                        Complete
+                      </span>
+                    </div>
+                  )}
                 </div>
                 {profileSetup?.verified && (
                   <motion.div 
@@ -438,7 +451,7 @@ export default function ProfilePage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 }}
-                onClick={() => navigate('/edit-profile-info')}
+                onClick={() => navigate('/edit-profile-info', { state: { showOnlyIncomplete: true, activeTab: 'edit' } })}
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
                 className="mt-4 px-6 py-2.5 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all text-sm sm:text-base flex items-center gap-2"

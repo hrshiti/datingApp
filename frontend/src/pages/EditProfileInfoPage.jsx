@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Camera, Upload, User, Sparkles, ChevronLeft, ChevronRight, MapPin, UserCircle, Heart, Smile, Calendar, Sun, Moon, Zap, MessageSquare, Coffee, Baby, Cigarette, Dog, GlassWater, GraduationCap, Briefcase, Languages, ShoppingBag, Plane, Mic, Dumbbell, ChefHat, Activity, Palette, Mountain, Music, Wine, Gamepad2, Waves, Users, Home } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -88,10 +88,37 @@ export default function EditProfileInfoPage() {
     return maxDate.toISOString().split('T')[0];
   };
 
+  // Check if should show only incomplete fields
+  const showOnlyIncomplete = location.state?.showOnlyIncomplete || false;
+  
+  // Function to check which sections are incomplete - memoized to recalculate when formData or photos change
+  const incompleteSections = useMemo(() => {
+    if (!showOnlyIncomplete) return {};
+    
+    return {
+      photos: !photos || photos.length < 4,
+      bio: !bio || bio.trim().length === 0,
+      step1: !formData.name || !formData.dob || !formData.gender || !formData.orientation || !formData.lookingFor,
+      step2: !formData.city,
+      step3: !formData.interests || formData.interests.length < 3,
+      step4: !formData.personality || !formData.personality.social || !formData.personality.planning || 
+             !formData.personality.romantic || !formData.personality.morning || !formData.personality.homebody ||
+             !formData.personality.serious || !formData.personality.decision || !formData.personality.communication,
+      step5: !formData.dealbreakers || !formData.dealbreakers.kids || !formData.dealbreakers.smoking ||
+             !formData.dealbreakers.pets || !formData.dealbreakers.drinking || !formData.dealbreakers.religion,
+      step6: !formData.prompts || formData.prompts.length === 0,
+      step7: false // Optional fields are always optional, so we don't require them
+    };
+  }, [showOnlyIncomplete, photos, bio, formData]);
+
   useEffect(() => {
     // Check if coming from profile photo click with preview tab state
     if (location.state?.activeTab === 'preview') {
       setActiveTab('preview');
+    }
+    // Check if coming from Complete Profile button
+    if (location.state?.activeTab === 'edit') {
+      setActiveTab('edit');
     }
 
     // Load profile data from backend API
@@ -471,6 +498,7 @@ export default function EditProfileInfoPage() {
                 className="space-y-6 sm:space-y-8 md:space-y-6 flex-1 overflow-y-auto pr-2 relative z-10 min-h-0"
               >
                 {/* Section 1: Photo Upload */}
+                {(!showOnlyIncomplete || incompleteSections.photos) && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -506,8 +534,10 @@ export default function EditProfileInfoPage() {
                     </motion.p>
                   )}
                 </motion.div>
+                )}
 
                 {/* Section 2: Bio */}
+                {(!showOnlyIncomplete || incompleteSections.bio) && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -557,8 +587,10 @@ export default function EditProfileInfoPage() {
                     )}
                   </div>
                 </motion.div>
+                )}
 
                 {/* Section 3: Basic Information (Step 1) */}
+                {(!showOnlyIncomplete || incompleteSections.step1) && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -699,8 +731,10 @@ export default function EditProfileInfoPage() {
                     />
                   </div>
                 </motion.div>
+                )}
 
                 {/* Section 4: Location & Preferences (Step 2) */}
+                {(!showOnlyIncomplete || incompleteSections.step2) && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -789,8 +823,10 @@ export default function EditProfileInfoPage() {
                     </div>
                   </div>
                 </motion.div>
+                )}
 
                 {/* Section 5: Interests (Step 3) */}
+                {(!showOnlyIncomplete || incompleteSections.step3) && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -839,8 +875,10 @@ export default function EditProfileInfoPage() {
                     })}
                   </div>
                 </motion.div>
+                )}
 
                 {/* Section 6: Personality Traits (Step 4) */}
+                {(!showOnlyIncomplete || incompleteSections.step4) && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -1122,8 +1160,10 @@ export default function EditProfileInfoPage() {
                     </div>
                   </div>
                 </motion.div>
+                )}
 
                 {/* Section 7: Dealbreakers (Step 5) */}
+                {(!showOnlyIncomplete || incompleteSections.step5) && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -1229,8 +1269,10 @@ export default function EditProfileInfoPage() {
                     </div>
                   </div>
                 </motion.div>
+                )}
 
                 {/* Section 8: Prompts (Step 6) */}
+                {(!showOnlyIncomplete || incompleteSections.step6) && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -1360,8 +1402,10 @@ export default function EditProfileInfoPage() {
                     </motion.p>
                   )}
                 </motion.div>
+                )}
 
                 {/* Section 9: Optional Info (Step 7) */}
+                {(!showOnlyIncomplete || incompleteSections.step7) && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -1475,6 +1519,7 @@ export default function EditProfileInfoPage() {
                     </div>
                   </div>
                 </motion.div>
+                )}
 
                 {/* Section 10: Save Button */}
                 <motion.div
