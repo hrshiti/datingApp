@@ -107,7 +107,7 @@ const profileSchema = new mongoose.Schema({
     },
     serious: {
       type: String,
-      enum: ['serious', 'casual', 'balanced', '']
+      enum: ['serious', 'casual', 'balanced', 'fun-loving', 'fun', '']
     },
     decision: {
       type: String,

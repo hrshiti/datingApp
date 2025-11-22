@@ -6,6 +6,7 @@ import PhotoUpload from '../components/PhotoUpload';
 import CustomDropdown from '../components/CustomDropdown';
 import CustomDatePicker from '../components/CustomDatePicker';
 import { profileService } from '../services/profileService';
+import { uploadService } from '../services/uploadService';
 
 export default function EditProfileInfoPage() {
   const navigate = useNavigate();
@@ -105,9 +106,9 @@ export default function EditProfileInfoPage() {
              !formData.personality.romantic || !formData.personality.morning || !formData.personality.homebody ||
              !formData.personality.serious || !formData.personality.decision || !formData.personality.communication,
       step5: !formData.dealbreakers || !formData.dealbreakers.kids || !formData.dealbreakers.smoking ||
-             !formData.dealbreakers.pets || !formData.dealbreakers.drinking || !formData.dealbreakers.religion,
-      step6: !formData.prompts || formData.prompts.length === 0,
-      step7: false // Optional fields are always optional, so we don't require them
+             !formData.dealbreakers.pets || !formData.dealbreakers.drinking, // religion is optional
+      step6: !formData.prompts || formData.prompts.length < 3 || formData.prompts.some(p => !p.answer || p.answer.trim() === ''),
+      step7: !formData.optional || !formData.optional.education || !formData.optional.profession || !formData.optional.languages || formData.optional.languages.length === 0 || !formData.optional.horoscope // Show if ANY optional field is missing
     };
   }, [showOnlyIncomplete, photos, bio, formData]);
 
@@ -205,6 +206,10 @@ export default function EditProfileInfoPage() {
               updatedFormData.optional.languages = profile.optional.languages;
             }
             if (profile.optional.horoscope) updatedFormData.optional.horoscope = profile.optional.horoscope;
+            // Load prompts from optional.prompts
+            if (profile.optional.prompts && profile.optional.prompts.length > 0) {
+              updatedFormData.prompts = profile.optional.prompts;
+            }
           }
           
           // Photos - only if exists
@@ -321,81 +326,94 @@ export default function EditProfileInfoPage() {
 
   const handleSave = async () => {
     try {
-      // Convert photos to base64 for storage
-      const photosData = await Promise.all(
-        photos.map(async (photo) => {
-          if (photo.file) {
-            return new Promise((resolve) => {
-              const reader = new FileReader();
-              reader.onloadend = () => {
-                resolve({
-                  id: photo.id,
-                  preview: reader.result,
-                  fileName: photo.file.name,
-                });
-              };
-              reader.readAsDataURL(photo.file);
-            });
-          } else {
-            return {
-              id: photo.id,
-              preview: photo.preview,
-              fileName: photo.fileName || 'photo.jpg',
-            };
-          }
-        })
-      );
-
-      // Save profile setup data
-      const profileData = {
-        photos: photosData,
-        bio: bio.trim(),
-        completedAt: new Date().toISOString(),
-      };
-      localStorage.setItem('profileSetup', JSON.stringify(profileData));
-
-      // Save onboarding data
-      const existingOnboarding = JSON.parse(localStorage.getItem('onboardingData') || '{}');
-      const updatedOnboarding = {
-        ...existingOnboarding,
-        step1: {
-          name: formData.name,
-          email: formData.email,
+      console.log('💾 Saving profile data to backend...');
+      
+      // Step 1: Save Basic Info if any field is filled
+      if (formData.name || formData.dob || formData.gender || formData.orientation || formData.lookingFor) {
+        const basicInfo = {
+          name: formData.name.trim(),
           dob: formData.dob,
           gender: formData.gender,
-          customGender: formData.customGender,
+          customGender: formData.customGender || '',
           orientation: formData.orientation,
-          customOrientation: formData.customOrientation,
-          lookingFor: formData.lookingFor
-        },
-        step2: {
-          city: formData.city,
+          customOrientation: formData.customOrientation || '',
+          lookingFor: Array.isArray(formData.lookingFor) ? formData.lookingFor : [formData.lookingFor]
+        };
+        await profileService.saveBasicInfo(basicInfo);
+        console.log('✅ Basic info saved');
+      }
+
+      // Step 2: Save Location & Preferences
+      if (formData.city || formData.ageRange || formData.distancePref) {
+        const step2Data = {
+          location: {
+            city: formData.city
+          },
           ageRange: formData.ageRange,
           distancePref: formData.distancePref
-        },
-        step3: {
-          interests: formData.interests
-        },
-        step4: {
-          personality: formData.personality
-        },
-        step5: {
-          dealbreakers: formData.dealbreakers
-        },
-        step6: {
-          prompts: formData.prompts
-        },
-        step7: {
-          optional: formData.optional
-        },
-        completed: existingOnboarding.completed || false,
-        currentStep: existingOnboarding.currentStep || 7
-      };
-      localStorage.setItem('onboardingData', JSON.stringify(updatedOnboarding));
+        };
+        await profileService.updateOnboardingStep(2, step2Data);
+        console.log('✅ Location & preferences saved');
+      }
 
+      // Step 3: Save Interests
+      if (formData.interests && formData.interests.length > 0) {
+        await profileService.updateOnboardingStep(3, { interests: formData.interests });
+        console.log('✅ Interests saved');
+      }
+
+      // Step 4: Save Personality
+      if (formData.personality) {
+        await profileService.updateOnboardingStep(4, { personality: formData.personality });
+        console.log('✅ Personality saved');
+      }
+
+      // Step 5: Save Dealbreakers
+      if (formData.dealbreakers) {
+        await profileService.updateOnboardingStep(5, { dealbreakers: formData.dealbreakers });
+        console.log('✅ Dealbreakers saved');
+      }
+
+      // Step 6 & 7: Save Prompts and Optional Info together (prompts are in optional)
+      if (formData.prompts || formData.optional) {
+        const optionalData = {
+          prompts: formData.prompts || [],
+          education: formData.optional?.education || '',
+          profession: formData.optional?.profession || '',
+          languages: formData.optional?.languages || [],
+          horoscope: formData.optional?.horoscope || ''
+        };
+        await profileService.updateOnboardingStep(6, { optional: optionalData });
+        console.log('✅ Prompts and optional info saved');
+      }
+
+      // Step 8: Upload Photos and Save Bio
+      if (photos && photos.length > 0) {
+        // Filter new photo files
+        const photoFiles = photos
+          .filter(photo => photo && photo.file instanceof File)
+          .map(photo => photo.file);
+
+        if (photoFiles.length > 0) {
+          const uploadResponse = await uploadService.uploadPhotos(photoFiles);
+          if (!uploadResponse.success) {
+            throw new Error(uploadResponse.message || 'Failed to upload photos');
+          }
+          console.log('✅ Photos uploaded');
+        }
+      }
+
+      // Save Bio
+      if (bio && bio.trim().length > 0) {
+        await profileService.updateBio(bio.trim());
+        console.log('✅ Bio saved');
+      }
+
+      alert('Profile updated successfully!');
       navigate('/profile');
     } catch (error) {
-      console.error('Error saving profile:', error);
+      console.error('❌ Error saving profile:', error);
+      alert('Error saving profile. Please try again.');
     }
   };
   
@@ -764,7 +782,8 @@ export default function EditProfileInfoPage() {
                     />
                   </div>
 
-                  {/* Age Range */}
+                  {/* Age Range - Show if max is not filled */}
+                  {(!showOnlyIncomplete || !formData.ageRange?.max) && (
                   <div className="mb-4">
                     <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5">
                       Age Range Preference
@@ -792,6 +811,7 @@ export default function EditProfileInfoPage() {
                       </div>
                     </div>
                   </div>
+                  )}
 
                   {/* Distance Preference */}
                   <div className="mb-4">
@@ -1068,7 +1088,7 @@ export default function EditProfileInfoPage() {
                       <div className="grid grid-cols-2 gap-3">
                         {[
                           { value: 'serious', label: 'Serious', icon: Heart },
-                          { value: 'fun', label: 'Fun', icon: Smile }
+                          { value: 'fun-loving', label: 'Fun-loving', icon: Smile }
                         ].map((option) => {
                           const Icon = option.icon;
                           const isSelected = formData.personality.serious === option.value;
@@ -1254,7 +1274,8 @@ export default function EditProfileInfoPage() {
                       />
                     </div>
 
-                    {/* Religion */}
+                    {/* Religion - Show if not filled */}
+                    {(!showOnlyIncomplete || !formData.dealbreakers?.religion) && (
                     <div>
                       <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
                         Religion
@@ -1267,6 +1288,7 @@ export default function EditProfileInfoPage() {
                         className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-[#FFB6C1] rounded-xl text-sm text-[#212121] focus:border-[#FF91A4] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-all shadow-sm"
                       />
                     </div>
+                    )}
                   </div>
                 </motion.div>
                 )}
@@ -1491,7 +1513,8 @@ export default function EditProfileInfoPage() {
                       </div>
                     </div>
 
-                    {/* Horoscope */}
+                    {/* Horoscope - Show if not filled */}
+                    {(!showOnlyIncomplete || !formData.optional?.horoscope) && (
                     <div>
                       <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
                         Horoscope Sign
@@ -1517,6 +1540,7 @@ export default function EditProfileInfoPage() {
                         placeholder="Select horoscope"
                       />
                     </div>
+                    )}
                   </div>
                 </motion.div>
                 )}
