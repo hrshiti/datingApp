@@ -123,37 +123,37 @@ export default function BasicInfoPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FFF0F5] via-[#FFE4E1] to-[#FFF0F5] flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-[#F5F7FA] via-[#E8ECF1] to-[#F5F7FA] flex flex-col">
       {/* Header */}
-      <div className="bg-white/80 backdrop-blur-lg border-b border-[#FFB6C1]/30 px-4 py-4">
-        <div className="max-w-2xl mx-auto flex items-center gap-4">
+      <div className="bg-white/95 backdrop-blur-lg border-b border-[#E8E8E8] px-3 sm:px-4 py-3 sm:py-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+        <div className="max-w-2xl mx-auto flex items-center gap-3 sm:gap-4">
           <button
             onClick={() => navigate(-1)}
-            className="p-2 hover:bg-[#FFE4E1] rounded-full transition-colors"
+            className="p-2 hover:bg-[#F5F5F5] rounded-xl transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-[#212121]" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-[#616161]" />
           </button>
-          <h1 className="text-xl font-bold text-[#212121]">Basic Information</h1>
+          <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-[#1A1A1A] tracking-tight">Basic Information</h1>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
+      <div className="flex-1 overflow-y-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6">
         <div className="max-w-2xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-3xl shadow-xl p-6 sm:p-8"
+            className="bg-white rounded-2xl sm:rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] p-4 sm:p-6 md:p-8 border border-[#E8E8E8]"
           >
-            <p className="text-[#757575] mb-6 text-center">
+            <p className="text-xs sm:text-sm md:text-base text-[#616161] mb-4 sm:mb-6 text-center font-medium">
               Tell us a bit about yourself to get started
             </p>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 md:space-y-6">
               {/* Name */}
               <div>
-                <label className="block text-sm font-medium text-[#212121] mb-2">
-                  <User className="w-4 h-4 inline mr-2" />
+                <label className="block text-xs sm:text-sm md:text-base font-medium text-[#1A1A1A] mb-2 tracking-tight">
+                  <User className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1.5 sm:mr-2 text-[#64B5F6]" />
                   Name
                 </label>
                 <input
@@ -161,16 +161,16 @@ export default function BasicInfoPage() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Enter your name"
-                  className="w-full px-4 py-3 border border-[#E0E0E0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:border-transparent"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-[#E8E8E8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#64B5F6]/20 focus:border-[#64B5F6] text-sm sm:text-base text-[#1A1A1A] bg-white shadow-sm"
                   disabled={isLoading}
                 />
-                {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+                {errors.name && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.name}</p>}
               </div>
 
               {/* Date of Birth */}
               <div>
-                <label className="block text-sm font-medium text-[#212121] mb-2">
-                  <Calendar className="w-4 h-4 inline mr-2" />
+                <label className="block text-xs sm:text-sm md:text-base font-medium text-[#1A1A1A] mb-2 tracking-tight">
+                  <Calendar className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1.5 sm:mr-2 text-[#64B5F6]" />
                   Date of Birth
                 </label>
                 <CustomDatePicker
@@ -178,12 +178,12 @@ export default function BasicInfoPage() {
                   onChange={(date) => setFormData({ ...formData, dob: date })}
                   maxDate={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
                 />
-                {errors.dob && <p className="text-red-500 text-sm mt-1">{errors.dob}</p>}
+                {errors.dob && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.dob}</p>}
               </div>
 
               {/* Gender */}
               <div>
-                <label className="block text-sm font-medium text-[#212121] mb-2">
+                <label className="block text-xs sm:text-sm md:text-base font-medium text-[#1A1A1A] mb-2 tracking-tight">
                   Gender Identity
                 </label>
                 <CustomDropdown
@@ -196,23 +196,23 @@ export default function BasicInfoPage() {
                   placeholder="Select gender"
                 />
                 {showCustomGender && (
-                  <div className="mt-3">
+                  <div className="mt-2 sm:mt-3">
                     <input
                       type="text"
                       value={formData.customGender}
                       onChange={(e) => setFormData({ ...formData, customGender: e.target.value })}
                       placeholder="Specify your gender"
-                      className="w-full px-4 py-3 border border-[#E0E0E0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:border-transparent"
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-[#E8E8E8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#64B5F6]/20 focus:border-[#64B5F6] text-sm sm:text-base text-[#1A1A1A] bg-white shadow-sm"
                     />
                   </div>
                 )}
-                {errors.gender && <p className="text-red-500 text-sm mt-1">{errors.gender}</p>}
-                {errors.customGender && <p className="text-red-500 text-sm mt-1">{errors.customGender}</p>}
+                {errors.gender && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.gender}</p>}
+                {errors.customGender && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.customGender}</p>}
               </div>
 
               {/* Sexual Orientation */}
               <div>
-                <label className="block text-sm font-medium text-[#212121] mb-2">
+                <label className="block text-xs sm:text-sm md:text-base font-medium text-[#1A1A1A] mb-2 tracking-tight">
                   Sexual Orientation
                 </label>
                 <CustomDropdown
@@ -225,24 +225,24 @@ export default function BasicInfoPage() {
                   placeholder="Select orientation"
                 />
                 {showCustomOrientation && (
-                  <div className="mt-3">
+                  <div className="mt-2 sm:mt-3">
                     <input
                       type="text"
                       value={formData.customOrientation}
                       onChange={(e) => setFormData({ ...formData, customOrientation: e.target.value })}
                       placeholder="Specify your orientation"
-                      className="w-full px-4 py-3 border border-[#E0E0E0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:border-transparent"
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-[#E8E8E8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#64B5F6]/20 focus:border-[#64B5F6] text-sm sm:text-base text-[#1A1A1A] bg-white shadow-sm"
                     />
                   </div>
                 )}
-                {errors.orientation && <p className="text-red-500 text-sm mt-1">{errors.orientation}</p>}
-                {errors.customOrientation && <p className="text-red-500 text-sm mt-1">{errors.customOrientation}</p>}
+                {errors.orientation && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.orientation}</p>}
+                {errors.customOrientation && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.customOrientation}</p>}
               </div>
 
               {/* Looking For */}
               <div>
-                <label className="block text-sm font-medium text-[#212121] mb-2">
-                  <Heart className="w-4 h-4 inline mr-2" />
+                <label className="block text-xs sm:text-sm md:text-base font-medium text-[#1A1A1A] mb-2 tracking-tight">
+                  <Heart className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1.5 sm:mr-2 text-[#64B5F6]" />
                   Looking For
                 </label>
                 <CustomDropdown
@@ -251,12 +251,12 @@ export default function BasicInfoPage() {
                   onChange={(value) => setFormData({ ...formData, lookingFor: value })}
                   placeholder="Select who you're looking for"
                 />
-                {errors.lookingFor && <p className="text-red-500 text-sm mt-1">{errors.lookingFor}</p>}
+                {errors.lookingFor && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.lookingFor}</p>}
               </div>
 
               {/* General Error */}
               {errors.general && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600 text-sm">
+                <div className="bg-red-50 border border-red-200 rounded-xl p-3 sm:p-4 text-red-600 text-xs sm:text-sm">
                   {errors.general}
                 </div>
               )}
@@ -265,9 +265,9 @@ export default function BasicInfoPage() {
               <motion.button
                 type="submit"
                 disabled={isLoading}
-                whileHover={{ scale: isLoading ? 1 : 1.02 }}
+                whileHover={{ scale: isLoading ? 1 : 1.02, y: isLoading ? 0 : -2 }}
                 whileTap={{ scale: isLoading ? 1 : 0.98 }}
-                className="w-full bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] text-white font-semibold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-[#64B5F6] hover:bg-[#42A5F5] text-white font-semibold py-3 sm:py-4 rounded-xl sm:rounded-2xl shadow-[0_4px_16px_rgba(100,181,246,0.3)] hover:shadow-[0_8px_24px_rgba(100,181,246,0.4)] transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base md:text-lg"
               >
                 {isLoading ? 'Saving...' : 'Continue'}
               </motion.button>

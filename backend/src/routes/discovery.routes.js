@@ -3,7 +3,8 @@ import {
   getDiscoveryFeed,
   likeProfile,
   passProfile,
-  getMatches
+  getMatches,
+  getNextUser
 } from '../controllers/discovery.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
 
@@ -16,6 +17,7 @@ router.get('/', getDiscoveryFeed);
 router.post('/like', likeProfile);
 router.post('/pass', passProfile);
 router.get('/matches', getMatches);
+router.get('/next-user', getNextUser);
 
 export default router;
 

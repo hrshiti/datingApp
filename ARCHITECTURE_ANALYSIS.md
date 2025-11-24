@@ -430,7 +430,7 @@ Get next profile
 - Axios instance with baseURL
 - Request interceptor (adds JWT token)
 - Response interceptor (handles errors, 401 redirects)
-```
+   ```
 
 ---
 
