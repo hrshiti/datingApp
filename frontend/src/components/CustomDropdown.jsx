@@ -91,18 +91,18 @@ export default function CustomDropdown({
           error
             ? 'border-red-500 focus:border-red-600'
             : isOpen
-            ? 'border-[#FF91A4] bg-white'
-            : 'border-[#FFB6C1] hover:border-[#FF91A4]'
-        } bg-white text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20`}
+            ? 'border-[#64B5F6] bg-white'
+            : 'border-[#E8E8E8] hover:border-[#64B5F6]'
+        } bg-white text-[#1A1A1A] focus:outline-none focus:ring-2 focus:ring-[#64B5F6] focus:ring-opacity-20 shadow-sm`}
       >
-        <span className={value ? 'text-[#212121]' : 'text-[#757575]'}>
+        <span className={value ? 'text-[#1A1A1A]' : 'text-[#616161]'}>
           {selectedLabel}
         </span>
         <div
           style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
           className="transition-transform duration-200"
         >
-          <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 text-[#757575]" />
+          <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 text-[#616161]" />
         </div>
         </button>
       </div>
@@ -110,7 +110,7 @@ export default function CustomDropdown({
         {isOpen && (
         <div
             ref={dropdownRef}
-            className="fixed bg-white border-2 border-[#FFB6C1] rounded-xl sm:rounded-2xl shadow-2xl max-h-60 overflow-hidden"
+            className="fixed bg-white border border-[#E8E8E8] rounded-xl sm:rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] max-h-60 overflow-hidden"
             style={{ 
               position: 'fixed',
               top: `${dropdownPosition.top}px`,
@@ -131,7 +131,7 @@ export default function CustomDropdown({
                   }}
                 onMouseEnter={(e) => {
                   if (value !== option.value) {
-                    e.target.style.backgroundColor = '#FFF0F5';
+                    e.target.style.backgroundColor = '#F5F5F5';
                     }
                   }}
                 onMouseLeave={(e) => {
@@ -141,8 +141,8 @@ export default function CustomDropdown({
                 }}
                 className={`w-full px-4 md:px-3 py-2.5 sm:py-3 md:py-2 text-left text-sm sm:text-base md:text-sm transition-colors ${
                     value === option.value
-                      ? 'bg-[#FF91A4] text-white'
-                      : 'text-[#212121]'
+                      ? 'bg-[#64B5F6] text-white'
+                      : 'text-[#1A1A1A]'
                   } ${
                     option.value === options[0]?.value ? 'rounded-t-xl sm:rounded-t-2xl' : ''
                   } ${
