@@ -36,16 +36,25 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
-});
-app.use('/api/', limiter);
-
-// Body parser middleware
+// Body parser middleware (must be before rate limiting to access req.body)
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Rate limiting - exclude auth routes as they have their own limiter
+// Higher limit for authenticated routes (profile, discovery, etc.)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 500, // Increased limit: 500 requests per 15 minutes (was 100, then 200)
+  skip: (req) => {
+    // Skip rate limiting for auth routes (they have their own limiter with test number bypass)
+    const path = req.path || req.url;
+    return path.includes('/auth');
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many requests, please try again later.'
+});
+app.use('/api/', limiter);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

@@ -7,8 +7,6 @@ import ReportBlockModal from './ReportBlockModal';
 export default function ProfileCard({ 
   profile, 
   currentUserLocation, 
-  matchScore, 
-  reasons = [],
   onLike, 
   onPass, 
   onSuperLike,
