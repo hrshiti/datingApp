@@ -5,9 +5,11 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
-    "clear-db": "node clearDatabase.js"
+    "start": "node api.js && node server.js",
+    "dev": "node api.js && nodemon server.js",
+    "clear-db": "node clearDatabase.js",
+    "seed": "node seedDatabase.js",
+    "view-db": "node viewDatabase.js"
   },
   "keywords": [
     "dating",

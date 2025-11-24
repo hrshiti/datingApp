@@ -149,13 +149,13 @@ export default function LikedYouPage() {
   // If not premium, show premium prompt with new design
   if (!isPremium) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#FFF0F5] via-[#FFE4E1] to-[#FFF0F5] flex flex-col relative overflow-hidden">
-        {/* Decorative Background Elements */}
-        <div className="absolute top-0 left-0 w-72 h-72 bg-[#FF91A4]/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#FF69B4]/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
+      <div className="min-h-screen bg-gradient-to-br from-[#F5F7FA] via-[#E8ECF1] to-[#F5F7FA] flex flex-col relative overflow-hidden">
+        {/* Premium Decorative Background Elements */}
+        <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-gradient-to-br from-[#64B5F6]/8 to-transparent rounded-full blur-3xl -translate-x-1/3 -translate-y-1/3"></div>
+        <div className="absolute bottom-0 right-0 w-[700px] h-[700px] bg-gradient-to-tl from-[#42A5F5]/8 to-transparent rounded-full blur-3xl translate-x-1/3 translate-y-1/3"></div>
 
         {/* Left Sidebar Navigation - Desktop Only (Instagram Style) */}
-        <div className="hidden md:flex fixed left-0 top-0 bottom-0 w-16 bg-white border-r border-[#E0E0E0] z-30 flex-col items-center justify-center py-4">
+        <div className="hidden md:flex fixed left-0 top-0 bottom-0 w-16 bg-white/80 backdrop-blur-xl border-r border-[#E0E0E0]/50 z-30 flex-col items-center justify-center py-4 shadow-[4px_0_16px_rgba(0,0,0,0.04)]">
           <div className="flex flex-col items-center gap-2">
             {/* Profile */}
             <motion.button
@@ -164,9 +164,9 @@ export default function LikedYouPage() {
               whileTap={{ scale: 0.95 }}
               className="flex items-center justify-center w-12 h-12 transition-colors relative group"
             >
-              <UserCircle className={`w-6 h-6 ${location.pathname === '/profile' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+              <UserCircle className={`w-6 h-6 ${location.pathname === '/profile' ? 'text-[#64B5F6]' : 'text-[#616161]'}`} />
               {location.pathname === '/profile' && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#64B5F6] rounded-r-full"></div>
               )}
             </motion.button>
 
@@ -177,9 +177,9 @@ export default function LikedYouPage() {
               whileTap={{ scale: 0.95 }}
               className="flex items-center justify-center w-12 h-12 transition-colors relative group"
             >
-              <Sparkles className={`w-6 h-6 ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+              <Sparkles className={`w-6 h-6 ${location.pathname === '/discover' ? 'text-[#64B5F6]' : 'text-[#616161]'}`} />
               {location.pathname === '/discover' && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#64B5F6] rounded-r-full"></div>
               )}
             </motion.button>
 
@@ -190,9 +190,9 @@ export default function LikedYouPage() {
               whileTap={{ scale: 0.95 }}
               className="flex items-center justify-center w-12 h-12 transition-colors relative group"
             >
-              <Users className={`w-6 h-6 ${location.pathname === '/people' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+              <Users className={`w-6 h-6 ${location.pathname === '/people' ? 'text-[#64B5F6]' : 'text-[#616161]'}`} />
               {location.pathname === '/people' && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#64B5F6] rounded-r-full"></div>
               )}
             </motion.button>
 
@@ -203,9 +203,9 @@ export default function LikedYouPage() {
               whileTap={{ scale: 0.95 }}
               className="flex items-center justify-center w-12 h-12 transition-colors relative group"
             >
-              <Heart className={`w-6 h-6 ${location.pathname === '/liked-you' ? 'text-[#FF91A4] fill-[#FF91A4]' : 'text-[#212121]'}`} />
+              <Heart className={`w-6 h-6 ${location.pathname === '/liked-you' ? 'text-[#64B5F6] fill-[#64B5F6]' : 'text-[#616161]'}`} />
               {location.pathname === '/liked-you' && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#64B5F6] rounded-r-full"></div>
               )}
             </motion.button>
 
@@ -216,24 +216,24 @@ export default function LikedYouPage() {
               whileTap={{ scale: 0.95 }}
               className="flex items-center justify-center w-12 h-12 transition-colors relative group"
             >
-              <MessageCircle className={`w-6 h-6 ${location.pathname === '/chats' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+              <MessageCircle className={`w-6 h-6 ${location.pathname === '/chats' ? 'text-[#64B5F6]' : 'text-[#616161]'}`} />
               {location.pathname === '/chats' && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#64B5F6] rounded-r-full"></div>
               )}
             </motion.button>
           </div>
         </div>
 
-        {/* Enhanced Header - Fixed */}
+        {/* Premium Header - Fixed with Glassmorphism */}
         <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-          className="fixed top-0 left-0 right-0 z-30 bg-gradient-to-b from-white via-white/98 to-white/95 backdrop-blur-lg border-b border-[#FFB6C1]/30 shadow-lg"
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="fixed top-0 left-0 right-0 z-30 backdrop-blur-xl bg-white/80 border-b border-[#E0E0E0]/50 shadow-[0_8px_32px_rgba(0,0,0,0.06)]"
         >
-          <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-6">
             <div className="flex items-center justify-center">
-              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#1A1A1A] tracking-tight">
                 Liked You
               </h1>
             </div>
@@ -248,7 +248,7 @@ export default function LikedYouPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-base sm:text-lg text-[#212121] text-center mb-5 font-medium"
+              className="text-base sm:text-lg text-[#616161] text-center mb-5 font-medium"
             >
               See who likes you and match with them instantly, with Premium.
             </motion.p>
@@ -264,10 +264,10 @@ export default function LikedYouPage() {
                 onClick={() => setActiveFilter('all')}
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
-                className={`flex items-center gap-2 px-5 py-3 rounded-full font-bold text-sm whitespace-nowrap transition-all shadow-md ${
+                className={`flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm whitespace-nowrap transition-all shadow-sm ${
                   activeFilter === 'all'
-                    ? 'bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-[#212121] shadow-lg'
-                    : 'bg-white text-[#212121] border-2 border-[#E0E0E0] hover:border-[#FFD700]'
+                    ? 'bg-[#64B5F6] text-white shadow-[0_4px_16px_rgba(100,181,246,0.3)]'
+                    : 'bg-white text-[#1A1A1A] border border-[#E0E0E0] hover:border-[#64B5F6] hover:shadow-md'
                 }`}
               >
                 {activeFilter === 'all' && (
@@ -287,10 +287,10 @@ export default function LikedYouPage() {
                 onClick={() => setActiveFilter('new')}
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
-                className={`flex items-center gap-2 px-5 py-3 rounded-full font-bold text-sm whitespace-nowrap transition-all shadow-md ${
+                className={`flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm whitespace-nowrap transition-all shadow-sm ${
                   activeFilter === 'new'
-                    ? 'bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-[#212121] shadow-lg'
-                    : 'bg-white text-[#212121] border-2 border-[#E0E0E0] hover:border-[#FFD700]'
+                    ? 'bg-[#64B5F6] text-white shadow-[0_4px_16px_rgba(100,181,246,0.3)]'
+                    : 'bg-white text-[#1A1A1A] border border-[#E0E0E0] hover:border-[#64B5F6] hover:shadow-md'
                 }`}
               >
                 {activeFilter === 'new' && (
@@ -310,10 +310,10 @@ export default function LikedYouPage() {
                 onClick={() => setActiveFilter('nearby')}
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
-                className={`flex items-center gap-2 px-5 py-3 rounded-full font-bold text-sm whitespace-nowrap transition-all shadow-md ${
+                className={`flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm whitespace-nowrap transition-all shadow-sm ${
                   activeFilter === 'nearby'
-                    ? 'bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-[#212121] shadow-lg'
-                    : 'bg-white text-[#212121] border-2 border-[#E0E0E0] hover:border-[#FFD700]'
+                    ? 'bg-[#64B5F6] text-white shadow-[0_4px_16px_rgba(100,181,246,0.3)]'
+                    : 'bg-white text-[#1A1A1A] border border-[#E0E0E0] hover:border-[#64B5F6] hover:shadow-md'
                 }`}
               >
                 {activeFilter === 'nearby' && (
@@ -347,7 +347,7 @@ export default function LikedYouPage() {
                     className="relative rounded-3xl overflow-hidden shadow-xl border-2 border-white/50"
                     style={{ filter: 'blur(20px)' }}
                   >
-                    <div className="aspect-[3/4] relative overflow-hidden bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5]">
+                    <div className="aspect-[3/4] relative overflow-hidden bg-gradient-to-br from-[#E3F2FD] to-[#BBDEFB]">
                       <img
                         src={profile.photos?.[0] || `https://ui-avatars.com/api/?name=${profile.name}&background=FF1744&color=fff&size=400`}
                         alt={profile.name}
@@ -366,7 +366,7 @@ export default function LikedYouPage() {
                         transition={{ duration: 2, repeat: Infinity }}
                         className="w-14 h-14 bg-gradient-to-br from-white to-white/90 rounded-full flex items-center justify-center shadow-2xl border-2 border-white/50"
                       >
-                        <Lock className="w-7 h-7 text-[#FF91A4]" />
+                        <Lock className="w-7 h-7 text-[#64B5F6]" />
                       </motion.div>
                     </div>
                   </motion.div>
@@ -395,7 +395,7 @@ export default function LikedYouPage() {
                         transition={{ duration: 2, repeat: Infinity }}
                         className="w-14 h-14 bg-gradient-to-br from-white to-white/90 rounded-full flex items-center justify-center shadow-2xl border-2 border-white/50"
                       >
-                        <Lock className="w-7 h-7 text-[#FF91A4]" />
+                        <Lock className="w-7 h-7 text-[#64B5F6]" />
                       </motion.div>
                     </div>
                   </motion.div>
@@ -411,9 +411,8 @@ export default function LikedYouPage() {
               onClick={() => navigate('/premium')}
               whileHover={{ scale: 1.02, y: -2 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full py-4 sm:py-5 bg-gradient-to-r from-[#212121] to-[#424242] text-white rounded-2xl font-bold text-lg sm:text-xl shadow-2xl hover:shadow-3xl transition-all mt-6 relative overflow-hidden group"
+              className="w-full py-4 sm:py-5 bg-[#64B5F6] hover:bg-[#42A5F5] text-white rounded-2xl font-semibold text-lg sm:text-xl shadow-[0_8px_24px_rgba(100,181,246,0.4)] hover:shadow-[0_12px_32px_rgba(100,181,246,0.5)] transition-all mt-6 relative overflow-hidden group"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] opacity-0 group-hover:opacity-10 transition-opacity"></div>
               <span className="relative z-10 flex items-center justify-center gap-2">
                 <Crown className="w-5 h-5 sm:w-6 sm:h-6" />
                 See who likes you
@@ -423,7 +422,7 @@ export default function LikedYouPage() {
         </div>
 
         {/* Bottom Navigation Bar */}
-        <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-[#E0E0E0]">
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 backdrop-blur-xl bg-white/80 border-t border-[#E0E0E0]/50 shadow-[0_-8px_32px_rgba(0,0,0,0.06)]">
           <div className="flex items-center justify-around px-2 py-2">
             {/* Profile */}
             <motion.button
@@ -431,13 +430,10 @@ export default function LikedYouPage() {
               whileTap={{ scale: 0.9 }}
               className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative"
             >
-              <UserCircle className={`w-5 h-5 ${location.pathname === '/profile' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
-              <span className={`text-xs font-medium ${location.pathname === '/profile' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+              <UserCircle className={`w-5 h-5 ${location.pathname === '/profile' ? 'text-[#64B5F6]' : 'text-[#616161]'}`} />
+              <span className={`text-xs font-medium ${location.pathname === '/profile' ? 'text-[#64B5F6]' : 'text-[#616161]'}`}>
                 Profile
               </span>
-              {location.pathname === '/profile' && (
-                <div className="absolute -top-1 right-2 w-2 h-2 bg-[#FF91A4] rounded-full"></div>
-              )}
             </motion.button>
 
             {/* Discover */}
@@ -446,8 +442,8 @@ export default function LikedYouPage() {
               whileTap={{ scale: 0.9 }}
               className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors"
             >
-              <Sparkles className={`w-5 h-5 ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
-              <span className={`text-xs font-medium ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+              <Sparkles className={`w-5 h-5 ${location.pathname === '/discover' ? 'text-[#64B5F6]' : 'text-[#616161]'}`} />
+              <span className={`text-xs font-medium ${location.pathname === '/discover' ? 'text-[#64B5F6]' : 'text-[#616161]'}`}>
                 Discover
               </span>
             </motion.button>
@@ -458,8 +454,8 @@ export default function LikedYouPage() {
               whileTap={{ scale: 0.9 }}
               className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative"
             >
-              <Users className={`w-5 h-5 ${location.pathname === '/people' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
-              <span className={`text-xs font-medium ${location.pathname === '/people' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+              <Users className={`w-5 h-5 ${location.pathname === '/people' ? 'text-[#64B5F6]' : 'text-[#616161]'}`} />
+              <span className={`text-xs font-medium ${location.pathname === '/people' ? 'text-[#64B5F6]' : 'text-[#616161]'}`}>
                 People
               </span>
             </motion.button>
@@ -470,13 +466,10 @@ export default function LikedYouPage() {
               whileTap={{ scale: 0.9 }}
               className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative"
             >
-              <Heart className={`w-5 h-5 ${location.pathname === '/liked-you' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
-              <span className={`text-xs font-medium ${location.pathname === '/liked-you' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+              <Heart className={`w-5 h-5 ${location.pathname === '/liked-you' ? 'text-[#64B5F6] fill-[#64B5F6]' : 'text-[#616161]'}`} />
+              <span className={`text-xs font-medium ${location.pathname === '/liked-you' ? 'text-[#64B5F6]' : 'text-[#616161]'}`}>
                 Liked You
               </span>
-              {location.pathname === '/liked-you' && (
-                <div className="absolute -top-1 right-2 w-2 h-2 bg-[#FF91A4] rounded-full"></div>
-              )}
             </motion.button>
 
             {/* Chats */}
@@ -485,8 +478,8 @@ export default function LikedYouPage() {
               whileTap={{ scale: 0.9 }}
               className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative"
             >
-              <MessageCircle className={`w-5 h-5 ${location.pathname === '/chats' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
-              <span className={`text-xs font-medium ${location.pathname === '/chats' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+              <MessageCircle className={`w-5 h-5 ${location.pathname === '/chats' ? 'text-[#64B5F6]' : 'text-[#616161]'}`} />
+              <span className={`text-xs font-medium ${location.pathname === '/chats' ? 'text-[#64B5F6]' : 'text-[#616161]'}`}>
                 Chats
               </span>
             </motion.button>
@@ -497,13 +490,14 @@ export default function LikedYouPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FFF0F5] via-[#FFE4E1] to-[#FFF0F5] flex flex-col relative overflow-hidden">
-      {/* Decorative Background Elements */}
-      <div className="absolute top-0 left-0 w-72 h-72 bg-[#FF91A4]/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#FF69B4]/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
+    <div className="min-h-screen bg-gradient-to-br from-[#F5F7FA] via-[#E8ECF1] to-[#F5F7FA] flex flex-col relative overflow-hidden">
+      {/* Premium Decorative Background Elements */}
+      <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-gradient-to-br from-[#64B5F6]/8 to-transparent rounded-full blur-3xl -translate-x-1/3 -translate-y-1/3"></div>
+      <div className="absolute bottom-0 right-0 w-[700px] h-[700px] bg-gradient-to-tl from-[#42A5F5]/8 to-transparent rounded-full blur-3xl translate-x-1/3 translate-y-1/3"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-r from-[#90CAF9]/5 to-transparent rounded-full blur-3xl"></div>
 
       {/* Left Sidebar Navigation - Desktop Only (Instagram Style) */}
-      <div className="hidden md:flex fixed left-0 top-0 bottom-0 w-16 bg-white border-r border-[#E0E0E0] z-30 flex-col items-center justify-center py-4">
+      <div className="hidden md:flex fixed left-0 top-0 bottom-0 w-16 bg-white/80 backdrop-blur-xl border-r border-[#E0E0E0]/50 z-30 flex-col items-center justify-center py-4 shadow-[4px_0_16px_rgba(0,0,0,0.04)]">
         <div className="flex flex-col items-center gap-2">
           {/* Profile */}
           <motion.button
@@ -512,9 +506,9 @@ export default function LikedYouPage() {
             whileTap={{ scale: 0.95 }}
             className="flex items-center justify-center w-12 h-12 transition-colors relative group"
           >
-            <UserCircle className={`w-6 h-6 ${location.pathname === '/profile' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            <UserCircle className={`w-6 h-6 ${location.pathname === '/profile' ? 'text-[#64B5F6]' : 'text-[#616161]'}`} />
             {location.pathname === '/profile' && (
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#64B5F6] rounded-r-full"></div>
             )}
           </motion.button>
 
@@ -525,9 +519,9 @@ export default function LikedYouPage() {
             whileTap={{ scale: 0.95 }}
             className="flex items-center justify-center w-12 h-12 transition-colors relative group"
           >
-            <Sparkles className={`w-6 h-6 ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            <Sparkles className={`w-6 h-6 ${location.pathname === '/discover' ? 'text-[#64B5F6]' : 'text-[#616161]'}`} />
             {location.pathname === '/discover' && (
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#64B5F6] rounded-r-full"></div>
             )}
           </motion.button>
 
@@ -538,9 +532,9 @@ export default function LikedYouPage() {
             whileTap={{ scale: 0.95 }}
             className="flex items-center justify-center w-12 h-12 transition-colors relative group"
           >
-            <Users className={`w-6 h-6 ${location.pathname === '/people' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            <Users className={`w-6 h-6 ${location.pathname === '/people' ? 'text-[#64B5F6]' : 'text-[#616161]'}`} />
             {location.pathname === '/people' && (
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#64B5F6] rounded-r-full"></div>
             )}
           </motion.button>
 
@@ -551,9 +545,9 @@ export default function LikedYouPage() {
             whileTap={{ scale: 0.95 }}
             className="flex items-center justify-center w-12 h-12 transition-colors relative group"
           >
-            <Heart className={`w-6 h-6 ${location.pathname === '/liked-you' ? 'text-[#FF91A4] fill-[#FF91A4]' : 'text-[#212121]'}`} />
+            <Heart className={`w-6 h-6 ${location.pathname === '/liked-you' ? 'text-[#64B5F6] fill-[#64B5F6]' : 'text-[#616161]'}`} />
             {location.pathname === '/liked-you' && (
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#64B5F6] rounded-r-full"></div>
             )}
           </motion.button>
 
@@ -564,44 +558,38 @@ export default function LikedYouPage() {
             whileTap={{ scale: 0.95 }}
             className="flex items-center justify-center w-12 h-12 transition-colors relative group"
           >
-            <MessageCircle className={`w-6 h-6 ${location.pathname === '/chats' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            <MessageCircle className={`w-6 h-6 ${location.pathname === '/chats' ? 'text-[#64B5F6]' : 'text-[#616161]'}`} />
             {location.pathname === '/chats' && (
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#64B5F6] rounded-r-full"></div>
             )}
           </motion.button>
         </div>
       </div>
 
-      {/* Enhanced Header - Fixed */}
+      {/* Premium Header - Fixed with Glassmorphism */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-        className="fixed top-0 left-0 right-0 z-30 bg-gradient-to-b from-white via-white/98 to-white/95 backdrop-blur-lg border-b border-[#FFB6C1]/30 shadow-lg"
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="fixed top-0 left-0 right-0 z-30 backdrop-blur-xl bg-white/80 border-b border-[#E0E0E0]/50 shadow-[0_8px_32px_rgba(0,0,0,0.06)]"
       >
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <motion.button
                 onClick={() => navigate(-1)}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="p-2 hover:bg-[#FFE4E1] rounded-xl transition-colors"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="p-3 hover:bg-[#F5F5F5] rounded-xl transition-all duration-200"
               >
-                <ArrowLeft className="w-5 h-5 text-[#212121]" />
+                <ArrowLeft className="w-5 h-5 text-[#616161]" />
               </motion.button>
-              <motion.div 
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FF91A4] via-[#FF69B4] to-[#FF91A4] flex items-center justify-center shadow-lg relative overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
-                <Eye className="w-6 h-6 text-white relative z-10" />
-              </motion.div>
+              <Eye className="w-5 h-5 text-[#64B5F6]" />
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent">
+                <h1 className="text-2xl sm:text-3xl font-bold text-[#1A1A1A] tracking-tight">
                   Who Liked You
                 </h1>
-                <p className="text-xs sm:text-sm text-[#757575] font-medium">
+                <p className="text-xs sm:text-sm text-[#757575] font-medium mt-0.5">
                   {likedYouProfiles.length} {likedYouProfiles.length === 1 ? 'person' : 'people'} liked you
                 </p>
               </div>
@@ -630,19 +618,19 @@ export default function LikedYouPage() {
               <motion.div
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="w-24 h-24 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl"
+                className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-[0_8px_24px_rgba(0,0,0,0.1)] border border-[#E8E8E8]"
               >
-                <Heart className="w-12 h-12 text-[#FF91A4]" />
+                <Heart className="w-12 h-12 text-[#64B5F6]" />
               </motion.div>
-              <h3 className="text-2xl font-bold text-[#212121] mb-2">No Likes Yet</h3>
-              <p className="text-sm text-[#757575] mb-6">
+              <h3 className="text-2xl font-bold text-[#1A1A1A] mb-2 tracking-tight">No Likes Yet</h3>
+              <p className="text-sm text-[#616161] mb-6 font-medium">
                 Keep swiping! When someone likes you, they'll appear here.
               </p>
               <motion.button
                 onClick={() => navigate('/discover')}
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-6 py-3 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all"
+                className="px-6 py-3 bg-[#64B5F6] hover:bg-[#42A5F5] text-white rounded-xl font-semibold shadow-[0_4px_16px_rgba(100,181,246,0.3)] hover:shadow-[0_8px_24px_rgba(100,181,246,0.4)] transition-all"
               >
                 Start Discovering
               </motion.button>
@@ -661,9 +649,9 @@ export default function LikedYouPage() {
                   onClick={() => setSelectedProfile(profile)}
                   whileHover={{ y: -5 }}
                 >
-                  <div className="relative rounded-3xl overflow-hidden shadow-xl border-2 border-[#FFB6C1]/50 hover:border-[#FF91A4] transition-all bg-white">
+                  <div className="relative rounded-3xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-[#E8E8E8] hover:border-[#64B5F6] hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)] transition-all bg-white">
                     {/* Profile Image */}
-                    <div className="aspect-[3/4] relative overflow-hidden bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5]">
+                    <div className="aspect-[3/4] relative overflow-hidden bg-gradient-to-br from-[#E3F2FD] to-[#BBDEFB]">
                       <motion.img
                         src={profile.photos?.[0] || `https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=600&fit=crop`}
                         alt={profile.name}
@@ -726,54 +714,54 @@ export default function LikedYouPage() {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-hidden"
+              className="bg-white rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.3)] max-w-md w-full max-h-[90vh] overflow-hidden border border-[#E8E8E8]"
             >
               {/* Image Carousel */}
-              <div className="relative h-96 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5]">
+              <div className="relative h-96 bg-gradient-to-br from-[#E3F2FD] to-[#BBDEFB]">
                 <img
                   src={selectedProfile.photos?.[0] || `https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=600&fit=crop`}
                   alt={selectedProfile.name}
                   className="w-full h-full object-cover"
                 />
-                <button
-                  onClick={() => setSelectedProfile(null)}
-                  className="absolute top-4 right-4 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors"
-                >
-                  <X className="w-5 h-5 text-[#212121]" />
-                </button>
-                {selectedProfile.isNew && (
-                  <div className="absolute top-4 left-4 px-3 py-1 bg-[#4CAF50] text-white text-xs font-bold rounded-full flex items-center gap-1">
-                    <Sparkles className="w-3 h-3" />
-                    <span>NEW</span>
-                  </div>
-                )}
+                  <button
+                    onClick={() => setSelectedProfile(null)}
+                    className="absolute top-4 right-4 w-10 h-10 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors"
+                  >
+                    <X className="w-5 h-5 text-[#616161]" />
+                  </button>
+                  {selectedProfile.isNew && (
+                    <div className="absolute top-4 left-4 px-3 py-1 bg-[#4CAF50] text-white text-xs font-bold rounded-full flex items-center gap-1 shadow-sm">
+                      <Sparkles className="w-3 h-3" />
+                      <span>NEW</span>
+                    </div>
+                  )}
               </div>
 
               {/* Profile Info */}
               <div className="p-6 overflow-y-auto max-h-[calc(90vh-24rem)]">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h2 className="text-2xl font-bold text-[#212121] mb-1">
+                    <h2 className="text-2xl font-bold text-[#1A1A1A] mb-1 tracking-tight">
                       {selectedProfile.name}, {selectedProfile.age}
                     </h2>
-                    <p className="text-sm text-[#757575]">
+                    <p className="text-sm text-[#616161] font-medium">
                       {getDistance(selectedProfile)} km away • {formatTimeAgo(selectedProfile.likedAt)}
                     </p>
                   </div>
                 </div>
 
                 {selectedProfile.bio && (
-                  <p className="text-sm text-[#212121] mb-4">{selectedProfile.bio}</p>
+                  <p className="text-sm text-[#1A1A1A] mb-4 font-medium">{selectedProfile.bio}</p>
                 )}
 
                 {selectedProfile.interests && selectedProfile.interests.length > 0 && (
                   <div className="mb-4">
-                    <h3 className="text-sm font-semibold text-[#212121] mb-2">Interests</h3>
+                    <h3 className="text-sm font-semibold text-[#1A1A1A] mb-2 tracking-tight">Interests</h3>
                     <div className="flex flex-wrap gap-2">
                       {selectedProfile.interests.slice(0, 6).map((interest, idx) => (
                         <span
                           key={idx}
-                          className="px-3 py-1 bg-[#FFE4E1] text-[#FF91A4] rounded-full text-xs font-medium"
+                          className="px-3 py-1 bg-white border-2 border-[#64B5F6] text-[#64B5F6] rounded-xl text-xs font-semibold shadow-sm"
                         >
                           {interest}
                         </span>
@@ -789,9 +777,9 @@ export default function LikedYouPage() {
                       handlePass(selectedProfile.id);
                       setSelectedProfile(null);
                     }}
-                    whileHover={{ scale: 1.05 }}
+                    whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.95 }}
-                    className="flex-1 px-4 py-3 border-2 border-[#E0E0E0] text-[#212121] rounded-xl font-semibold hover:border-[#757575] transition-all flex items-center justify-center gap-2"
+                    className="flex-1 px-4 py-3 border border-[#E0E0E0] text-[#1A1A1A] rounded-xl font-semibold hover:border-[#757575] hover:bg-[#F5F5F5] transition-all flex items-center justify-center gap-2 shadow-sm"
                   >
                     <X className="w-5 h-5" />
                     <span>Pass</span>
@@ -801,9 +789,9 @@ export default function LikedYouPage() {
                       handleLike(selectedProfile.id);
                       setSelectedProfile(null);
                     }}
-                    whileHover={{ scale: 1.05 }}
+                    whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.95 }}
-                    className="flex-1 px-4 py-3 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                    className="flex-1 px-4 py-3 bg-[#64B5F6] hover:bg-[#42A5F5] text-white rounded-xl font-semibold shadow-[0_4px_16px_rgba(100,181,246,0.3)] hover:shadow-[0_8px_24px_rgba(100,181,246,0.4)] transition-all flex items-center justify-center gap-2"
                   >
                     <Heart className="w-5 h-5" />
                     <span>Like Back</span>
@@ -816,7 +804,7 @@ export default function LikedYouPage() {
       </AnimatePresence>
 
       {/* Bottom Navigation Bar - Mobile Only */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-white via-white/98 to-white/95 backdrop-blur-lg border-t-2 border-[#FFB6C1]/30 shadow-2xl">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 backdrop-blur-xl bg-white/80 border-t border-[#E0E0E0]/50 shadow-[0_-8px_32px_rgba(0,0,0,0.06)]">
         <div className="flex items-center justify-around px-2 py-2">
           {/* Profile */}
           <motion.button
@@ -824,8 +812,8 @@ export default function LikedYouPage() {
             whileTap={{ scale: 0.9 }}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors"
           >
-            <UserCircle className={`w-5 h-5 ${location.pathname === '/profile' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
-            <span className={`text-xs font-medium ${location.pathname === '/profile' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+            <UserCircle className={`w-5 h-5 ${location.pathname === '/profile' ? 'text-[#64B5F6]' : 'text-[#616161]'}`} />
+            <span className={`text-xs font-medium ${location.pathname === '/profile' ? 'text-[#64B5F6]' : 'text-[#616161]'}`}>
               Profile
             </span>
           </motion.button>
@@ -836,20 +824,20 @@ export default function LikedYouPage() {
             whileTap={{ scale: 0.9 }}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors"
           >
-            <Sparkles className={`w-5 h-5 ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
-            <span className={`text-xs font-medium ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+            <Sparkles className={`w-5 h-5 ${location.pathname === '/discover' ? 'text-[#64B5F6]' : 'text-[#616161]'}`} />
+            <span className={`text-xs font-medium ${location.pathname === '/discover' ? 'text-[#64B5F6]' : 'text-[#616161]'}`}>
               Discover
             </span>
           </motion.button>
 
           {/* People */}
           <motion.button
-            onClick={() => navigate('/discover')}
+            onClick={() => navigate('/people')}
             whileTap={{ scale: 0.9 }}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative"
           >
-            <Users className={`w-5 h-5 ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
-            <span className={`text-xs font-medium ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+            <Users className={`w-5 h-5 ${location.pathname === '/people' ? 'text-[#64B5F6]' : 'text-[#616161]'}`} />
+            <span className={`text-xs font-medium ${location.pathname === '/people' ? 'text-[#64B5F6]' : 'text-[#616161]'}`}>
               People
             </span>
           </motion.button>
@@ -860,8 +848,8 @@ export default function LikedYouPage() {
             whileTap={{ scale: 0.9 }}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative"
           >
-            <Heart className={`w-5 h-5 ${location.pathname === '/liked-you' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
-            <span className={`text-xs font-medium ${location.pathname === '/liked-you' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+            <Heart className={`w-5 h-5 ${location.pathname === '/liked-you' ? 'text-[#64B5F6] fill-[#64B5F6]' : 'text-[#616161]'}`} />
+            <span className={`text-xs font-medium ${location.pathname === '/liked-you' ? 'text-[#64B5F6]' : 'text-[#616161]'}`}>
               Liked You
             </span>
           </motion.button>
@@ -872,8 +860,8 @@ export default function LikedYouPage() {
             whileTap={{ scale: 0.9 }}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative"
           >
-            <MessageCircle className={`w-5 h-5 ${location.pathname === '/chats' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
-            <span className={`text-xs font-medium ${location.pathname === '/chats' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+            <MessageCircle className={`w-5 h-5 ${location.pathname === '/chats' ? 'text-[#64B5F6]' : 'text-[#616161]'}`} />
+            <span className={`text-xs font-medium ${location.pathname === '/chats' ? 'text-[#64B5F6]' : 'text-[#616161]'}`}>
               Chats
             </span>
           </motion.button>

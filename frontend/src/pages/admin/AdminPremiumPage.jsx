@@ -167,7 +167,7 @@ export default function AdminPremiumPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 flex relative">
+    <div className="min-h-screen bg-gradient-to-br from-[#F5F7FA] via-[#E8ECF1] to-[#F5F7FA] flex relative">
       {/* Mobile Overlay */}
       {mobileMenuOpen && (
         <motion.div
@@ -181,7 +181,7 @@ export default function AdminPremiumPage() {
       
       {/* Left Sidebar */}
       <div 
-        className={`${sidebarOpen ? 'w-64' : 'w-20'} fixed top-0 left-0 h-screen bg-white/80 backdrop-blur-lg border-r border-gray-200/50 flex flex-col transition-all duration-300 shadow-xl z-50 ${
+        className={`${sidebarOpen ? 'w-64' : 'w-20'} fixed top-0 left-0 h-screen bg-white/95 backdrop-blur-lg border-r border-[#E8E8E8] flex flex-col transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.08)] z-50 ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
@@ -190,10 +190,10 @@ export default function AdminPremiumPage() {
             <div className={`flex items-center gap-3 ${!sidebarOpen && 'justify-center w-full'}`}>
               {sidebarOpen && (
                 <div>
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  <h1 className="text-xl font-bold text-[#1A1A1A] tracking-tight">
                     Admin Panel
                   </h1>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xs text-[#616161] mt-0.5 font-medium">
                     {localStorage.getItem('adminUsername') || 'Admin'}
                   </p>
                 </div>
@@ -204,9 +204,9 @@ export default function AdminPremiumPage() {
                 onClick={() => setSidebarOpen(false)}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-[#F5F5F5] transition-colors"
               >
-                <X className="w-4 h-4 text-gray-500" />
+                <X className="w-4 h-4 text-[#616161]" />
               </motion.button>
             )}
             {!sidebarOpen && (
@@ -214,9 +214,9 @@ export default function AdminPremiumPage() {
                 onClick={() => setSidebarOpen(true)}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-[#F5F5F5] transition-colors"
               >
-                <Menu className="w-5 h-5 text-gray-500" />
+                <Menu className="w-5 h-5 text-[#616161]" />
               </motion.button>
             )}
           </div>
@@ -234,18 +234,18 @@ export default function AdminPremiumPage() {
                 whileTap={{ scale: 0.98 }}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all relative group ${
                   isActive
-                    ? 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-600 shadow-md'
-                    : 'text-gray-700 hover:bg-gray-50/80'
+                    ? 'bg-[#E3F2FD] text-[#64B5F6] shadow-[0_2px_8px_rgba(100,181,246,0.15)]'
+                    : 'text-[#616161] hover:bg-[#F5F5F5]'
                 }`}
               >
-                <div className={`${isActive ? 'text-blue-600' : 'text-gray-500 group-hover:text-blue-500'} transition-colors`}>
+                <div className={`${isActive ? 'text-[#64B5F6]' : 'text-[#616161] group-hover:text-[#64B5F6]'} transition-colors`}>
                   <Icon className="w-4 h-4" />
                 </div>
                 {sidebarOpen && <span className="font-medium whitespace-nowrap">{item.label}</span>}
                 {isActive && (
                   <motion.div
                     layoutId="activeTab"
-                    className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-purple-600 rounded-r-full"
+                    className="absolute left-0 top-0 bottom-0 w-1 bg-[#64B5F6] rounded-r-full"
                     initial={false}
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   />
@@ -255,12 +255,12 @@ export default function AdminPremiumPage() {
           })}
         </nav>
 
-        <div className="p-4 border-t border-gray-200/50">
+        <div className="p-4 border-t border-[#E8E8E8]">
           <motion.button
             onClick={handleLogout}
             whileHover={{ scale: 1.02, x: 4 }}
             whileTap={{ scale: 0.98 }}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50/80 transition-all group"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-all group"
           >
             <LogOut className="w-4 h-4 group-hover:rotate-12 transition-transform" />
             {sidebarOpen && <span className="font-medium">Logout</span>}
@@ -271,22 +271,22 @@ export default function AdminPremiumPage() {
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto md:ml-64">
         {/* Top Header Bar */}
-        <div className="fixed top-0 right-0 left-0 md:left-64 z-10 bg-white/80 backdrop-blur-lg border-b border-gray-200/50 shadow-sm">
+        <div className="fixed top-0 right-0 left-0 md:left-64 z-10 bg-white/95 backdrop-blur-lg border-b border-[#E8E8E8] shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
           <div className="p-4 md:p-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
               {/* Mobile Menu Button */}
               <motion.button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 whileTap={{ scale: 0.95 }}
-                className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className="md:hidden p-2 rounded-lg hover:bg-[#F5F5F5] transition-colors"
               >
-                <Menu className="w-6 h-6 text-gray-600" />
+                <Menu className="w-6 h-6 text-[#616161]" />
               </motion.button>
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] tracking-tight">
                   Premium Management
                 </h1>
-                <p className="text-xs md:text-sm text-gray-500 mt-1">
+                <p className="text-xs md:text-sm text-[#616161] mt-1 font-medium">
                   Manage subscriptions
                 </p>
               </div>
@@ -294,9 +294,9 @@ export default function AdminPremiumPage() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="relative p-2 md:p-2.5 rounded-xl bg-gray-50/50 hover:bg-gray-100/80 transition-colors"
+              className="relative p-2 md:p-2.5 rounded-xl bg-white hover:bg-[#F5F5F5] transition-colors border border-[#E8E8E8] shadow-sm"
             >
-              <Bell className="w-5 h-5 text-gray-600" />
+              <Bell className="w-5 h-5 text-[#616161]" />
             </motion.button>
           </div>
         </div>
@@ -319,15 +319,14 @@ export default function AdminPremiumPage() {
                 <motion.div
                   key={stat.label}
                   whileHover={{ y: -4, scale: 1.02 }}
-                  className="group relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50 hover:shadow-xl transition-all overflow-hidden"
+                  className="group relative bg-white rounded-2xl p-6 shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[#E8E8E8] hover:shadow-[0_8px_24px_rgba(0,0,0,0.12)] transition-all overflow-hidden"
                 >
-                  <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-5 transition-opacity`} />
                   <div className="relative flex items-center justify-between">
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs md:text-sm font-semibold text-gray-600 mb-1">{stat.label}</p>
+                      <p className="text-xs md:text-sm font-semibold text-[#616161] mb-1">{stat.label}</p>
                       <p className={`text-xl md:text-3xl font-bold ${stat.textColor}`}>{stat.format(stat.value)}</p>
                     </div>
-                    <Icon className="w-4 h-4 md:w-5 md:h-5 text-gray-600 group-hover:scale-110 transition-transform flex-shrink-0" />
+                    <Icon className="w-4 h-4 md:w-5 md:h-5 text-[#64B5F6] group-hover:scale-110 transition-transform flex-shrink-0" />
                   </div>
                 </motion.div>
               );
@@ -335,17 +334,17 @@ export default function AdminPremiumPage() {
           </div>
 
           {/* Filter */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 md:p-6 shadow-lg border border-gray-200/50 mb-4 md:mb-6">
+          <div className="bg-white rounded-2xl p-4 md:p-6 shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[#E8E8E8] mb-4 md:mb-6">
             <div className="flex flex-wrap items-center gap-2 md:gap-4">
-              <span className="text-xs md:text-sm font-medium text-gray-700 w-full md:w-auto">Filter:</span>
+              <span className="text-xs md:text-sm font-medium text-[#1A1A1A] w-full md:w-auto">Filter:</span>
               {['all', 'active', 'expired'].map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
                   className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all flex-1 md:flex-none ${
                     filter === f
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-[#64B5F6] text-white shadow-sm'
+                      : 'bg-white text-[#616161] hover:bg-[#F5F5F5] border border-[#E8E8E8]'
                   }`}
                 >
                   {f.charAt(0).toUpperCase() + f.slice(1)}
@@ -355,10 +354,10 @@ export default function AdminPremiumPage() {
           </div>
 
           {/* Premium Users Table */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[#E8E8E8] overflow-hidden">
             <div className="overflow-x-auto -mx-4 md:mx-0">
               <table className="w-full min-w-[700px]">
-                <thead className="bg-gray-800 text-white">
+                <thead className="bg-[#1A1A1A] text-white">
                   <tr>
                     <th className="px-4 py-3 text-left text-sm font-semibold">User</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold">Plan</th>
@@ -369,16 +368,16 @@ export default function AdminPremiumPage() {
                     <th className="px-4 py-3 text-center text-sm font-semibold">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-[#E8E8E8]">
                   <AnimatePresence>
                     {filteredUsers.map((user, index) => (
                       <tr
                         key={user.id}
-                        className="hover:bg-gray-50 transition-colors"
+                        className="hover:bg-[#F5F5F5] transition-colors"
                       >
                         <td className="px-4 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
+                            <div className="w-9 h-9 rounded-full bg-[#64B5F6] flex items-center justify-center text-white font-semibold">
                               {user.photo ? (
                                 <img
                                   src={user.photo}
@@ -390,26 +389,26 @@ export default function AdminPremiumPage() {
                               )}
                             </div>
                             <div>
-                              <p className="font-semibold text-gray-900">{user.name}</p>
-                              <p className="text-xs text-gray-500">{user.email}</p>
+                              <p className="font-semibold text-[#1A1A1A]">{user.name}</p>
+                              <p className="text-xs text-[#616161] font-medium">{user.email}</p>
                             </div>
                           </div>
                         </td>
                         <td className="px-4 py-4">
-                          <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold capitalize">
+                          <span className="px-3 py-1 bg-[#E3F2FD] text-[#64B5F6] rounded-full text-xs font-semibold capitalize border border-[#BBDEFB]">
                             {user.plan}
                           </span>
                         </td>
                         <td className="px-4 py-4">
-                          <p className="text-sm font-semibold text-gray-900">₹{user.price}</p>
+                          <p className="text-sm font-semibold text-[#1A1A1A]">₹{user.price}</p>
                         </td>
                         <td className="px-4 py-4">
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-[#616161] font-medium">
                             {new Date(user.startDate).toLocaleDateString()}
                           </p>
                         </td>
                         <td className="px-4 py-4">
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-[#616161] font-medium">
                             {new Date(user.endDate).toLocaleDateString()}
                           </p>
                         </td>
@@ -435,7 +434,7 @@ export default function AdminPremiumPage() {
                               }}
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
-                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              className="p-2 text-[#64B5F6] hover:bg-[#E3F2FD] rounded-lg transition-colors"
                               title="View Details"
                             >
                               <Eye className="w-4 h-4" />
@@ -472,8 +471,8 @@ export default function AdminPremiumPage() {
               
               {filteredUsers.length === 0 && (
                 <div className="text-center py-12">
-                  <Crown className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">No premium users found</p>
+                  <Crown className="w-12 h-12 text-[#616161] mx-auto mb-4" />
+                  <p className="text-[#616161] font-medium">No premium users found</p>
                 </div>
               )}
             </div>
@@ -496,10 +495,10 @@ export default function AdminPremiumPage() {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
+              className="bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] max-w-md w-full p-6 border border-[#E8E8E8]"
             >
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
+                <div className="w-12 h-12 rounded-full bg-[#64B5F6] flex items-center justify-center text-white font-semibold">
                   {selectedUser.photo ? (
                     <img
                       src={selectedUser.photo}
@@ -511,34 +510,34 @@ export default function AdminPremiumPage() {
                   )}
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">{selectedUser.name}</h3>
-                  <p className="text-sm text-gray-500">{selectedUser.email}</p>
+                  <h3 className="text-xl font-bold text-[#1A1A1A]">{selectedUser.name}</h3>
+                  <p className="text-sm text-[#616161] font-medium">{selectedUser.email}</p>
                 </div>
               </div>
 
               <div className="space-y-4 mb-6">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Plan</p>
-                  <p className="text-sm font-semibold text-gray-900 capitalize">{selectedUser.plan}</p>
+                  <p className="text-sm text-[#616161] mb-1 font-medium">Plan</p>
+                  <p className="text-sm font-semibold text-[#1A1A1A] capitalize">{selectedUser.plan}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Price</p>
-                  <p className="text-sm font-semibold text-gray-900">₹{selectedUser.price}</p>
+                  <p className="text-sm text-[#616161] mb-1 font-medium">Price</p>
+                  <p className="text-sm font-semibold text-[#1A1A1A]">₹{selectedUser.price}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Start Date</p>
-                  <p className="text-sm text-gray-900">
+                  <p className="text-sm text-[#616161] mb-1 font-medium">Start Date</p>
+                  <p className="text-sm text-[#1A1A1A]">
                     {new Date(selectedUser.startDate).toLocaleString()}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">End Date</p>
-                  <p className="text-sm text-gray-900">
+                  <p className="text-sm text-[#616161] mb-1 font-medium">End Date</p>
+                  <p className="text-sm text-[#1A1A1A]">
                     {new Date(selectedUser.endDate).toLocaleString()}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Status</p>
+                  <p className="text-sm text-[#616161] mb-1 font-medium">Status</p>
                   {selectedUser.status === 'active' ? (
                     <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
                       Active
@@ -581,7 +580,7 @@ export default function AdminPremiumPage() {
                   onClick={() => setShowDetails(false)}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 px-4 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold transition-all"
+                    className="flex-1 px-4 py-3 bg-[#F5F5F5] hover:bg-[#E8E8E8] text-[#1A1A1A] rounded-lg font-semibold transition-all"
                 >
                   Close
                 </motion.button>

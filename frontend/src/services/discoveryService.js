@@ -28,6 +28,12 @@ export const discoveryService = {
   getMatches: async () => {
     const response = await api.get(API_ENDPOINTS.DISCOVERY.MATCHES);
     return response;
+  },
+
+  // Get next best match (single user)
+  getNextUser: async () => {
+    const response = await api.get(API_ENDPOINTS.DISCOVERY.NEXT_USER);
+    return response;
   }
 };
 

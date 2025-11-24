@@ -138,20 +138,15 @@ export default function SettingsPage() {
 
     return (
       <motion.div
-        whileHover={{ scale: 1.01, x: 4 }}
-        className="flex items-center justify-between p-4 sm:p-5 bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl border-2 border-[#FFB6C1]/30 hover:border-[#FF91A4] transition-all mb-3 shadow-md hover:shadow-lg"
+        whileHover={{ scale: 1.01, y: -2 }}
+        className="flex items-center justify-between p-5 sm:p-6 bg-white rounded-2xl border border-[#E8E8E8] hover:border-[#64B5F6] transition-all mb-3 shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]"
       >
-        <div className="flex items-center gap-3 sm:gap-4 flex-1">
-          <motion.div 
-            whileHover={{ scale: 1.1, rotate: 5 }}
-            className="w-12 h-12 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] rounded-xl flex items-center justify-center shadow-md"
-          >
-            <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-[#FF91A4]" />
-          </motion.div>
+        <div className="flex items-center gap-4 flex-1">
+          <Icon className="w-5 h-5 text-[#757575] flex-shrink-0" />
           <div className="flex-1">
-            <h3 className="text-sm sm:text-base font-bold text-[#212121]">{title}</h3>
+            <h3 className="text-sm sm:text-base font-semibold text-[#1A1A1A] tracking-tight">{title}</h3>
             {description && (
-              <p className="text-xs sm:text-sm text-[#757575] mt-1">{description}</p>
+              <p className="text-xs sm:text-sm text-[#616161] mt-0.5 font-normal">{description}</p>
             )}
           </div>
         </div>
@@ -162,15 +157,15 @@ export default function SettingsPage() {
               onClick={handleToggle}
               onMouseDown={(e) => e.stopPropagation()}
               onTouchStart={(e) => e.stopPropagation()}
-              className={`relative w-14 h-7 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-offset-2 ${
-                value ? 'bg-gradient-to-r from-[#FF91A4] to-[#FF69B4]' : 'bg-[#E0E0E0]'
+              className={`relative w-14 h-7 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-[#64B5F6] focus:ring-offset-2 ${
+                value ? 'bg-gradient-to-r from-[#64B5F6] to-[#42A5F5]' : 'bg-[#E0E0E0]'
               }`}
               aria-label={`Toggle ${title}`}
             >
               <motion.div
                 animate={{ x: value ? 28 : 0 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                className="absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-lg pointer-events-none"
+                className="absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.15)] pointer-events-none"
               />
             </button>
           </div>
@@ -181,7 +176,7 @@ export default function SettingsPage() {
               e.stopPropagation();
               onChange(e.target.value);
             }}
-            className="px-3 py-2 border-2 border-[#FFB6C1] rounded-xl text-sm text-[#212121] focus:border-[#FF91A4] focus:outline-none bg-white shadow-md"
+            className="px-4 py-2.5 border border-[#E0E0E0] rounded-xl text-sm text-[#1A1A1A] focus:border-[#64B5F6] focus:outline-none bg-white shadow-sm hover:shadow-md transition-all font-medium"
           >
             {type === 'visibility' && (
               <>
@@ -196,33 +191,34 @@ export default function SettingsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FFF0F5] via-[#FFE4E1] to-[#FFF0F5] flex flex-col relative overflow-hidden">
-      {/* Decorative Background Elements */}
-      <div className="absolute top-0 left-0 w-72 h-72 bg-[#FF91A4]/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#FF69B4]/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
+    <div className="min-h-screen bg-gradient-to-br from-[#F5F7FA] via-[#E8ECF1] to-[#F5F7FA] flex flex-col relative overflow-hidden">
+      {/* Premium Decorative Background Elements */}
+      <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-gradient-to-br from-[#64B5F6]/8 to-transparent rounded-full blur-3xl -translate-x-1/3 -translate-y-1/3"></div>
+      <div className="absolute bottom-0 right-0 w-[700px] h-[700px] bg-gradient-to-tl from-[#42A5F5]/8 to-transparent rounded-full blur-3xl translate-x-1/3 translate-y-1/3"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-r from-[#90CAF9]/5 to-transparent rounded-full blur-3xl"></div>
 
-      {/* Enhanced Header - Fixed */}
+      {/* Premium Header - Fixed with Glassmorphism */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-        className="fixed top-0 left-0 right-0 z-30 bg-gradient-to-b from-white via-white/98 to-white/95 backdrop-blur-lg border-b border-[#FFB6C1]/30 shadow-lg"
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="fixed top-0 left-0 right-0 z-30 backdrop-blur-xl bg-white/80 border-b border-[#E0E0E0]/50 shadow-[0_8px_32px_rgba(0,0,0,0.06)]"
       >
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
-          <div className="flex items-center gap-3">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-6">
+          <div className="flex items-center gap-4">
             <motion.button
               onClick={() => navigate('/profile')}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="p-2 hover:bg-[#FFE4E1] rounded-xl transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-3 hover:bg-[#F5F5F5] rounded-xl transition-all duration-200"
             >
-              <ArrowLeft className="w-5 h-5 text-[#212121]" />
+              <ArrowLeft className="w-5 h-5 text-[#616161]" />
             </motion.button>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#1A1A1A] tracking-tight">
                 Settings
               </h1>
-              <p className="text-xs sm:text-sm text-[#757575] font-medium">Manage your preferences</p>
+              <p className="text-xs sm:text-sm text-[#757575] font-medium mt-0.5">Manage your preferences</p>
             </div>
           </div>
         </div>
@@ -236,17 +232,9 @@ export default function SettingsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="mb-6"
+            className="mb-8"
           >
-            <h2 className="text-xl sm:text-2xl font-bold text-[#212121] mb-5 flex items-center gap-3">
-              <motion.div 
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] flex items-center justify-center shadow-md"
-              >
-                <Eye className="w-5 h-5 text-[#FF91A4]" />
-              </motion.div>
-              Privacy Settings
-            </h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A] tracking-tight mb-6">Privacy Settings</h2>
             <div className="space-y-3">
               <SettingItem
                 key="hideDistance"
@@ -293,17 +281,9 @@ export default function SettingsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="mb-6"
+            className="mb-8"
           >
-            <h2 className="text-xl sm:text-2xl font-bold text-[#212121] mb-5 flex items-center gap-3">
-              <motion.div 
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] flex items-center justify-center shadow-md"
-              >
-                <Bell className="w-5 h-5 text-[#FF91A4]" />
-              </motion.div>
-              Notifications
-            </h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A] tracking-tight mb-6">Notifications</h2>
             <div className="space-y-3">
               <SettingItem
                 key="pushNotifications"
@@ -340,26 +320,15 @@ export default function SettingsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
-            className="mb-6"
+            className="mb-8"
           >
-            <h2 className="text-xl sm:text-2xl font-bold text-[#212121] mb-5 flex items-center gap-3">
-              <motion.div 
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] flex items-center justify-center shadow-md"
-              >
-                <Shield className="w-5 h-5 text-[#FF91A4]" />
-              </motion.div>
-              Safety & Security
-            </h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A] tracking-tight mb-6">Safety & Security</h2>
             
             {/* Blocked Users */}
-            <div className="mb-5">
-              <h3 className="text-lg font-bold text-[#212121] mb-3 flex items-center gap-2">
-                <Ban className="w-5 h-5 text-[#FF91A4]" />
-                Blocked Users ({blockedUsers.length})
-              </h3>
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-[#1A1A1A] mb-4 tracking-tight">Blocked Users ({blockedUsers.length})</h3>
               {blockedUsers.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {blockedUsers.map((userId) => {
                     // Get user name from mockProfiles
                     const user = mockProfiles.find(p => p.id === userId);
@@ -369,54 +338,51 @@ export default function SettingsPage() {
                         key={userId}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="flex items-center justify-between p-3 bg-white rounded-xl border-2 border-[#FFB6C1]/30"
+                        whileHover={{ scale: 1.01, y: -2 }}
+                        className="flex items-center justify-between p-4 bg-white rounded-xl border border-[#E8E8E8] shadow-sm hover:shadow-md transition-all"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-[#FFE4E1] rounded-full flex items-center justify-center">
-                            <Ban className="w-5 h-5 text-[#FF91A4]" />
-                          </div>
-                          <span className="text-sm font-medium text-[#212121]">{userName}</span>
+                          <Ban className="w-4 h-4 text-[#757575]" />
+                          <span className="text-sm font-medium text-[#1A1A1A]">{userName}</span>
                         </div>
-                        <button
+                        <motion.button
                           onClick={() => handleUnblock(userId)}
-                          className="px-4 py-2 bg-[#FFE4E1] hover:bg-[#FF91A4] hover:text-white text-[#FF91A4] rounded-lg text-sm font-medium transition-all"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="px-4 py-2 bg-[#F5F5F5] hover:bg-[#64B5F6] hover:text-white text-[#616161] rounded-lg text-sm font-medium transition-all"
                         >
                           Unblock
-                        </button>
+                        </motion.button>
                       </motion.div>
                     );
                   })}
                 </div>
               ) : (
-                <div className="p-4 bg-[#FFE4E1] rounded-xl border-2 border-[#FFB6C1] text-center">
-                  <p className="text-sm text-[#757575]">No blocked users</p>
+                <div className="p-6 bg-white rounded-xl border border-[#E8E8E8] text-center shadow-sm">
+                  <p className="text-sm text-[#616161] font-normal">No blocked users</p>
                 </div>
               )}
             </div>
 
             {/* Reported Users */}
             <div>
-              <h3 className="text-lg font-bold text-[#212121] mb-3 flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-[#FF91A4]" />
-                Reported Users ({reportedUsers.length})
-              </h3>
+              <h3 className="text-lg font-semibold text-[#1A1A1A] mb-4 tracking-tight">Reported Users ({reportedUsers.length})</h3>
               {reportedUsers.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {reportedUsers.map((report, index) => (
                     <motion.div
                       key={index}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      className="p-3 bg-white rounded-xl border-2 border-[#FFB6C1]/30"
+                      whileHover={{ scale: 1.01, y: -2 }}
+                      className="p-4 bg-white rounded-xl border border-[#E8E8E8] shadow-sm hover:shadow-md transition-all"
                     >
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 bg-[#FFE4E1] rounded-full flex items-center justify-center">
-                          <AlertTriangle className="w-5 h-5 text-[#FF91A4]" />
-                        </div>
+                      <div className="flex items-center gap-3">
+                        <AlertTriangle className="w-4 h-4 text-[#757575] flex-shrink-0" />
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-[#212121]">{report.userName}</p>
-                          <p className="text-xs text-[#757575]">Reason: {report.reason}</p>
-                          <p className="text-xs text-[#757575]">
+                          <p className="text-sm font-medium text-[#1A1A1A]">{report.userName}</p>
+                          <p className="text-xs text-[#616161] font-normal mt-1">Reason: {report.reason}</p>
+                          <p className="text-xs text-[#757575] mt-0.5">
                             Reported: {new Date(report.reportedAt).toLocaleDateString()}
                           </p>
                         </div>
@@ -425,8 +391,8 @@ export default function SettingsPage() {
                   ))}
                 </div>
               ) : (
-                <div className="p-4 bg-[#FFE4E1] rounded-xl border-2 border-[#FFB6C1] text-center">
-                  <p className="text-sm text-[#757575]">No reported users</p>
+                <div className="p-6 bg-white rounded-xl border border-[#E8E8E8] text-center shadow-sm">
+                  <p className="text-sm text-[#616161] font-normal">No reported users</p>
                 </div>
               )}
             </div>
@@ -437,19 +403,11 @@ export default function SettingsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="mb-6"
+            className="mb-8"
           >
-            <h2 className="text-xl sm:text-2xl font-bold text-[#212121] mb-5 flex items-center gap-3">
-              <motion.div 
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] flex items-center justify-center shadow-md"
-              >
-                <HelpCircle className="w-5 h-5 text-[#FF91A4]" />
-              </motion.div>
-              Help & Support
-            </h2>
-            <div className="p-4 bg-[#FFE4E1] rounded-xl border-2 border-[#FFB6C1] text-center">
-              <p className="text-sm text-[#757575]">Help center coming soon!</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A] tracking-tight mb-6">Help & Support</h2>
+            <div className="p-6 bg-white rounded-xl border border-[#E8E8E8] text-center shadow-sm">
+              <p className="text-sm text-[#616161] font-normal">Help center coming soon!</p>
             </div>
           </motion.div>
 
@@ -458,25 +416,17 @@ export default function SettingsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35 }}
-            className="mb-6"
+            className="mb-8"
           >
-            <h2 className="text-xl sm:text-2xl font-bold text-[#212121] mb-5 flex items-center gap-3">
-              <motion.div 
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] flex items-center justify-center shadow-md"
-              >
-                <User className="w-5 h-5 text-[#FF91A4]" />
-              </motion.div>
-              Account
-            </h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A] tracking-tight mb-6">Account</h2>
             <div className="space-y-3">
               <motion.button
                 onClick={() => setShowDeleteConfirm(true)}
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: 1.01, y: -2 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full p-4 bg-white rounded-xl border-2 border-red-200 hover:border-red-400 transition-all flex items-center gap-3"
+                className="w-full p-4 bg-white rounded-xl border border-red-200 hover:border-red-400 transition-all flex items-center gap-3 shadow-sm hover:shadow-md"
               >
-                <Trash2 className="w-5 h-5 text-red-500" />
+                <Trash2 className="w-4 h-4 text-red-500" />
                 <span className="flex-1 text-left text-sm font-medium text-red-600">Delete Account</span>
               </motion.button>
 
@@ -485,12 +435,12 @@ export default function SettingsPage() {
                   localStorage.clear();
                   navigate('/login');
                 }}
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: 1.01, y: -2 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full p-4 bg-white rounded-xl border-2 border-[#FFB6C1]/30 hover:border-[#FF91A4] transition-all flex items-center gap-3"
+                className="w-full p-4 bg-white rounded-xl border border-[#E8E8E8] hover:border-[#64B5F6] transition-all flex items-center gap-3 shadow-sm hover:shadow-md"
               >
-                <LogOut className="w-5 h-5 text-[#FF91A4]" />
-                <span className="flex-1 text-left text-sm font-medium text-[#212121]">Logout</span>
+                <LogOut className="w-4 h-4 text-[#757575]" />
+                <span className="flex-1 text-left text-sm font-medium text-[#1A1A1A]">Logout</span>
               </motion.button>
             </div>
           </motion.div>
@@ -512,31 +462,35 @@ export default function SettingsPage() {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-3xl shadow-2xl p-6 max-w-sm w-full"
+              className="bg-white rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.3)] p-8 max-w-sm w-full border border-[#E8E8E8]"
             >
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm">
                   <Trash2 className="w-8 h-8 text-red-500" />
                 </div>
-                <h3 className="text-xl font-bold text-[#212121] mb-2">Delete Account?</h3>
-                <p className="text-sm text-[#757575]">
+                <h3 className="text-2xl font-bold text-[#1A1A1A] mb-3 tracking-tight">Delete Account?</h3>
+                <p className="text-sm text-[#616161] font-medium leading-relaxed">
                   This action cannot be undone. All your data will be permanently deleted.
                 </p>
               </div>
 
               <div className="flex gap-3">
-                <button
+                <motion.button
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="flex-1 px-4 py-3 border-2 border-[#E0E0E0] text-[#212121] rounded-xl font-semibold hover:border-[#757575] transition-all"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex-1 px-5 py-3.5 border border-[#E0E0E0] text-[#1A1A1A] rounded-xl font-semibold hover:border-[#757575] transition-all shadow-sm"
                 >
                   Cancel
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   onClick={handleDeleteAccount}
-                  className="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold transition-all"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex-1 px-5 py-3.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold transition-all shadow-[0_4px_16px_rgba(239,68,68,0.3)] hover:shadow-[0_8px_24px_rgba(239,68,68,0.4)]"
                 >
                   Delete
-                </button>
+                </motion.button>
               </div>
             </motion.div>
           </motion.div>

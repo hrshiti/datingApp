@@ -239,7 +239,7 @@ export default function AdminUserManagementPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 flex relative">
+    <div className="min-h-screen bg-gradient-to-br from-[#F5F7FA] via-[#E8ECF1] to-[#F5F7FA] flex relative">
       {/* Mobile Overlay */}
       {mobileMenuOpen && (
         <motion.div
@@ -253,20 +253,20 @@ export default function AdminUserManagementPage() {
       
       {/* Left Sidebar */}
       <div 
-        className={`${sidebarOpen ? 'w-64' : 'w-20'} fixed top-0 left-0 h-screen bg-white/80 backdrop-blur-lg border-r border-gray-200/50 flex flex-col transition-all duration-300 shadow-xl z-50 ${
+        className={`${sidebarOpen ? 'w-64' : 'w-20'} fixed top-0 left-0 h-screen bg-white/95 backdrop-blur-lg border-r border-[#E8E8E8] flex flex-col transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.08)] z-50 ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
         {/* Logo/Header */}
-        <div className="p-6 border-b border-gray-200/50">
+        <div className="p-6 border-b border-[#E8E8E8]">
           <div className="flex items-center justify-between">
             <div className={`flex items-center gap-3 ${!sidebarOpen && 'justify-center w-full'}`}>
               {sidebarOpen && (
                 <div>
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  <h1 className="text-xl font-bold text-[#1A1A1A] tracking-tight">
                     Admin Panel
                   </h1>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xs text-[#616161] mt-0.5 font-medium">
                     {localStorage.getItem('adminUsername') || 'Admin'}
                   </p>
                 </div>
@@ -277,9 +277,9 @@ export default function AdminUserManagementPage() {
                 onClick={() => setSidebarOpen(false)}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-[#F5F5F5] transition-colors"
               >
-                <X className="w-4 h-4 text-gray-500" />
+                <X className="w-4 h-4 text-[#616161]" />
               </motion.button>
             )}
             {!sidebarOpen && (
@@ -287,9 +287,9 @@ export default function AdminUserManagementPage() {
                 onClick={() => setSidebarOpen(true)}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-[#F5F5F5] transition-colors"
               >
-                <Menu className="w-5 h-5 text-gray-500" />
+                <Menu className="w-5 h-5 text-[#616161]" />
               </motion.button>
             )}
           </div>
@@ -308,18 +308,18 @@ export default function AdminUserManagementPage() {
                 whileTap={{ scale: 0.98 }}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all relative group ${
                   isActive
-                    ? 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-600 shadow-md'
-                    : 'text-gray-700 hover:bg-gray-50/80'
+                    ? 'bg-[#E3F2FD] text-[#64B5F6] shadow-[0_2px_8px_rgba(100,181,246,0.15)]'
+                    : 'text-[#616161] hover:bg-[#F5F5F5]'
                 }`}
               >
-                <div className={`${isActive ? 'text-blue-600' : 'text-gray-500 group-hover:text-blue-500'} transition-colors`}>
+                <div className={`${isActive ? 'text-[#64B5F6]' : 'text-[#616161] group-hover:text-[#64B5F6]'} transition-colors`}>
                   <Icon className="w-4 h-4" />
                 </div>
                 {sidebarOpen && <span className="font-medium whitespace-nowrap">{item.label}</span>}
                 {isActive && (
                   <motion.div
                     layoutId="activeTab"
-                    className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-purple-600 rounded-r-full"
+                    className="absolute left-0 top-0 bottom-0 w-1 bg-[#64B5F6] rounded-r-full"
                     initial={false}
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   />
@@ -330,12 +330,12 @@ export default function AdminUserManagementPage() {
         </nav>
 
         {/* Logout */}
-        <div className="p-4 border-t border-gray-200/50">
+        <div className="p-4 border-t border-[#E8E8E8]">
           <motion.button
             onClick={handleLogout}
             whileHover={{ scale: 1.02, x: 4 }}
             whileTap={{ scale: 0.98 }}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50/80 transition-all group"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-all group"
           >
             <LogOut className="w-4 h-4 group-hover:rotate-12 transition-transform" />
             {sidebarOpen && <span className="font-medium">Logout</span>}
@@ -346,22 +346,22 @@ export default function AdminUserManagementPage() {
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto md:ml-64">
         {/* Top Header Bar */}
-        <div className="fixed top-0 right-0 left-0 md:left-64 z-10 bg-white/80 backdrop-blur-lg border-b border-gray-200/50 shadow-sm">
+        <div className="fixed top-0 right-0 left-0 md:left-64 z-10 bg-white/95 backdrop-blur-lg border-b border-[#E8E8E8] shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
           <div className="p-4 md:p-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
               {/* Mobile Menu Button */}
               <motion.button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 whileTap={{ scale: 0.95 }}
-                className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className="md:hidden p-2 rounded-lg hover:bg-[#F5F5F5] transition-colors"
               >
-                <Menu className="w-6 h-6 text-gray-600" />
+                <Menu className="w-6 h-6 text-[#616161]" />
               </motion.button>
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] tracking-tight">
                   User Management
                 </h1>
-                <p className="text-xs md:text-sm text-gray-500 mt-1 flex items-center gap-2">
+                <p className="text-xs md:text-sm text-[#616161] mt-1 flex items-center gap-2 font-medium">
                   <Clock className="w-3 h-3 md:w-4 md:h-4 hidden md:block" />
                   <span className="hidden md:inline">Manage all users, view profiles, and take actions</span>
                   <span className="md:hidden">User Management</span>
@@ -370,19 +370,19 @@ export default function AdminUserManagementPage() {
             </div>
             <div className="flex items-center gap-2 md:gap-4">
               <div className="relative hidden lg:block">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#616161]" />
                 <input
                   type="text"
                   placeholder="Search..."
-                  className="pl-10 pr-4 py-2.5 w-64 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="pl-10 pr-4 py-2.5 w-64 rounded-xl border border-[#E8E8E8] bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#64B5F6]/20 focus:border-[#64B5F6] transition-all shadow-sm"
                 />
               </div>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="relative p-2 md:p-2.5 rounded-xl bg-gray-50/50 hover:bg-gray-100/80 transition-colors"
+                className="relative p-2 md:p-2.5 rounded-xl bg-white hover:bg-[#F5F5F5] transition-colors border border-[#E8E8E8] shadow-sm"
               >
-                <Bell className="w-5 h-5 text-gray-600" />
+                <Bell className="w-5 h-5 text-[#616161]" />
                 <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
                   3
                 </span>
@@ -400,86 +400,82 @@ export default function AdminUserManagementPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
             <motion.div
               whileHover={{ y: -4, scale: 1.02 }}
-              className="group relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50 hover:shadow-xl transition-all overflow-hidden"
+              className="group relative bg-white rounded-2xl p-6 shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[#E8E8E8] hover:shadow-[0_8px_24px_rgba(0,0,0,0.12)] transition-all overflow-hidden"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-600 opacity-0 group-hover:opacity-5 transition-opacity" />
               <div className="relative flex items-center justify-between">
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs md:text-sm font-semibold text-gray-600 mb-1">Total Users</p>
-                  <p className="text-xl md:text-3xl font-bold text-gray-900">{users.length}</p>
+                  <p className="text-xs md:text-sm font-semibold text-[#616161] mb-1">Total Users</p>
+                  <p className="text-xl md:text-3xl font-bold text-[#1A1A1A]">{users.length}</p>
                 </div>
-                <Users className="w-4 h-4 md:w-5 md:h-5 text-gray-600 group-hover:scale-110 transition-transform flex-shrink-0" />
+                <Users className="w-4 h-4 md:w-5 md:h-5 text-[#64B5F6] group-hover:scale-110 transition-transform flex-shrink-0" />
               </div>
             </motion.div>
 
             <motion.div
               whileHover={{ y: -4, scale: 1.02 }}
-              className="group relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50 hover:shadow-xl transition-all overflow-hidden"
+              className="group relative bg-white rounded-2xl p-6 shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[#E8E8E8] hover:shadow-[0_8px_24px_rgba(0,0,0,0.12)] transition-all overflow-hidden"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-green-600 opacity-0 group-hover:opacity-5 transition-opacity" />
               <div className="relative flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-gray-600 mb-1">Active Users</p>
+                  <p className="text-sm font-semibold text-[#616161] mb-1">Active Users</p>
                   <p className="text-3xl font-bold text-green-600">
                     {users.filter(u => u.status === 'active').length}
                   </p>
                 </div>
-                <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-gray-600 group-hover:scale-110 transition-transform" />
+                <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-[#64B5F6] group-hover:scale-110 transition-transform" />
               </div>
             </motion.div>
 
             <motion.div
               whileHover={{ y: -4, scale: 1.02 }}
-              className="group relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50 hover:shadow-xl transition-all overflow-hidden"
+              className="group relative bg-white rounded-2xl p-6 shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[#E8E8E8] hover:shadow-[0_8px_24px_rgba(0,0,0,0.12)] transition-all overflow-hidden"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500 to-yellow-600 opacity-0 group-hover:opacity-5 transition-opacity" />
               <div className="relative flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-gray-600 mb-1">Suspended</p>
+                  <p className="text-sm font-semibold text-[#616161] mb-1">Suspended</p>
                   <p className="text-3xl font-bold text-yellow-600">
                     {users.filter(u => u.status === 'suspended').length}
                   </p>
                 </div>
-                <XCircle className="w-5 h-5 md:w-6 md:h-6 text-gray-600 group-hover:scale-110 transition-transform" />
+                <XCircle className="w-5 h-5 md:w-6 md:h-6 text-[#64B5F6] group-hover:scale-110 transition-transform" />
               </div>
             </motion.div>
 
             <motion.div
               whileHover={{ y: -4, scale: 1.02 }}
-              className="group relative bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50 hover:shadow-xl transition-all overflow-hidden"
+              className="group relative bg-white rounded-2xl p-6 shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[#E8E8E8] hover:shadow-[0_8px_24px_rgba(0,0,0,0.12)] transition-all overflow-hidden"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-red-600 opacity-0 group-hover:opacity-5 transition-opacity" />
               <div className="relative flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-gray-600 mb-1">Banned</p>
+                  <p className="text-sm font-semibold text-[#616161] mb-1">Banned</p>
                   <p className="text-3xl font-bold text-red-600">
                     {users.filter(u => u.status === 'banned').length}
                   </p>
                 </div>
-                <Ban className="w-5 h-5 md:w-6 md:h-6 text-gray-600 group-hover:scale-110 transition-transform" />
+                <Ban className="w-5 h-5 md:w-6 md:h-6 text-[#64B5F6] group-hover:scale-110 transition-transform" />
               </div>
             </motion.div>
           </div>
 
           {/* Search and Filters */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 md:p-6 shadow-lg border border-gray-200/50 mb-4 md:mb-6">
+          <div className="bg-white rounded-2xl p-4 md:p-6 shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[#E8E8E8] mb-4 md:mb-6">
             <div className="flex flex-col md:flex-row gap-3 md:gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-[#616161]" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search by name, email..."
-                  className="w-full pl-9 md:pl-10 pr-4 py-2 md:py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                  className="w-full pl-9 md:pl-10 pr-4 py-2 md:py-2.5 text-sm border border-[#E8E8E8] rounded-xl bg-white focus:bg-white focus:border-[#64B5F6] focus:outline-none focus:ring-2 focus:ring-[#64B5F6]/20 transition-all shadow-sm"
                 />
               </div>
               <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 md:w-5 md:h-5 text-gray-400 hidden md:block" />
+                <Filter className="w-4 h-4 md:w-5 md:h-5 text-[#616161] hidden md:block" />
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="flex-1 md:flex-none px-3 md:px-4 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                  className="flex-1 md:flex-none px-3 md:px-4 py-2 text-sm border border-[#E8E8E8] rounded-xl bg-white focus:bg-white focus:border-[#64B5F6] focus:outline-none focus:ring-2 focus:ring-[#64B5F6]/20 transition-all shadow-sm"
                 >
                   <option value="all">All Status</option>
                   <option value="active">Active</option>
@@ -491,10 +487,10 @@ export default function AdminUserManagementPage() {
           </div>
 
           {/* Users Table */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[#E8E8E8] overflow-hidden">
             <div className="overflow-x-auto -mx-4 md:mx-0">
             <table className="w-full min-w-[800px]">
-              <thead className="bg-gray-800 text-white">
+              <thead className="bg-[#1A1A1A] text-white">
                 <tr>
                   <th className="px-4 py-3 text-left text-sm font-semibold">User</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold">Contact</th>
@@ -505,7 +501,7 @@ export default function AdminUserManagementPage() {
                   <th className="px-4 py-3 text-center text-sm font-semibold">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#FFB6C1]/20">
+              <tbody className="divide-y divide-[#E8E8E8]">
                 <AnimatePresence>
                   {filteredUsers.map((user, index) => (
                     <motion.tr
@@ -514,11 +510,11 @@ export default function AdminUserManagementPage() {
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 20 }}
                       transition={{ delay: index * 0.05 }}
-                      className="hover:bg-gray-50 transition-colors"
+                      className="hover:bg-[#F5F5F5] transition-colors"
                     >
                       <td className="px-3 md:px-4 py-3 md:py-4">
                         <div className="flex items-center gap-2 md:gap-3">
-                          <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold flex-shrink-0">
+                          <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-[#64B5F6] flex items-center justify-center text-white font-semibold flex-shrink-0">
                             {user.photos?.[0] ? (
                               <img
                                 src={user.photos[0].preview || user.photos[0]}
@@ -530,8 +526,8 @@ export default function AdminUserManagementPage() {
                             )}
                           </div>
                           <div className="min-w-0">
-                            <p className="font-semibold text-[#212121] text-sm md:text-base truncate">{user.name}</p>
-                            <p className="text-xs text-[#757575]">
+                            <p className="font-semibold text-[#1A1A1A] text-sm md:text-base truncate">{user.name}</p>
+                            <p className="text-xs text-[#616161]">
                               {user.dob ? `Age: ${calculateAge(user.dob)}` : 'Age: N/A'}
                             </p>
                           </div>
@@ -540,14 +536,14 @@ export default function AdminUserManagementPage() {
                       <td className="px-3 md:px-4 py-3 md:py-4">
                         <div className="space-y-1">
                           {user.email && (
-                            <p className="text-xs md:text-sm text-[#212121] flex items-center gap-1 truncate">
-                              <Mail className="w-3 h-3 text-[#757575] flex-shrink-0" />
+                            <p className="text-xs md:text-sm text-[#1A1A1A] flex items-center gap-1 truncate">
+                              <Mail className="w-3 h-3 text-[#616161] flex-shrink-0" />
                               <span className="truncate">{user.email}</span>
                             </p>
                           )}
                           {user.phone && (
-                            <p className="text-xs md:text-sm text-[#212121] flex items-center gap-1 truncate">
-                              <Phone className="w-3 h-3 text-[#757575] flex-shrink-0" />
+                            <p className="text-xs md:text-sm text-[#1A1A1A] flex items-center gap-1 truncate">
+                              <Phone className="w-3 h-3 text-[#616161] flex-shrink-0" />
                               <span className="truncate">{user.phone}</span>
                             </p>
                           )}
@@ -555,12 +551,12 @@ export default function AdminUserManagementPage() {
                       </td>
                       <td className="px-3 md:px-4 py-3 md:py-4">
                         {user.city ? (
-                          <p className="text-xs md:text-sm text-[#212121] flex items-center gap-1 truncate">
-                            <MapPin className="w-3 h-3 text-[#757575] flex-shrink-0" />
+                          <p className="text-xs md:text-sm text-[#1A1A1A] flex items-center gap-1 truncate">
+                            <MapPin className="w-3 h-3 text-[#616161] flex-shrink-0" />
                             <span className="truncate">{user.city}</span>
                           </p>
                         ) : (
-                          <p className="text-xs md:text-sm text-[#757575]">N/A</p>
+                          <p className="text-xs md:text-sm text-[#616161]">N/A</p>
                         )}
                       </td>
                       <td className="px-3 md:px-4 py-3 md:py-4">
@@ -581,12 +577,12 @@ export default function AdminUserManagementPage() {
                       </td>
                       <td className="px-3 md:px-4 py-3 md:py-4">
                         {user.isPremium ? (
-                          <span className="px-2 md:px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] text-white flex items-center gap-1 w-fit">
+                          <span className="px-2 md:px-3 py-1 rounded-full text-xs font-semibold bg-[#64B5F6] text-white flex items-center gap-1 w-fit">
                             <Crown className="w-3 h-3" />
                             <span className="hidden sm:inline">Premium</span>
                           </span>
                         ) : (
-                          <span className="text-xs md:text-sm text-[#757575]">Free</span>
+                          <span className="text-xs md:text-sm text-[#616161]">Free</span>
                         )}
                       </td>
                       <td className="px-3 md:px-4 py-3 md:py-4">
@@ -598,7 +594,7 @@ export default function AdminUserManagementPage() {
                             }}
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            className="p-2 text-[#64B5F6] hover:bg-[#E3F2FD] rounded-lg transition-colors"
                             title="View Details"
                           >
                             <Eye className="w-4 h-4" />
@@ -671,8 +667,8 @@ export default function AdminUserManagementPage() {
             
             {filteredUsers.length === 0 && (
               <div className="text-center py-12">
-                <Users className="w-10 h-10 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">No users found</p>
+                <Users className="w-10 h-10 text-[#616161] mx-auto mb-4" />
+                <p className="text-[#616161] font-medium">No users found</p>
               </div>
             )}
           </div>
@@ -694,11 +690,11 @@ export default function AdminUserManagementPage() {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-[#E8E8E8]"
             >
-              <div className="bg-gray-800 p-6 text-white">
+              <div className="bg-[#1A1A1A] p-6 text-white">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold">User Details</h2>
+                  <h2 className="text-2xl font-bold tracking-tight">User Details</h2>
                   <button
                     onClick={() => setShowUserDetails(false)}
                     className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -710,7 +706,7 @@ export default function AdminUserManagementPage() {
               
               <div className="p-6 space-y-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold text-lg">
+                  <div className="w-16 h-16 rounded-full bg-[#64B5F6] flex items-center justify-center text-white font-semibold text-lg">
                     {selectedUser.photos?.[0] ? (
                       <img
                         src={selectedUser.photos[0].preview || selectedUser.photos[0]}
@@ -722,8 +718,8 @@ export default function AdminUserManagementPage() {
                     )}
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-[#212121]">{selectedUser.name}</h3>
-                    <p className="text-sm text-[#757575]">
+                    <h3 className="text-xl font-bold text-[#1A1A1A]">{selectedUser.name}</h3>
+                    <p className="text-sm text-[#616161] font-medium">
                       {selectedUser.dob ? `Age: ${calculateAge(selectedUser.dob)}` : 'Age: N/A'}
                     </p>
                     {getStatusBadge(selectedUser.status)}
@@ -732,20 +728,20 @@ export default function AdminUserManagementPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-[#757575] mb-1">Email</p>
-                    <p className="text-sm font-semibold text-[#212121]">{selectedUser.email || 'N/A'}</p>
+                    <p className="text-sm text-[#616161] mb-1 font-medium">Email</p>
+                    <p className="text-sm font-semibold text-[#1A1A1A]">{selectedUser.email || 'N/A'}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-[#757575] mb-1">Phone</p>
-                    <p className="text-sm font-semibold text-[#212121]">{selectedUser.phone || 'N/A'}</p>
+                    <p className="text-sm text-[#616161] mb-1 font-medium">Phone</p>
+                    <p className="text-sm font-semibold text-[#1A1A1A]">{selectedUser.phone || 'N/A'}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-[#757575] mb-1">City</p>
-                    <p className="text-sm font-semibold text-[#212121]">{selectedUser.city || 'N/A'}</p>
+                    <p className="text-sm text-[#616161] mb-1 font-medium">City</p>
+                    <p className="text-sm font-semibold text-[#1A1A1A]">{selectedUser.city || 'N/A'}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-[#757575] mb-1">Gender</p>
-                    <p className="text-sm font-semibold text-[#212121]">
+                    <p className="text-sm text-[#616161] mb-1 font-medium">Gender</p>
+                    <p className="text-sm font-semibold text-[#1A1A1A]">
                       {selectedUser.gender ? selectedUser.gender.charAt(0).toUpperCase() + selectedUser.gender.slice(1) : 'N/A'}
                     </p>
                   </div>
@@ -753,19 +749,19 @@ export default function AdminUserManagementPage() {
 
                 {selectedUser.bio && (
                   <div>
-                    <p className="text-sm text-[#757575] mb-1">Bio</p>
-                    <p className="text-sm text-[#212121]">{selectedUser.bio}</p>
+                    <p className="text-sm text-[#616161] mb-1 font-medium">Bio</p>
+                    <p className="text-sm text-[#1A1A1A]">{selectedUser.bio}</p>
                   </div>
                 )}
 
                 {selectedUser.interests && selectedUser.interests.length > 0 && (
                   <div>
-                    <p className="text-sm text-[#757575] mb-2">Interests</p>
+                    <p className="text-sm text-[#616161] mb-2 font-medium">Interests</p>
                     <div className="flex flex-wrap gap-2">
                       {selectedUser.interests.map((interest, idx) => (
                         <span
                           key={idx}
-                          className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-medium"
+                          className="px-3 py-1 bg-[#E3F2FD] text-[#64B5F6] rounded-full text-xs font-medium border border-[#BBDEFB]"
                         >
                           {interest}
                         </span>
@@ -794,14 +790,14 @@ export default function AdminUserManagementPage() {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
+              className="bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] max-w-md w-full p-6 border border-[#E8E8E8]"
             >
               <div className="text-center mb-6">
                 <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Trash2 className="w-5 h-5 text-red-600" />
                 </div>
-                <h3 className="text-xl font-bold text-[#212121] mb-2">Delete User?</h3>
-                <p className="text-sm text-[#757575]">
+                <h3 className="text-xl font-bold text-[#1A1A1A] mb-2 tracking-tight">Delete User?</h3>
+                <p className="text-sm text-[#616161] font-medium">
                   Are you sure you want to delete this user? This action cannot be undone.
                 </p>
               </div>
@@ -811,7 +807,7 @@ export default function AdminUserManagementPage() {
                   onClick={() => setShowDeleteConfirm(false)}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 px-4 py-3 border-2 border-[#E0E0E0] text-[#212121] rounded-xl font-semibold hover:border-[#757575] transition-all"
+                  className="flex-1 px-4 py-3 border-2 border-[#E8E8E8] text-[#1A1A1A] rounded-xl font-semibold hover:border-[#616161] transition-all"
                 >
                   Cancel
                 </motion.button>
@@ -819,7 +815,7 @@ export default function AdminUserManagementPage() {
                   onClick={confirmDelete}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition-all"
+                  className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition-all shadow-lg"
                 >
                   Delete
                 </motion.button>
