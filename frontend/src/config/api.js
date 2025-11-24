@@ -31,7 +31,8 @@ export const API_ENDPOINTS = {
     FEED: '/discovery',
     LIKE: '/discovery/like',
     PASS: '/discovery/pass',
-    MATCHES: '/discovery/matches'
+    MATCHES: '/discovery/matches',
+    NEXT_USER: '/discovery/next-user'
   }
 };
 

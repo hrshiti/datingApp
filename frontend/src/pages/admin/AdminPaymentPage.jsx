@@ -169,7 +169,7 @@ export default function AdminPaymentPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 flex relative">
+    <div className="min-h-screen bg-gradient-to-br from-[#F5F7FA] via-[#E8ECF1] to-[#F5F7FA] flex relative">
       {/* Mobile Overlay */}
       {mobileMenuOpen && (
         <motion.div
@@ -183,19 +183,19 @@ export default function AdminPaymentPage() {
       
       {/* Left Sidebar */}
       <div 
-        className={`${sidebarOpen ? 'w-64' : 'w-20'} fixed top-0 left-0 h-screen bg-white/80 backdrop-blur-lg border-r border-gray-200/50 flex flex-col transition-all duration-300 shadow-xl z-50 ${
+        className={`${sidebarOpen ? 'w-64' : 'w-20'} fixed top-0 left-0 h-screen bg-white/95 backdrop-blur-lg border-r border-[#E8E8E8] flex flex-col transition-all duration-300 shadow-xl z-50 ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
-        <div className="p-6 border-b border-gray-200/50 sticky top-0 bg-white/80 backdrop-blur-lg z-10">
+        <div className="p-6 border-b border-[#E8E8E8] sticky top-0 bg-white/80 backdrop-blur-lg z-10">
           <div className="flex items-center justify-between">
             <div className={`flex items-center gap-3 ${!sidebarOpen && 'justify-center w-full'}`}>
               {sidebarOpen && (
                 <div>
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  <h1 className="text-xl font-bold text-[#1A1A1A] tracking-tight">
                     Admin Panel
                   </h1>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xs text-[#616161] mt-0.5">
                     {localStorage.getItem('adminUsername') || 'Admin'}
                   </p>
                 </div>
@@ -206,9 +206,9 @@ export default function AdminPaymentPage() {
                 onClick={() => setSidebarOpen(false)}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-[#F5F5F5] transition-colors"
               >
-                <X className="w-4 h-4 text-gray-500" />
+                <X className="w-4 h-4 text-[#616161]" />
               </motion.button>
             )}
             {!sidebarOpen && (
@@ -216,9 +216,9 @@ export default function AdminPaymentPage() {
                 onClick={() => setSidebarOpen(true)}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-[#F5F5F5] transition-colors"
               >
-                <Menu className="w-5 h-5 text-gray-500" />
+                <Menu className="w-5 h-5 text-[#616161]" />
               </motion.button>
             )}
           </div>
@@ -239,18 +239,18 @@ export default function AdminPaymentPage() {
                 whileTap={{ scale: 0.98 }}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all relative group ${
                   isActive
-                    ? 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-600 shadow-md'
-                    : 'text-gray-700 hover:bg-gray-50/80'
+                    ? 'bg-[#E3F2FD] text-[#64B5F6] shadow-[0_2px_8px_rgba(100,181,246,0.15)] shadow-md'
+                    : 'text-[#616161] hover:bg-[#F5F5F5]'
                 }`}
               >
-                <div className={`${isActive ? 'text-blue-600' : 'text-gray-500 group-hover:text-blue-500'} transition-colors`}>
+                <div className={`${isActive ? 'text-[#64B5F6]' : 'text-[#616161] group-hover:text-blue-500'} transition-colors`}>
                   <Icon className="w-4 h-4" />
                 </div>
                 {sidebarOpen && <span className="font-medium whitespace-nowrap">{item.label}</span>}
                 {isActive && (
                   <motion.div
                     layoutId="activeTab"
-                    className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-purple-600 rounded-r-full"
+                    className="absolute left-0 top-0 bottom-0 w-1 bg-[#64B5F6] rounded-r-full"
                     initial={false}
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   />
@@ -260,7 +260,7 @@ export default function AdminPaymentPage() {
           })}
         </nav>
 
-        <div className="p-4 border-t border-gray-200/50">
+        <div className="p-4 border-t border-[#E8E8E8]">
           <motion.button
             onClick={handleLogout}
             whileHover={{ scale: 1.02, x: 4 }}
@@ -276,22 +276,22 @@ export default function AdminPaymentPage() {
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto md:ml-64">
         {/* Top Header Bar */}
-        <div className="fixed top-0 right-0 left-0 md:left-64 z-10 bg-white/80 backdrop-blur-lg border-b border-gray-200/50 shadow-sm">
+        <div className="fixed top-0 right-0 left-0 md:left-64 z-10 bg-white/95 backdrop-blur-lg border-b border-[#E8E8E8] shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
           <div className="p-4 md:p-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
               {/* Mobile Menu Button */}
               <motion.button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 whileTap={{ scale: 0.95 }}
-                className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className="md:hidden p-2 rounded-lg hover:bg-[#F5F5F5] transition-colors"
               >
-                <Menu className="w-6 h-6 text-gray-600" />
+                <Menu className="w-6 h-6 text-[#616161]" />
               </motion.button>
               <div>
-                <h1 className="text-xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                <h1 className="text-xl md:text-3xl font-bold text-[#1A1A1A] tracking-tight">
                   Payments & Refunds
                 </h1>
-                <p className="text-xs md:text-sm text-gray-500 mt-1">
+                <p className="text-xs md:text-sm text-[#616161] mt-1">
                   View payment history and process refunds
                 </p>
               </div>
@@ -304,37 +304,37 @@ export default function AdminPaymentPage() {
 
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
-            <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3 md:p-4 shadow-lg border border-gray-200/50">
+            <div className="bg-white rounded-xl p-3 md:p-4 shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[#E8E8E8]">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs md:text-sm text-gray-500">Total Revenue</p>
+                  <p className="text-xs md:text-sm text-[#616161]">Total Revenue</p>
                   <p className="text-lg md:text-2xl font-bold text-green-600">₹{stats.totalRevenue.toLocaleString()}</p>
                 </div>
                 <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
               </div>
             </div>
-            <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3 md:p-4 shadow-lg border border-gray-200/50">
+            <div className="bg-white rounded-xl p-3 md:p-4 shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[#E8E8E8]">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs md:text-sm text-gray-500">Successful</p>
-                  <p className="text-lg md:text-2xl font-bold text-blue-600">{stats.totalPayments}</p>
+                  <p className="text-xs md:text-sm text-[#616161]">Successful</p>
+                  <p className="text-lg md:text-2xl font-bold text-[#64B5F6]">{stats.totalPayments}</p>
                 </div>
-                <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
+                <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-[#64B5F6]" />
               </div>
             </div>
-            <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3 md:p-4 shadow-lg border border-gray-200/50">
+            <div className="bg-white rounded-xl p-3 md:p-4 shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[#E8E8E8]">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs md:text-sm text-gray-500">Pending</p>
+                  <p className="text-xs md:text-sm text-[#616161]">Pending</p>
                   <p className="text-lg md:text-2xl font-bold text-yellow-600">{stats.pendingPayments}</p>
                 </div>
                 <RefreshCw className="w-5 h-5 md:w-6 md:h-6 text-yellow-600" />
               </div>
             </div>
-            <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3 md:p-4 shadow-lg border border-gray-200/50">
+            <div className="bg-white rounded-xl p-3 md:p-4 shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[#E8E8E8]">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs md:text-sm text-gray-500">Total Refunds</p>
+                  <p className="text-xs md:text-sm text-[#616161]">Total Refunds</p>
                   <p className="text-lg md:text-2xl font-bold text-red-600">₹{stats.totalRefunds.toLocaleString()}</p>
                 </div>
                 <RefreshCw className="w-5 h-5 md:w-6 md:h-6 text-red-600" />
@@ -343,7 +343,7 @@ export default function AdminPaymentPage() {
           </div>
 
           {/* Filters */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3 md:p-4 shadow-lg border border-gray-200/50 mb-4 md:mb-6">
+          <div className="bg-white rounded-xl p-3 md:p-4 shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[#E8E8E8] mb-4 md:mb-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -381,9 +381,9 @@ export default function AdminPaymentPage() {
           </div>
 
           {/* Payments - Desktop Table / Mobile Cards */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 overflow-hidden mb-4 md:mb-6">
-            <div className="p-3 md:p-4 border-b border-gray-200/50 bg-gradient-to-r from-gray-50 to-gray-100/50">
-              <h2 className="text-base md:text-lg font-bold text-gray-900">Payment History</h2>
+          <div className="bg-white rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[#E8E8E8] overflow-hidden mb-4 md:mb-6">
+            <div className="p-3 md:p-4 border-b border-[#E8E8E8] bg-gradient-to-r from-gray-50 to-gray-100/50">
+              <h2 className="text-base md:text-lg font-bold text-[#1A1A1A]">Payment History</h2>
             </div>
             
             {/* Desktop Table View */}
@@ -413,29 +413,29 @@ export default function AdminPaymentPage() {
                       >
                         <td className="px-4 py-4">
                           <div>
-                            <p className="font-semibold text-gray-900">{payment.userName}</p>
-                            <p className="text-xs text-gray-500">{payment.userEmail}</p>
+                            <p className="font-semibold text-[#1A1A1A]">{payment.userName}</p>
+                            <p className="text-xs text-[#616161]">{payment.userEmail}</p>
                           </div>
                         </td>
                         <td className="px-4 py-4">
-                          <span className="text-sm text-gray-900">{payment.plan}</span>
+                          <span className="text-sm text-[#1A1A1A]">{payment.plan}</span>
                           {payment.promoCode && (
-                            <p className="text-xs text-gray-500">Code: {payment.promoCode}</p>
+                            <p className="text-xs text-[#616161]">Code: {payment.promoCode}</p>
                           )}
                         </td>
                         <td className="px-4 py-4">
                           <div>
-                            <p className="text-sm font-semibold text-gray-900">₹{payment.finalAmount}</p>
+                            <p className="text-sm font-semibold text-[#1A1A1A]">₹{payment.finalAmount}</p>
                             {payment.discount > 0 && (
-                              <p className="text-xs text-gray-500 line-through">₹{payment.amount}</p>
+                              <p className="text-xs text-[#616161] line-through">₹{payment.amount}</p>
                             )}
                           </div>
                         </td>
                         <td className="px-4 py-4">
-                          <span className="text-sm font-mono text-gray-600">{payment.transactionId}</span>
+                          <span className="text-sm font-mono text-[#616161]">{payment.transactionId}</span>
                         </td>
                         <td className="px-4 py-4">
-                          <span className="text-sm text-gray-600">
+                          <span className="text-sm text-[#616161]">
                             {new Date(payment.createdAt).toLocaleDateString()}
                           </span>
                         </td>
@@ -453,7 +453,7 @@ export default function AdminPaymentPage() {
                               Failed
                             </span>
                           ) : (
-                            <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">
+                            <span className="px-3 py-1 bg-[#F5F5F5] text-gray-700 rounded-full text-xs font-semibold">
                               Refunded
                             </span>
                           )}
@@ -467,7 +467,7 @@ export default function AdminPaymentPage() {
                               }}
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
-                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              className="p-2 text-[#64B5F6] hover:bg-blue-50 rounded-lg transition-colors"
                               title="View Details"
                             >
                               <Eye className="w-4 h-4" />
@@ -509,12 +509,12 @@ export default function AdminPaymentPage() {
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
-                        <p className="font-semibold text-gray-900 text-sm mb-1">{payment.userName}</p>
-                        <p className="text-xs text-gray-500 mb-2">{payment.userEmail}</p>
+                        <p className="font-semibold text-[#1A1A1A] text-sm mb-1">{payment.userName}</p>
+                        <p className="text-xs text-[#616161] mb-2">{payment.userEmail}</p>
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="text-sm font-semibold text-gray-900">₹{payment.finalAmount}</span>
+                          <span className="text-sm font-semibold text-[#1A1A1A]">₹{payment.finalAmount}</span>
                           {payment.discount > 0 && (
-                            <span className="text-xs text-gray-500 line-through">₹{payment.amount}</span>
+                            <span className="text-xs text-[#616161] line-through">₹{payment.amount}</span>
                           )}
                           {payment.status === 'success' ? (
                             <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
@@ -529,17 +529,17 @@ export default function AdminPaymentPage() {
                               Failed
                             </span>
                           ) : (
-                            <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">
+                            <span className="px-2 py-0.5 bg-[#F5F5F5] text-gray-700 rounded-full text-xs font-semibold">
                               Refunded
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-gray-600 mb-1">Plan: {payment.plan}</p>
+                        <p className="text-xs text-[#616161] mb-1">Plan: {payment.plan}</p>
                         {payment.promoCode && (
-                          <p className="text-xs text-gray-500 mb-1">Code: {payment.promoCode}</p>
+                          <p className="text-xs text-[#616161] mb-1">Code: {payment.promoCode}</p>
                         )}
-                        <p className="text-xs text-gray-500 mb-1">TXN: {payment.transactionId}</p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-[#616161] mb-1">TXN: {payment.transactionId}</p>
+                        <p className="text-xs text-[#616161]">
                           {new Date(payment.createdAt).toLocaleDateString()}
                         </p>
                       </div>
@@ -551,7 +551,7 @@ export default function AdminPaymentPage() {
                           }}
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          className="p-2 text-[#64B5F6] hover:bg-blue-50 rounded-lg transition-colors"
                           title="View Details"
                         >
                           <Eye className="w-4 h-4" />
@@ -580,16 +580,16 @@ export default function AdminPaymentPage() {
             {filteredPayments.length === 0 && (
               <div className="text-center py-12">
                 <CreditCard className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">No payments found</p>
+                <p className="text-[#616161]">No payments found</p>
               </div>
             )}
           </div>
 
           {/* Refunds Table */}
           {refunds.length > 0 && (
-            <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 overflow-hidden">
-              <div className="p-3 md:p-4 border-b border-gray-200/50 bg-gradient-to-r from-gray-50 to-gray-100/50">
-                <h2 className="text-base md:text-lg font-bold text-gray-900">Refund History</h2>
+            <div className="bg-white rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[#E8E8E8] overflow-hidden">
+              <div className="p-3 md:p-4 border-b border-[#E8E8E8] bg-gradient-to-r from-gray-50 to-gray-100/50">
+                <h2 className="text-base md:text-lg font-bold text-[#1A1A1A]">Refund History</h2>
               </div>
               {/* Desktop Table View */}
               <div className="hidden md:block overflow-x-auto">
@@ -614,13 +614,13 @@ export default function AdminPaymentPage() {
                         className="hover:bg-gray-50 transition-colors"
                       >
                         <td className="px-4 py-4">
-                          <span className="text-sm font-semibold text-gray-900">{refund.userName}</span>
+                          <span className="text-sm font-semibold text-[#1A1A1A]">{refund.userName}</span>
                         </td>
                         <td className="px-4 py-4">
-                          <span className="text-sm font-semibold text-gray-900">₹{refund.amount}</span>
+                          <span className="text-sm font-semibold text-[#1A1A1A]">₹{refund.amount}</span>
                         </td>
                         <td className="px-4 py-4">
-                          <span className="text-sm text-gray-600">{refund.reason}</span>
+                          <span className="text-sm text-[#616161]">{refund.reason}</span>
                         </td>
                         <td className="px-4 py-4">
                           {refund.status === 'completed' ? (
@@ -634,7 +634,7 @@ export default function AdminPaymentPage() {
                           )}
                         </td>
                         <td className="px-4 py-4">
-                          <span className="text-sm text-gray-600">
+                          <span className="text-sm text-[#616161]">
                             {new Date(refund.createdAt).toLocaleDateString()}
                           </span>
                         </td>
@@ -668,9 +668,9 @@ export default function AdminPaymentPage() {
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
-                        <p className="text-sm font-semibold text-gray-900 mb-1">{refund.userName}</p>
+                        <p className="text-sm font-semibold text-[#1A1A1A] mb-1">{refund.userName}</p>
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="text-sm font-semibold text-gray-900">₹{refund.amount}</span>
+                          <span className="text-sm font-semibold text-[#1A1A1A]">₹{refund.amount}</span>
                           {refund.status === 'completed' ? (
                             <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
                               Completed
@@ -681,8 +681,8 @@ export default function AdminPaymentPage() {
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-gray-600 mb-1">{refund.reason}</p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-[#616161] mb-1">{refund.reason}</p>
+                        <p className="text-xs text-[#616161]">
                           {new Date(refund.createdAt).toLocaleDateString()}
                         </p>
                       </div>
@@ -722,49 +722,49 @@ export default function AdminPaymentPage() {
               onClick={(e) => e.stopPropagation()}
               className="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
             >
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Payment Details</h2>
+              <h2 className="text-2xl font-bold text-[#1A1A1A] mb-4">Payment Details</h2>
               
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm text-gray-500">User</p>
-                  <p className="text-sm font-semibold text-gray-900">{selectedPayment.userName}</p>
-                  <p className="text-xs text-gray-500">{selectedPayment.userEmail}</p>
+                  <p className="text-sm text-[#616161]">User</p>
+                  <p className="text-sm font-semibold text-[#1A1A1A]">{selectedPayment.userName}</p>
+                  <p className="text-xs text-[#616161]">{selectedPayment.userEmail}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Plan</p>
-                  <p className="text-sm font-semibold text-gray-900">{selectedPayment.plan}</p>
+                  <p className="text-sm text-[#616161]">Plan</p>
+                  <p className="text-sm font-semibold text-[#1A1A1A]">{selectedPayment.plan}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Amount</p>
-                  <p className="text-sm font-semibold text-gray-900">₹{selectedPayment.finalAmount}</p>
+                  <p className="text-sm text-[#616161]">Amount</p>
+                  <p className="text-sm font-semibold text-[#1A1A1A]">₹{selectedPayment.finalAmount}</p>
                   {selectedPayment.discount > 0 && (
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-[#616161]">
                       Original: ₹{selectedPayment.amount} | Discount: ₹{selectedPayment.discount}
                     </p>
                   )}
                 </div>
                 {selectedPayment.promoCode && (
                   <div>
-                    <p className="text-sm text-gray-500">Promo Code</p>
-                    <p className="text-sm font-semibold text-gray-900">{selectedPayment.promoCode}</p>
+                    <p className="text-sm text-[#616161]">Promo Code</p>
+                    <p className="text-sm font-semibold text-[#1A1A1A]">{selectedPayment.promoCode}</p>
                   </div>
                 )}
                 <div>
-                  <p className="text-sm text-gray-500">Transaction ID</p>
-                  <p className="text-sm font-mono text-gray-900">{selectedPayment.transactionId}</p>
+                  <p className="text-sm text-[#616161]">Transaction ID</p>
+                  <p className="text-sm font-mono text-[#1A1A1A]">{selectedPayment.transactionId}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Payment Method</p>
-                  <p className="text-sm font-semibold text-gray-900">{selectedPayment.paymentMethod}</p>
+                  <p className="text-sm text-[#616161]">Payment Method</p>
+                  <p className="text-sm font-semibold text-[#1A1A1A]">{selectedPayment.paymentMethod}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Date</p>
-                  <p className="text-sm text-gray-900">
+                  <p className="text-sm text-[#616161]">Date</p>
+                  <p className="text-sm text-[#1A1A1A]">
                     {new Date(selectedPayment.createdAt).toLocaleString()}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Status</p>
+                  <p className="text-sm text-[#616161]">Status</p>
                   {selectedPayment.status === 'success' ? (
                     <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
                       Success
@@ -811,16 +811,16 @@ export default function AdminPaymentPage() {
               onClick={(e) => e.stopPropagation()}
               className="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
             >
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Process Refund</h2>
+              <h2 className="text-2xl font-bold text-[#1A1A1A] mb-4">Process Refund</h2>
               
               <div className="space-y-4 mb-6">
                 <div>
-                  <p className="text-sm text-gray-500">User</p>
-                  <p className="text-sm font-semibold text-gray-900">{selectedPayment.userName}</p>
+                  <p className="text-sm text-[#616161]">User</p>
+                  <p className="text-sm font-semibold text-[#1A1A1A]">{selectedPayment.userName}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Refund Amount</p>
-                  <p className="text-lg font-bold text-gray-900">₹{selectedPayment.finalAmount}</p>
+                  <p className="text-sm text-[#616161]">Refund Amount</p>
+                  <p className="text-lg font-bold text-[#1A1A1A]">₹{selectedPayment.finalAmount}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">

@@ -16,7 +16,7 @@ export default function SafetyCenterPage() {
       id: 'meeting',
       icon: Users,
       title: 'Meeting Safely',
-      color: 'from-[#FF91A4] to-[#FF69B4]',
+      color: 'from-[#64B5F6] to-[#42A5F5]',
       tips: [
         'Always meet in a public place for the first time',
         'Tell a friend or family member where you\'re going',
@@ -30,7 +30,7 @@ export default function SafetyCenterPage() {
       id: 'online',
       icon: MessageCircle,
       title: 'Online Safety',
-      color: 'from-[#FF91A4] to-[#FF69B4]',
+      color: 'from-[#64B5F6] to-[#42A5F5]',
       tips: [
         'Never share your financial information',
         'Be cautious about sharing personal details',
@@ -44,7 +44,7 @@ export default function SafetyCenterPage() {
       id: 'privacy',
       icon: Lock,
       title: 'Privacy Protection',
-      color: 'from-[#FF91A4] to-[#FF69B4]',
+      color: 'from-[#64B5F6] to-[#42A5F5]',
       tips: [
         'Use privacy settings to control who sees your profile',
         'Hide your distance if you prefer',
@@ -58,7 +58,7 @@ export default function SafetyCenterPage() {
       id: 'lgbtq',
       icon: Heart,
       title: 'LGBTQ+ Safety',
-      color: 'from-[#FF91A4] to-[#FF69B4]',
+      color: 'from-[#64B5F6] to-[#42A5F5]',
       tips: [
         'Use discreet mode if needed in your area',
         'Be cautious about sharing your orientation publicly',
@@ -72,7 +72,7 @@ export default function SafetyCenterPage() {
       id: 'consent',
       icon: CheckCircle,
       title: 'Consent & Boundaries',
-      color: 'from-[#FF91A4] to-[#FF69B4]',
+      color: 'from-[#64B5F6] to-[#42A5F5]',
       tips: [
         'Always respect boundaries and consent',
         'No means no - always',
@@ -86,7 +86,7 @@ export default function SafetyCenterPage() {
       id: 'reporting',
       icon: AlertTriangle,
       title: 'Reporting & Support',
-      color: 'from-[#FF91A4] to-[#FF69B4]',
+      color: 'from-[#64B5F6] to-[#42A5F5]',
       tips: [
         'Report any inappropriate behavior immediately',
         'Block users who make you uncomfortable',
@@ -104,28 +104,28 @@ export default function SafetyCenterPage() {
       title: 'Report User',
       description: 'Report inappropriate behavior',
       action: () => navigate('/discover'),
-      color: 'bg-[#FFE4E1] text-[#FF91A4] hover:bg-[#FF91A4] hover:text-white'
+      color: 'bg-[#E3F2FD] text-[#64B5F6] hover:bg-[#64B5F6] hover:text-white'
     },
     {
       icon: Lock,
       title: 'Privacy Settings',
       description: 'Manage your privacy',
       action: () => navigate('/settings'),
-      color: 'bg-[#FFE4E1] text-[#FF91A4] hover:bg-[#FF91A4] hover:text-white'
+      color: 'bg-[#E3F2FD] text-[#64B5F6] hover:bg-[#64B5F6] hover:text-white'
     },
     {
       icon: Ban,
       title: 'Blocked Users',
       description: 'View blocked users',
       action: () => navigate('/settings'),
-      color: 'bg-[#FFE4E1] text-[#FF91A4] hover:bg-[#FF91A4] hover:text-white'
+      color: 'bg-[#E3F2FD] text-[#64B5F6] hover:bg-[#64B5F6] hover:text-white'
     },
     {
       icon: Eye,
       title: 'Hide Distance',
       description: 'Protect your location',
       action: () => navigate('/settings'),
-      color: 'bg-[#FFE4E1] text-[#FF91A4] hover:bg-[#FF91A4] hover:text-white'
+      color: 'bg-[#E3F2FD] text-[#64B5F6] hover:bg-[#64B5F6] hover:text-white'
     }
   ];
 
@@ -161,25 +161,25 @@ export default function SafetyCenterPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.1 }}
-        className="bg-white rounded-2xl shadow-md border-2 border-[#FFB6C1]/30 overflow-hidden mb-4"
+        className="bg-white rounded-xl sm:rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[#E8E8E8] overflow-hidden mb-3 sm:mb-4"
       >
         <button
           onClick={() => setExpandedSection(isExpanded ? null : tip.id)}
-          className="w-full p-4 flex items-center justify-between hover:bg-[#FFE4E1] transition-colors"
+          className="w-full p-3 sm:p-4 flex items-center justify-between hover:bg-[#F5F5F5] transition-colors"
         >
           <div className="flex items-center gap-3">
             <div className={`w-12 h-12 bg-gradient-to-br ${tip.color} rounded-xl flex items-center justify-center shadow-md`}>
               <Icon className="w-6 h-6 text-white" />
             </div>
             <div className="text-left">
-              <h3 className="text-base font-bold text-[#212121]">{tip.title}</h3>
-              <p className="text-xs text-[#757575]">{tip.tips.length} safety tips</p>
+              <h3 className="text-sm sm:text-base font-bold text-[#1A1A1A]">{tip.title}</h3>
+              <p className="text-[10px] sm:text-xs text-[#616161]">{tip.tips.length} safety tips</p>
             </div>
           </div>
           <motion.div
             animate={{ rotate: isExpanded ? 180 : 0 }}
             transition={{ duration: 0.3 }}
-            className="text-[#FF91A4]"
+            className="text-[#64B5F6]"
           >
             <ArrowLeft className="w-5 h-5 rotate-90" />
           </motion.div>
@@ -199,9 +199,9 @@ export default function SafetyCenterPage() {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: isExpanded ? 1 : 0, x: isExpanded ? 0 : -10 }}
                   transition={{ delay: idx * 0.05 }}
-                  className="flex items-start gap-2 text-sm text-[#212121]"
+                  className="flex items-start gap-2 text-xs sm:text-sm text-[#1A1A1A]"
                 >
-                  <CheckCircle className="w-4 h-4 text-[#FF91A4] mt-0.5 flex-shrink-0" />
+                  <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#64B5F6] mt-0.5 flex-shrink-0" />
                   <span>{tipText}</span>
                 </motion.li>
               ))}
@@ -213,57 +213,53 @@ export default function SafetyCenterPage() {
   };
 
   return (
-    <div className="h-screen heart-background flex flex-col relative overflow-hidden">
-      <span className="heart-decoration">💕</span>
-      <span className="heart-decoration">💖</span>
-      <span className="heart-decoration">💗</span>
-      <span className="heart-decoration">💝</span>
-      <span className="heart-decoration">❤️</span>
-      <span className="heart-decoration">💓</span>
-      <div className="decoration-circle"></div>
-      <div className="decoration-circle"></div>
+    <div className="min-h-screen bg-gradient-to-br from-[#F5F7FA] via-[#E8ECF1] to-[#F5F7FA] flex flex-col relative overflow-hidden">
+      {/* Premium Decorative Background Elements */}
+      <div className="absolute top-0 left-0 w-[300px] sm:w-[400px] md:w-[600px] h-[300px] sm:h-[400px] md:h-[600px] bg-gradient-to-br from-[#64B5F6]/8 to-transparent rounded-full blur-3xl -translate-x-1/3 -translate-y-1/3"></div>
+      <div className="absolute bottom-0 right-0 w-[350px] sm:w-[500px] md:w-[700px] h-[350px] sm:h-[500px] md:h-[700px] bg-gradient-to-tl from-[#42A5F5]/8 to-transparent rounded-full blur-3xl translate-x-1/3 translate-y-1/3"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] sm:w-[350px] md:w-[500px] h-[250px] sm:h-[350px] md:h-[500px] bg-gradient-to-r from-[#90CAF9]/5 to-transparent rounded-full blur-3xl"></div>
 
       {/* Header */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="relative z-20 bg-white/95 backdrop-blur-md border-b-2 border-[#FFB6C1] shadow-sm"
+        className="relative z-20 bg-white/95 backdrop-blur-lg border-b border-[#E8E8E8] shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
       >
-        <div className="max-w-2xl mx-auto px-4 py-3">
-          <div className="flex items-center gap-3">
+        <div className="max-w-2xl mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4">
+          <div className="flex items-center gap-2 sm:gap-3">
             <motion.button
               onClick={() => navigate('/profile')}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="p-1.5 hover:bg-[#FFE4E1] rounded-lg transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-2 hover:bg-[#F5F5F5] rounded-xl transition-colors"
             >
-              <ArrowLeft className="w-5 h-5 text-[#212121]" />
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-[#616161]" />
             </motion.button>
-            <div className="w-10 h-10 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-lg flex items-center justify-center shadow-md">
-              <Shield className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-[#64B5F6] to-[#42A5F5] rounded-xl flex items-center justify-center shadow-md">
+              <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-[#212121]">Safety Center</h1>
-              <p className="text-xs text-[#757575]">Your safety is our priority</p>
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-[#1A1A1A]">Safety Center</h1>
+              <p className="text-[10px] sm:text-xs md:text-sm text-[#616161]">Your safety is our priority</p>
             </div>
           </div>
         </div>
       </motion.div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide pt-3 pb-20">
-        <div className="max-w-2xl mx-auto px-4 py-4">
+      <div className="flex-1 overflow-y-auto scrollbar-hide pt-3 sm:pt-4 md:pt-6 pb-20 sm:pb-24">
+        <div className="max-w-2xl mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6">
           {/* Quick Actions */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-6"
           >
-            <h2 className="text-lg font-bold text-[#212121] mb-4 flex items-center gap-2">
-              <Info className="w-5 h-5 text-[#FF91A4]" />
+            <h2 className="text-base sm:text-lg md:text-xl font-bold text-[#1A1A1A] mb-3 sm:mb-4 flex items-center gap-2">
+              <Info className="w-4 h-4 sm:w-5 sm:h-5 text-[#64B5F6]" />
               Quick Actions
             </h2>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
               {quickActions.map((action, index) => {
                 const Icon = action.icon;
                 return (
@@ -272,11 +268,11 @@ export default function SafetyCenterPage() {
                     onClick={action.action}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className={`p-4 rounded-xl border-2 border-[#FFB6C1]/30 transition-all text-left ${action.color}`}
+                    className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E8E8E8] transition-all text-left ${action.color} shadow-sm hover:shadow-md`}
                   >
-                    <Icon className="w-5 h-5 mb-2" />
-                    <div className="text-sm font-semibold">{action.title}</div>
-                    <div className="text-xs opacity-80 mt-0.5">{action.description}</div>
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5 mb-1.5 sm:mb-2" />
+                    <div className="text-xs sm:text-sm font-semibold">{action.title}</div>
+                    <div className="text-[10px] sm:text-xs opacity-80 mt-0.5">{action.description}</div>
                   </motion.button>
                 );
               })}

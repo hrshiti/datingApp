@@ -279,7 +279,7 @@ export default function AuthPages() {
         console.error('❌ OTP VERIFICATION FAILED');
         console.error('❌ Error:', response.message);
         console.error('❌ ==========================================');
-        setErrors(prev => ({ ...prev, otp: response.message || 'Invalid OTP. Please try again.' }));
+        setErrors(prev => ({ ...prev, otp: response.message || 'Wrong OTP, please enter correct' }));
       }
     } catch (error) {
       console.error('❌ ==========================================');
@@ -295,64 +295,24 @@ export default function AuthPages() {
   // Splash/Welcome Screen
   if (currentPage === 'splash') {
     return (
-      <div className="h-screen heart-background flex items-center justify-center p-3 sm:p-4 overflow-hidden">
-        <span className="heart-decoration">💕</span>
-        <span className="heart-decoration">💖</span>
-        <span className="heart-decoration">💗</span>
-        <span className="heart-decoration">💝</span>
-        <span className="heart-decoration">❤️</span>
-        <span className="heart-decoration">💓</span>
-        <div className="decoration-circle"></div>
-        <div className="decoration-circle"></div>
+      <div className="h-screen bg-gradient-to-br from-[#F5F7FA] via-[#E8ECF1] to-[#F5F7FA] flex items-center justify-center p-3 sm:p-4 overflow-hidden relative">
+        {/* Premium Decorative Background Elements */}
+        <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-gradient-to-br from-[#64B5F6]/8 to-transparent rounded-full blur-3xl -translate-x-1/3 -translate-y-1/3"></div>
+        <div className="absolute bottom-0 right-0 w-[700px] h-[700px] bg-gradient-to-tl from-[#42A5F5]/8 to-transparent rounded-full blur-3xl translate-x-1/3 translate-y-1/3"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-r from-[#90CAF9]/5 to-transparent rounded-full blur-3xl"></div>
         <div className="w-full max-w-md text-center relative z-10">
           {/* App Logo */}
           <motion.div 
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="mb-10 sm:mb-12"
+            className="mb-12 sm:mb-16"
           >
-            <motion.div 
-              animate={{ 
-                rotate: [0, 5, -5, 0],
-                scale: [1, 1.05, 1],
-                boxShadow: [
-                  "0 15px 30px rgba(255, 145, 164, 0.25)",
-                  "0 20px 40px rgba(255, 105, 180, 0.35)",
-                  "0 15px 30px rgba(255, 145, 164, 0.25)"
-                ]
-              }}
-              transition={{ 
-                duration: 4, 
-                repeat: Infinity, 
-                repeatDelay: 2,
-                ease: "easeInOut"
-              }}
-              className="w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-br from-[#FF91A4] via-[#FF69B4] to-[#FF91A4] rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-xl relative overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-white/20 to-transparent"></div>
-              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-white/30"></div>
-              <motion.div
-                animate={{ 
-                  scale: [1, 1.1, 1],
-                  rotate: [0, -5, 5, 0]
-                }}
-                transition={{ 
-                  duration: 2.5, 
-                  repeat: Infinity, 
-                  repeatDelay: 0.5,
-                  ease: "easeInOut"
-                }}
-                className="relative z-10"
-              >
-                <Heart className="w-12 h-12 sm:w-14 sm:h-14 text-white fill-white drop-shadow-md" strokeWidth={2.5} />
-              </motion.div>
-            </motion.div>
             <motion.h1 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-3xl sm:text-4xl font-bold text-[#212121] mb-3 drop-shadow-sm"
+              className="text-4xl sm:text-5xl font-bold text-[#1A1A1A] mb-4 tracking-tight"
             >
               DatingApp
             </motion.h1>
@@ -360,7 +320,7 @@ export default function AuthPages() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="text-lg sm:text-xl text-[#757575] font-semibold mb-2"
+              className="text-lg sm:text-xl text-[#616161] font-medium mb-1"
             >
               Find your perfect match
             </motion.p>
@@ -368,7 +328,7 @@ export default function AuthPages() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.4 }}
-              className="text-sm sm:text-base text-[#9E9E9E] font-medium"
+              className="text-sm sm:text-base text-[#757575] font-medium"
             >
               Connect with people who share your interests
             </motion.p>
@@ -379,10 +339,8 @@ export default function AuthPages() {
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.5 }}
-            className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-3xl shadow-2xl p-6 sm:p-8 border border-[#FFB6C1]/30 relative overflow-hidden backdrop-blur-sm"
+            className="w-full"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/10 via-[#FF69B4]/5 to-transparent"></div>
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#FF91A4] via-[#FF69B4] to-[#FF91A4]"></div>
             <motion.button
               onClick={() => {
                 // This is signup flow
@@ -390,17 +348,13 @@ export default function AuthPages() {
                 setCurrentPage('phone');
                 navigate('/phone');
               }}
-              whileHover={{ scale: 1.03, y: -3 }}
-              whileTap={{ scale: 0.97 }}
-              className="w-full bg-gradient-to-r from-[#FF91A4] via-[#FF69B4] to-[#FF91A4] text-white font-bold py-4 sm:py-5 rounded-2xl transition-all shadow-xl hover:shadow-2xl mb-5 relative z-10 text-base sm:text-lg group overflow-hidden"
+              whileHover={{ scale: 1.02, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full bg-[#64B5F6] hover:bg-[#42A5F5] text-white font-bold py-4 sm:py-5 rounded-2xl transition-all shadow-[0_8px_24px_rgba(100,181,246,0.3)] hover:shadow-[0_12px_32px_rgba(100,181,246,0.4)] mb-6 text-base sm:text-lg"
             >
-              <span className="relative z-10 flex items-center justify-center gap-2">
+              <span className="flex items-center justify-center gap-2">
                 Continue with Phone Number
               </span>
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-[#FF69B4] via-[#FF91A4] to-[#FF69B4] opacity-0 group-hover:opacity-100 transition-opacity"
-                initial={false}
-              />
             </motion.button>
 
             <motion.button
@@ -412,7 +366,7 @@ export default function AuthPages() {
               }}
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
-              className="text-sm sm:text-base text-[#757575] hover:text-[#FF91A4] font-semibold transition-all relative z-10 underline decoration-2 underline-offset-4 decoration-transparent hover:decoration-[#FF91A4]"
+              className="text-sm sm:text-base text-[#616161] hover:text-[#64B5F6] font-semibold transition-all underline decoration-2 underline-offset-4 decoration-transparent hover:decoration-[#64B5F6]"
             >
               Already have an account? Login
             </motion.button>
@@ -425,59 +379,68 @@ export default function AuthPages() {
   // Phone Number Page
   if (currentPage === 'phone') {
     return (
-      <div className="h-screen heart-background flex items-center justify-center p-3 sm:p-4 overflow-hidden">
-        <span className="heart-decoration">💕</span>
-        <span className="heart-decoration">💖</span>
-        <span className="heart-decoration">💗</span>
-        <span className="heart-decoration">💝</span>
-        <span className="heart-decoration">❤️</span>
-        <span className="heart-decoration">💓</span>
-        <div className="decoration-circle"></div>
-        <div className="decoration-circle"></div>
-        <div className="w-full max-w-md relative z-10">
+      <div className="min-h-screen bg-gradient-to-br from-[#F5F7FA] via-[#E8ECF1] to-[#F5F7FA] flex items-center justify-center p-2 sm:p-4 md:p-6 lg:p-8 overflow-y-auto relative">
+        {/* Premium Decorative Background Elements */}
+        <div className="absolute top-0 left-0 w-[300px] sm:w-[400px] md:w-[600px] h-[300px] sm:h-[400px] md:h-[600px] bg-gradient-to-br from-[#64B5F6]/8 to-transparent rounded-full blur-3xl -translate-x-1/3 -translate-y-1/3"></div>
+        <div className="absolute bottom-0 right-0 w-[350px] sm:w-[500px] md:w-[700px] h-[350px] sm:h-[500px] md:h-[700px] bg-gradient-to-tl from-[#42A5F5]/8 to-transparent rounded-full blur-3xl translate-x-1/3 translate-y-1/3"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] sm:w-[350px] md:w-[500px] h-[250px] sm:h-[350px] md:h-[500px] bg-gradient-to-r from-[#90CAF9]/5 to-transparent rounded-full blur-3xl"></div>
+        <div className="w-full max-w-md relative z-10 my-4 sm:my-6 md:my-8">
           {/* Back Button */}
           <button
             onClick={() => {
               setCurrentPage('splash');
               navigate('/');
             }}
-            className="mb-4 sm:mb-6 p-2 hover:bg-[#FFE4E1] rounded-xl transition-colors"
+            className="mb-3 sm:mb-4 md:mb-6 p-2 hover:bg-[#F5F5F5] rounded-xl transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-[#212121]" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-[#616161]" />
           </button>
 
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-center mb-6 sm:mb-8"
+            className="text-center mb-4 sm:mb-5 md:mb-6 lg:mb-8"
           >
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#212121] mb-2">Enter Your Phone Number</h1>
-            <p className="text-sm sm:text-base text-[#757575]">We'll send you a verification code</p>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-1 sm:mb-2 tracking-tight px-2">Enter Your Phone Number</h1>
+            <p className="text-xs sm:text-sm md:text-base text-[#616161] font-medium px-2">We'll send you a verification code</p>
           </motion.div>
 
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-3xl shadow-2xl p-6 sm:p-8 border border-[#FFB6C1]/20 relative overflow-hidden"
+            className="bg-white rounded-2xl sm:rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] p-4 sm:p-5 md:p-6 lg:p-8 border border-[#E8E8E8] relative overflow-hidden mx-2 sm:mx-3 md:mx-0"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent pointer-events-none"></div>
-            <div className="space-y-6 relative z-10">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#64B5F6]/5 to-transparent pointer-events-none"></div>
+            <div className="space-y-4 sm:space-y-5 md:space-y-6 relative z-10">
               <div>
-                <label className="block text-sm sm:text-base font-semibold text-[#212121] mb-3">
-                  Phone Number <span className="text-[#FF91A4]">*</span>
+                <label className="block text-xs sm:text-sm md:text-base font-semibold text-[#1A1A1A] mb-2 sm:mb-3 tracking-tight">
+                  Phone Number <span className="text-[#64B5F6]">*</span>
                 </label>
-                <div className="flex gap-2">
-                  <div className="relative" ref={countryDropdownRef}>
+                <style>{`
+                  @media (min-width: 320px) {
+                    .phone-input-container {
+                      flex-direction: row !important;
+                    }
+                    .phone-input-container .country-dropdown {
+                      width: auto !important;
+                    }
+                    .phone-input-container .phone-input {
+                      width: auto !important;
+                    }
+                  }
+                `}</style>
+                <div className="phone-input-container flex flex-col gap-2">
+                  <div className="country-dropdown relative w-full" ref={countryDropdownRef}>
                     <button
                       type="button"
                       onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
-                      className="px-3 sm:px-4 py-4 border-2 rounded-2xl focus:outline-none transition-all text-[#212121] text-sm sm:text-base bg-white shadow-sm hover:shadow-md border-[#FFB6C1] focus:border-[#FF91A4] focus:ring-2 focus:ring-[#FF91A4]/20 font-semibold flex items-center gap-2 min-w-[80px]"
+                      className="w-full px-3 sm:px-4 py-3 sm:py-4 border rounded-xl sm:rounded-2xl focus:outline-none transition-all text-[#1A1A1A] text-xs sm:text-sm md:text-base bg-white shadow-sm hover:shadow-md border-[#E8E8E8] focus:border-[#64B5F6] focus:ring-2 focus:ring-[#64B5F6]/20 font-semibold flex items-center justify-center sm:justify-start gap-2 min-w-[70px] sm:min-w-[80px]"
                     >
                       <span>{countryCode}</span>
                       <ChevronDown 
-                        className={`w-4 h-4 transition-transform ${isCountryDropdownOpen ? 'rotate-180' : ''}`} 
+                        className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform ${isCountryDropdownOpen ? 'rotate-180' : ''}`} 
                       />
                     </button>
                     <AnimatePresence>
@@ -487,7 +450,7 @@ export default function AuthPages() {
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -10 }}
                           transition={{ duration: 0.2 }}
-                          className="absolute top-full left-0 mt-1 bg-white border-2 border-[#FFB6C1] rounded-2xl shadow-xl z-50 w-full min-w-[120px] max-h-[200px] overflow-y-auto"
+                          className="absolute top-full left-0 mt-1 bg-white border border-[#E8E8E8] rounded-xl sm:rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] z-50 w-full sm:w-auto min-w-[120px] sm:min-w-[150px] max-h-[180px] sm:max-h-[200px] overflow-y-auto"
                         >
                           {countryCodes.map((item) => (
                             <button
@@ -497,12 +460,12 @@ export default function AuthPages() {
                                 setCountryCode(item.code);
                                 setIsCountryDropdownOpen(false);
                               }}
-                              className={`w-full px-4 py-3 text-left text-sm hover:bg-[#FFE4E1] transition-colors first:rounded-t-2xl last:rounded-b-2xl ${
-                                countryCode === item.code ? 'bg-[#FFE4E1] font-semibold' : ''
+                              className={`w-full px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm hover:bg-[#F5F5F5] transition-colors first:rounded-t-xl sm:first:rounded-t-2xl last:rounded-b-xl sm:last:rounded-b-2xl ${
+                                countryCode === item.code ? 'bg-[#E3F2FD] font-semibold' : ''
                               }`}
                             >
                               <span className="font-semibold">{item.code}</span>
-                              <span className="text-[#757575] ml-2 text-xs">{item.country}</span>
+                              <span className="text-[#616161] ml-2 text-[10px] sm:text-xs">{item.country}</span>
                             </button>
                           ))}
                         </motion.div>
@@ -519,10 +482,10 @@ export default function AuthPages() {
                     }}
                     placeholder="Enter your phone number"
                     maxLength={10}
-                    className={`flex-1 px-4 py-4 border-2 rounded-2xl focus:outline-none transition-all text-[#212121] text-base bg-white shadow-sm hover:shadow-md ${
+                    className={`phone-input flex-1 w-full px-3 sm:px-4 py-3 sm:py-4 border rounded-xl sm:rounded-2xl focus:outline-none transition-all text-[#1A1A1A] text-sm sm:text-base bg-white shadow-sm hover:shadow-md font-medium ${
                       errors.phone 
                         ? 'border-red-500 focus:border-red-600 focus:ring-2 focus:ring-red-500/20' 
-                        : 'border-[#FFB6C1] focus:border-[#FF91A4] focus:ring-2 focus:ring-[#FF91A4]/20'
+                        : 'border-[#E8E8E8] focus:border-[#64B5F6] focus:ring-2 focus:ring-[#64B5F6]/20'
                     }`}
                   />
                 </div>
@@ -532,7 +495,7 @@ export default function AuthPages() {
                     animate={{ opacity: 1, y: 0 }}
                     className="mt-2 ml-1"
                   >
-                    <p className="text-sm text-red-600 mb-2">
+                    <p className="text-xs sm:text-sm text-red-600 mb-1 sm:mb-2 break-words">
                       {errors.phone}
                     </p>
                     {errors.showLoginLink && (
@@ -561,7 +524,7 @@ export default function AuthPages() {
                             setIsLoading(false);
                           }
                         }}
-                        className="text-sm text-[#FF91A4] hover:text-[#FF69B4] font-semibold underline underline-offset-2 transition-colors"
+                        className="text-xs sm:text-sm text-[#64B5F6] hover:text-[#42A5F5] font-semibold underline underline-offset-2 transition-colors break-words"
                       >
                         Click here to Login instead
                       </button>
@@ -569,7 +532,7 @@ export default function AuthPages() {
                   </motion.div>
                 )}
                 {!errors.phone && phone.length > 0 && (
-                  <p className="text-xs text-[#757575] mt-2 ml-1">
+                  <p className="text-[10px] sm:text-xs text-[#616161] mt-1 sm:mt-2 ml-1 font-medium">
                     {phone.length} digits
                   </p>
                 )}
@@ -580,26 +543,22 @@ export default function AuthPages() {
                 disabled={!phone || isLoading || !!errors.phone || phone.length !== 10}
                 whileHover={{ scale: phone.length === 10 && !isLoading ? 1.02 : 1, y: phone.length === 10 && !isLoading ? -2 : 0 }}
                 whileTap={{ scale: phone.length === 10 && !isLoading ? 0.98 : 1 }}
-                className="w-full bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-bold py-4 sm:py-5 rounded-2xl transition-all shadow-lg hover:shadow-xl disabled:shadow-none text-base sm:text-lg relative overflow-hidden group"
+                className="w-full bg-[#64B5F6] hover:bg-[#42A5F5] disabled:bg-[#E0E0E0] disabled:cursor-not-allowed text-white font-bold py-3 sm:py-3.5 md:py-4 lg:py-5 rounded-xl sm:rounded-2xl transition-all shadow-[0_4px_16px_rgba(100,181,246,0.3)] hover:shadow-[0_8px_24px_rgba(100,181,246,0.4)] disabled:shadow-none text-sm sm:text-base md:text-lg"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
                     <motion.div
                       animate={{ rotate: 360 }}
                       transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                      className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full"
                     />
-                    Sending...
+                    <span className="text-xs sm:text-sm md:text-base">Sending...</span>
                   </span>
                 ) : (
                   <span className="flex items-center justify-center gap-2">
                     Send OTP
                   </span>
                 )}
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-[#FF69B4] via-[#FF91A4] to-[#FF69B4] opacity-0 group-hover:opacity-100 transition-opacity"
-                  initial={false}
-                />
               </motion.button>
             </div>
           </motion.div>
@@ -611,30 +570,26 @@ export default function AuthPages() {
   // OTP Verification Page
   if (currentPage === 'otp') {
     return (
-      <div className="h-screen heart-background flex items-center justify-center p-3 sm:p-4 overflow-hidden">
-        <span className="heart-decoration">💕</span>
-        <span className="heart-decoration">💖</span>
-        <span className="heart-decoration">💗</span>
-        <span className="heart-decoration">💝</span>
-        <span className="heart-decoration">❤️</span>
-        <span className="heart-decoration">💓</span>
-        <div className="decoration-circle"></div>
-        <div className="decoration-circle"></div>
-        <div className="w-full max-w-md relative z-10">
+      <div className="min-h-screen bg-gradient-to-br from-[#F5F7FA] via-[#E8ECF1] to-[#F5F7FA] flex items-center justify-center p-2 sm:p-4 md:p-6 lg:p-8 overflow-y-auto relative">
+        {/* Premium Decorative Background Elements */}
+        <div className="absolute top-0 left-0 w-[300px] sm:w-[400px] md:w-[600px] h-[300px] sm:h-[400px] md:h-[600px] bg-gradient-to-br from-[#64B5F6]/8 to-transparent rounded-full blur-3xl -translate-x-1/3 -translate-y-1/3"></div>
+        <div className="absolute bottom-0 right-0 w-[350px] sm:w-[500px] md:w-[700px] h-[350px] sm:h-[500px] md:h-[700px] bg-gradient-to-tl from-[#42A5F5]/8 to-transparent rounded-full blur-3xl translate-x-1/3 translate-y-1/3"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] sm:w-[350px] md:w-[500px] h-[250px] sm:h-[350px] md:h-[500px] bg-gradient-to-r from-[#90CAF9]/5 to-transparent rounded-full blur-3xl"></div>
+        <div className="w-full max-w-md relative z-10 my-4 sm:my-6 md:my-8">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-center mb-6 sm:mb-8"
+            className="text-center mb-4 sm:mb-5 md:mb-6 lg:mb-8 px-2"
           >
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#212121] mb-2">Verify OTP</h1>
-            <p className="text-sm sm:text-base text-[#757575] mb-2">
+            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-[#1A1A1A] mb-1 sm:mb-2 tracking-tight">Verify OTP</h1>
+            <p className="text-[11px] sm:text-xs md:text-sm lg:text-base text-[#616161] mb-1 sm:mb-2 font-medium px-1">
               We've sent a verification code to your registered number:
             </p>
-            <p className="text-base sm:text-lg font-bold text-[#FF91A4] mb-1">
+            <p className="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-[#64B5F6] mb-1 break-all px-1">
               {countryCode} {phone}
             </p>
-            <p className="text-xs text-[#757575]">
+            <p className="text-[10px] sm:text-[11px] md:text-xs text-[#616161] font-medium px-1">
               Please enter the 6-digit OTP received on this number
             </p>
             
@@ -643,14 +598,14 @@ export default function AuthPages() {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mt-4 p-4 bg-yellow-50 border-2 border-yellow-200 rounded-xl"
+                className="mt-2 sm:mt-3 md:mt-4 p-2 sm:p-3 md:p-4 bg-yellow-50 border-2 border-yellow-200 rounded-lg sm:rounded-xl mx-1 sm:mx-2 md:mx-0"
               >
-                <p className="text-xs font-semibold text-yellow-800 mb-2">🔧 Development Mode</p>
-                <p className="text-sm text-yellow-700 mb-1">OTP Code (for testing):</p>
-                <p className="text-2xl font-bold text-yellow-900 text-center tracking-widest">
+                <p className="text-[10px] sm:text-[11px] md:text-xs font-semibold text-yellow-800 mb-1 sm:mb-2">🔧 Development Mode</p>
+                <p className="text-[11px] sm:text-xs md:text-sm text-yellow-700 mb-1">OTP Code (for testing):</p>
+                <p className="text-lg sm:text-xl md:text-2xl font-bold text-yellow-900 text-center tracking-widest break-all">
                   {receivedOtp}
                 </p>
-                <p className="text-xs text-yellow-600 mt-2 text-center">
+                <p className="text-[10px] sm:text-[11px] md:text-xs text-yellow-600 mt-1 sm:mt-2 text-center">
                   Check backend console for more details
                 </p>
               </motion.div>
@@ -661,15 +616,15 @@ export default function AuthPages() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-3xl shadow-2xl p-6 sm:p-8 border border-[#FFB6C1]/20 relative overflow-hidden"
+            className="bg-white rounded-2xl sm:rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] p-4 sm:p-5 md:p-6 lg:p-8 border border-[#E8E8E8] relative overflow-hidden mx-2 sm:mx-3 md:mx-0"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent pointer-events-none"></div>
-            <div className="space-y-6 relative z-10">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#64B5F6]/5 to-transparent pointer-events-none"></div>
+            <div className="space-y-4 sm:space-y-5 md:space-y-6 relative z-10">
               <div>
-                <label className="block text-sm sm:text-base font-semibold text-[#212121] mb-4 sm:mb-5 text-center">
+                <label className="block text-xs sm:text-sm md:text-base font-semibold text-[#1A1A1A] mb-2 sm:mb-3 md:mb-4 lg:mb-5 text-center tracking-tight">
                   Enter 6-digit code
                 </label>
-                <div className="flex justify-center items-center gap-2 sm:gap-3 px-1">
+                <div className="flex justify-center items-center gap-1 sm:gap-1.5 md:gap-2 lg:gap-3 px-0.5 sm:px-1">
                   {otp.map((digit, index) => (
                     <motion.input
                       key={index}
@@ -684,7 +639,7 @@ export default function AuthPages() {
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.3, delay: index * 0.05 }}
                       whileFocus={{ scale: 1.05 }}
-                      className="flex-1 max-w-[50px] sm:max-w-[55px] h-14 sm:h-16 text-center text-2xl sm:text-3xl font-bold border-2 rounded-xl focus:outline-none transition-all text-[#212121] bg-white shadow-sm hover:shadow-md focus:shadow-lg focus:ring-2 focus:ring-[#FF91A4]/20 border-[#FFB6C1] focus:border-[#FF91A4]"
+                      className="flex-1 max-w-[38px] sm:max-w-[42px] md:max-w-[48px] lg:max-w-[55px] h-10 sm:h-12 md:h-14 lg:h-16 text-center text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold border rounded-lg sm:rounded-xl focus:outline-none transition-all text-[#1A1A1A] bg-white shadow-sm hover:shadow-md focus:shadow-lg focus:ring-2 focus:ring-[#64B5F6]/20 border-[#E8E8E8] focus:border-[#64B5F6]"
                     />
                   ))}
                 </div>
@@ -695,44 +650,40 @@ export default function AuthPages() {
                 disabled={otp.some(d => !d) || isLoading}
                 whileHover={{ scale: !otp.some(d => !d) && !isLoading ? 1.02 : 1, y: !otp.some(d => !d) && !isLoading ? -2 : 0 }}
                 whileTap={{ scale: !otp.some(d => !d) && !isLoading ? 0.98 : 1 }}
-                className="w-full bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-bold py-4 sm:py-5 rounded-2xl transition-all shadow-lg hover:shadow-xl disabled:shadow-none text-base sm:text-lg relative overflow-hidden group"
+                className="w-full bg-[#64B5F6] hover:bg-[#42A5F5] disabled:bg-[#E0E0E0] disabled:cursor-not-allowed text-white font-bold py-2.5 sm:py-3 md:py-3.5 lg:py-4 xl:py-5 rounded-lg sm:rounded-xl md:rounded-2xl transition-all shadow-[0_4px_16px_rgba(100,181,246,0.3)] hover:shadow-[0_8px_24px_rgba(100,181,246,0.4)] disabled:shadow-none text-xs sm:text-sm md:text-base lg:text-lg"
               >
                 {isLoading ? (
-                  <span className="flex items-center justify-center gap-2">
+                  <span className="flex items-center justify-center gap-1.5 sm:gap-2">
                     <motion.div
                       animate={{ rotate: 360 }}
                       transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                      className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 border-2 border-white border-t-transparent rounded-full"
                     />
-                    Verifying...
+                    <span className="text-[11px] sm:text-xs md:text-sm lg:text-base">Verifying...</span>
                   </span>
                 ) : (
                   <span>Verify OTP</span>
                 )}
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-[#FF69B4] via-[#FF91A4] to-[#FF69B4] opacity-0 group-hover:opacity-100 transition-opacity"
-                  initial={false}
-                />
               </motion.button>
 
-              <div className="text-center pt-2">
+              <div className="text-center pt-1 sm:pt-2">
                 {canResend ? (
                   <motion.button
                     onClick={handleResendOtp}
                     disabled={isLoading}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="text-[#757575] hover:text-[#212121] font-semibold text-sm sm:text-base transition-colors"
+                    className="text-[#616161] hover:text-[#1A1A1A] font-semibold text-[10px] sm:text-xs md:text-sm lg:text-base transition-colors break-words px-1"
                   >
-                    Didn't receive code? <span className="text-[#FF91A4] hover:text-[#FF69B4] underline decoration-2 underline-offset-2">Resend OTP</span>
+                    Didn't receive code? <span className="text-[#64B5F6] hover:text-[#42A5F5] underline decoration-2 underline-offset-2">Resend OTP</span>
                   </motion.button>
                 ) : (
                   <motion.p 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="text-[#757575] text-sm sm:text-base"
+                    className="text-[#616161] text-[10px] sm:text-xs md:text-sm lg:text-base font-medium"
                   >
-                    Resend OTP in <span className="font-bold text-[#FF91A4]">{otpTimer}s</span>
+                    Resend OTP in <span className="font-bold text-[#64B5F6]">{otpTimer}s</span>
                   </motion.p>
                 )}
               </div>

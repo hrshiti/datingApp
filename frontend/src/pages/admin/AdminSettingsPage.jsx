@@ -110,7 +110,7 @@ export default function AdminSettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 flex relative">
+    <div className="min-h-screen bg-gradient-to-br from-[#F5F7FA] via-[#E8ECF1] to-[#F5F7FA] flex relative">
       {/* Mobile Overlay */}
       {mobileMenuOpen && (
         <motion.div
@@ -124,19 +124,19 @@ export default function AdminSettingsPage() {
       
       {/* Left Sidebar */}
       <div 
-        className={`${sidebarOpen ? 'w-64' : 'w-20'} fixed top-0 left-0 h-screen bg-white/80 backdrop-blur-lg border-r border-gray-200/50 flex flex-col transition-all duration-300 shadow-xl z-50 ${
+        className={`${sidebarOpen ? 'w-64' : 'w-20'} fixed top-0 left-0 h-screen bg-white/95 backdrop-blur-lg border-r border-[#E8E8E8] flex flex-col transition-all duration-300 shadow-xl z-50 ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
-        <div className="p-6 border-b border-gray-200/50 sticky top-0 bg-white/80 backdrop-blur-lg z-10">
+        <div className="p-6 border-b border-[#E8E8E8] sticky top-0 bg-white/80 backdrop-blur-lg z-10">
           <div className="flex items-center justify-between">
             <div className={`flex items-center gap-3 ${!sidebarOpen && 'justify-center w-full'}`}>
               {sidebarOpen && (
                 <div>
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  <h1 className="text-xl font-bold text-[#1A1A1A] tracking-tight">
                     Admin Panel
                   </h1>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xs text-[#616161] mt-0.5">
                     {localStorage.getItem('adminUsername') || 'Admin'}
                   </p>
                 </div>
@@ -147,9 +147,9 @@ export default function AdminSettingsPage() {
                 onClick={() => setSidebarOpen(false)}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-[#F5F5F5] transition-colors"
               >
-                <X className="w-4 h-4 text-gray-500" />
+                <X className="w-4 h-4 text-[#616161]" />
               </motion.button>
             )}
             {!sidebarOpen && (
@@ -157,9 +157,9 @@ export default function AdminSettingsPage() {
                 onClick={() => setSidebarOpen(true)}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-[#F5F5F5] transition-colors"
               >
-                <Menu className="w-5 h-5 text-gray-500" />
+                <Menu className="w-5 h-5 text-[#616161]" />
               </motion.button>
             )}
           </div>
@@ -177,18 +177,18 @@ export default function AdminSettingsPage() {
                 whileTap={{ scale: 0.98 }}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all relative group ${
                   isActive
-                    ? 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-600 shadow-md'
-                    : 'text-gray-700 hover:bg-gray-50/80'
+                    ? 'bg-[#E3F2FD] text-[#64B5F6] shadow-[0_2px_8px_rgba(100,181,246,0.15)] shadow-md'
+                    : 'text-[#616161] hover:bg-[#F5F5F5]'
                 }`}
               >
-                <div className={`${isActive ? 'text-blue-600' : 'text-gray-500 group-hover:text-blue-500'} transition-colors`}>
+                <div className={`${isActive ? 'text-[#64B5F6]' : 'text-[#616161] group-hover:text-blue-500'} transition-colors`}>
                   <Icon className="w-4 h-4" />
                 </div>
                 {sidebarOpen && <span className="font-medium whitespace-nowrap">{item.label}</span>}
                 {isActive && (
                   <motion.div
                     layoutId="activeTab"
-                    className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-purple-600 rounded-r-full"
+                    className="absolute left-0 top-0 bottom-0 w-1 bg-[#64B5F6] rounded-r-full"
                     initial={false}
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   />
@@ -198,7 +198,7 @@ export default function AdminSettingsPage() {
           })}
         </nav>
 
-        <div className="p-4 border-t border-gray-200/50">
+        <div className="p-4 border-t border-[#E8E8E8]">
           <motion.button
             onClick={handleLogout}
             whileHover={{ scale: 1.02, x: 4 }}
@@ -214,22 +214,22 @@ export default function AdminSettingsPage() {
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto md:ml-64">
         {/* Top Header Bar */}
-        <div className="fixed top-0 right-0 left-0 md:left-64 z-10 bg-white/80 backdrop-blur-lg border-b border-gray-200/50 shadow-sm">
+        <div className="fixed top-0 right-0 left-0 md:left-64 z-10 bg-white/95 backdrop-blur-lg border-b border-[#E8E8E8] shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
           <div className="p-4 md:p-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
               {/* Mobile Menu Button */}
               <motion.button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 whileTap={{ scale: 0.95 }}
-                className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className="md:hidden p-2 rounded-lg hover:bg-[#F5F5F5] transition-colors"
               >
-                <Menu className="w-6 h-6 text-gray-600" />
+                <Menu className="w-6 h-6 text-[#616161]" />
               </motion.button>
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] tracking-tight">
                   App Settings
                 </h1>
-                <p className="text-xs md:text-sm text-gray-500 mt-1">
+                <p className="text-xs md:text-sm text-[#616161] mt-1">
                   Configure app limits, features, and system settings
                 </p>
               </div>
@@ -242,10 +242,10 @@ export default function AdminSettingsPage() {
 
           <div className="space-y-6">
             {/* App Limits */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-6">
+            <div className="bg-white rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[#E8E8E8] p-6">
               <div className="flex items-center gap-3 mb-6">
-                <Sliders className="w-5 h-5 text-gray-600" />
-                <h2 className="text-xl font-bold text-gray-900">App Limits</h2>
+                <Sliders className="w-5 h-5 text-[#616161]" />
+                <h2 className="text-xl font-bold text-[#1A1A1A]">App Limits</h2>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -308,10 +308,10 @@ export default function AdminSettingsPage() {
             </div>
 
             {/* Matching Settings */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-6">
+            <div className="bg-white rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[#E8E8E8] p-6">
               <div className="flex items-center gap-3 mb-6">
-                <Heart className="w-5 h-5 text-gray-600" />
-                <h2 className="text-xl font-bold text-gray-900">Matching Settings</h2>
+                <Heart className="w-5 h-5 text-[#616161]" />
+                <h2 className="text-xl font-bold text-[#1A1A1A]">Matching Settings</h2>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -360,10 +360,10 @@ export default function AdminSettingsPage() {
             </div>
 
             {/* Feature Flags */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-6">
+            <div className="bg-white rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[#E8E8E8] p-6">
               <div className="flex items-center gap-3 mb-6">
-                <Shield className="w-5 h-5 text-gray-600" />
-                <h2 className="text-xl font-bold text-gray-900">Feature Flags</h2>
+                <Shield className="w-5 h-5 text-[#616161]" />
+                <h2 className="text-xl font-bold text-[#1A1A1A]">Feature Flags</h2>
               </div>
               
               <div className="space-y-4">
@@ -376,7 +376,7 @@ export default function AdminSettingsPage() {
                   <motion.div 
                     key={feature.key} 
                     whileHover={{ scale: 1.02 }}
-                    className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-xl border border-gray-200/50 hover:shadow-md transition-all"
+                    className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-xl border border-[#E8E8E8] hover:shadow-md transition-all"
                   >
                     <span className="text-sm font-semibold text-gray-700">{feature.label}</span>
                     <button
@@ -397,10 +397,10 @@ export default function AdminSettingsPage() {
             </div>
 
             {/* Notifications */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-6">
+            <div className="bg-white rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[#E8E8E8] p-6">
               <div className="flex items-center gap-3 mb-6">
-                <Bell className="w-5 h-5 text-gray-600" />
-                <h2 className="text-xl font-bold text-gray-900">Notifications</h2>
+                <Bell className="w-5 h-5 text-[#616161]" />
+                <h2 className="text-xl font-bold text-[#1A1A1A]">Notifications</h2>
               </div>
               
               <div className="space-y-4">
@@ -411,7 +411,7 @@ export default function AdminSettingsPage() {
                   <motion.div 
                     key={notif.key} 
                     whileHover={{ scale: 1.02 }}
-                    className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-xl border border-gray-200/50 hover:shadow-md transition-all"
+                    className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-xl border border-[#E8E8E8] hover:shadow-md transition-all"
                   >
                     <span className="text-sm font-semibold text-gray-700">{notif.label}</span>
                     <button
@@ -432,16 +432,16 @@ export default function AdminSettingsPage() {
             </div>
 
             {/* Maintenance Mode */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-6">
+            <div className="bg-white rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-[#E8E8E8] p-6">
               <div className="flex items-center gap-3 mb-6">
-                <RefreshCw className="w-5 h-5 text-gray-600" />
-                <h2 className="text-xl font-bold text-gray-900">Maintenance Mode</h2>
+                <RefreshCw className="w-5 h-5 text-[#616161]" />
+                <h2 className="text-xl font-bold text-[#1A1A1A]">Maintenance Mode</h2>
               </div>
               
               <div className="space-y-4">
                 <motion.div 
                   whileHover={{ scale: 1.02 }}
-                  className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-xl border border-gray-200/50 hover:shadow-md transition-all"
+                  className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-xl border border-[#E8E8E8] hover:shadow-md transition-all"
                 >
                   <span className="text-sm font-semibold text-gray-700">Enable Maintenance Mode</span>
                   <button
@@ -496,7 +496,7 @@ export default function AdminSettingsPage() {
                 onClick={handleReset}
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
-                className="px-6 py-3.5 bg-white/90 backdrop-blur-sm hover:bg-white border-2 border-gray-200 hover:border-gray-300 text-gray-700 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 shadow-md"
+                className="px-6 py-3.5 bg-white hover:bg-white border-2 border-gray-200 hover:border-gray-300 text-gray-700 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 shadow-md"
               >
                 <RefreshCw className="w-4 h-4" />
                 Reset

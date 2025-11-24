@@ -15,85 +15,67 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
   return R * c; // Distance in km
 };
 
-// Helper function to calculate match score
-const calculateMatchScore = (userProfile, otherProfile) => {
-  let score = 0;
-  let reasons = [];
-
-  // Age compatibility (within age range)
-  if (userProfile.ageRange && otherProfile.age) {
-    if (otherProfile.age >= userProfile.ageRange.min && 
-        otherProfile.age <= userProfile.ageRange.max) {
-      score += 20;
-      reasons.push('Age compatible');
-    }
+// Helper function to check user active status
+const checkUserActiveStatus = (lastActiveAt) => {
+  if (!lastActiveAt) {
+    return {
+      status: 'offline',
+      hoursAgo: null,
+      minutesAgo: null,
+      isActive: false,
+      displayText: 'Offline'
+    };
   }
 
-  // Distance compatibility
-  if (userProfile.location?.coordinates && otherProfile.location?.coordinates) {
-    const distance = calculateDistance(
-      userProfile.location.coordinates[1],
-      userProfile.location.coordinates[0],
-      otherProfile.location.coordinates[1],
-      otherProfile.location.coordinates[0]
-    );
-    if (distance <= (userProfile.distancePref || 25)) {
-      score += 15;
-      reasons.push('Near you');
-    }
-  }
+  const now = new Date();
+  const lastActive = new Date(lastActiveAt);
+  const diffMs = now - lastActive;
+  const diffHours = diffMs / (1000 * 60 * 60);
+  const diffMinutes = diffMs / (1000 * 60);
 
-  // Common interests
-  if (userProfile.interests && otherProfile.interests) {
-    const commonInterests = userProfile.interests.filter(interest =>
-      otherProfile.interests.includes(interest)
-    );
-    const interestScore = Math.min(commonInterests.length * 10, 30);
-    score += interestScore;
-    if (commonInterests.length > 0) {
-      reasons.push(`${commonInterests.length} common interests`);
-    }
+  if (diffMinutes <= 5) {
+    return {
+      status: 'online',
+      hoursAgo: 0,
+      minutesAgo: Math.floor(diffMinutes),
+      isActive: true,
+      displayText: 'Online'
+    };
+  } else if (diffMinutes <= 30) {
+    return {
+      status: 'recently_active',
+      hoursAgo: 0,
+      minutesAgo: Math.floor(diffMinutes),
+      isActive: true,
+      displayText: `Active ${Math.floor(diffMinutes)}m ago`
+    };
+  } else if (diffHours < 24) {
+    return {
+      status: 'active_today',
+      hoursAgo: Math.floor(diffHours),
+      minutesAgo: null,
+      isActive: true,
+      displayText: `Active ${Math.floor(diffHours)}h ago`
+    };
+  } else if (diffHours <= 168) { // 1 week
+    return {
+      status: 'active_this_week',
+      hoursAgo: Math.floor(diffHours),
+      minutesAgo: null,
+      isActive: true,
+      displayText: `Active ${Math.floor(diffHours / 24)}d ago`
+    };
+  } else {
+    return {
+      status: 'offline',
+      hoursAgo: Math.floor(diffHours),
+      minutesAgo: null,
+      isActive: false,
+      displayText: 'Offline'
+    };
   }
-
-  // Personality compatibility
-  if (userProfile.personality && otherProfile.personality) {
-    let personalityMatches = 0;
-    const traits = ['social', 'planning', 'romantic', 'morning', 'homebody', 'serious', 'decision', 'communication'];
-    traits.forEach(trait => {
-      if (userProfile.personality[trait] && 
-          otherProfile.personality[trait] &&
-          userProfile.personality[trait] === otherProfile.personality[trait]) {
-        personalityMatches++;
-      }
-    });
-    score += Math.min(personalityMatches * 5, 20);
-    if (personalityMatches > 0) {
-      reasons.push('Similar personality');
-    }
-  }
-
-  // Dealbreakers check
-  if (userProfile.dealbreakers && otherProfile.dealbreakers) {
-    // Check for dealbreakers
-    const dealbreakers = ['kids', 'smoking', 'pets', 'drinking'];
-    let dealbreakerMatches = true;
-    dealbreakers.forEach(dealbreaker => {
-      if (userProfile.dealbreakers[dealbreaker] && 
-          otherProfile.dealbreakers[dealbreaker] &&
-          userProfile.dealbreakers[dealbreaker] !== otherProfile.dealbreakers[dealbreaker]) {
-        dealbreakerMatches = false;
-      }
-    });
-    if (dealbreakerMatches) {
-      score += 15;
-      reasons.push('Compatible preferences');
-    } else {
-      score = Math.max(0, score - 30); // Heavy penalty for dealbreakers
-    }
-  }
-
-  return { score: Math.min(score, 100), reasons };
 };
+
 
 // @desc    Get discovery feed
 // @route   GET /api/discovery
@@ -101,6 +83,9 @@ const calculateMatchScore = (userProfile, otherProfile) => {
 export const getDiscoveryFeed = async (req, res) => {
   try {
     const userId = req.user._id;
+    
+    // Update lastActiveAt
+    await User.findByIdAndUpdate(userId, { lastActiveAt: new Date() });
     
     // Parse and validate page and limit
     const page = parseInt(req.query.page, 10) || 1;
@@ -132,15 +117,24 @@ export const getDiscoveryFeed = async (req, res) => {
       });
     }
 
-    // Get user's interactions (likes and passes)
+    // STEP 1: Exclude Users
+    // Exclude: liked, disliked (passed), matched, blocked, incomplete profiles
     const interactions = await Interaction.find({ fromUser: userId });
+    const matches = await Match.find({ users: userId, isActive: true });
+    
+    const likedUserIds = interactions.filter(i => i.type === 'like').map(i => i.toUser);
+    const dislikedUserIds = interactions.filter(i => i.type === 'pass').map(i => i.toUser);
+    const matchedUserIds = matches.flatMap(m => m.users.filter(u => u.toString() !== userId.toString()));
+    
     const excludedUserIds = [
       userId,
-      ...interactions.map(i => i.toUser)
+      ...likedUserIds,
+      ...dislikedUserIds,
+      ...matchedUserIds
     ];
 
-    // Build query - allow users with at least basic info to see feed
-    // Show profiles that have at least basic info (onboardingCompleted is optional)
+    // STEP 2: Filter by Preferences
+    // Build query - exclude incomplete profiles (< 60% completion)
     let query = {
       userId: { $nin: excludedUserIds },
       isActive: true,
@@ -149,18 +143,31 @@ export const getDiscoveryFeed = async (req, res) => {
       name: { $exists: true, $ne: null },
       gender: { $exists: true, $ne: null },
       orientation: { $exists: true, $ne: null },
-      lookingFor: { $exists: true, $ne: [] }
+      lookingFor: { $exists: true, $ne: [] },
+      // Exclude incomplete profiles (< 60% completion)
+      completionPercentage: { $gte: 60 }
     };
     
     console.log('Query before filters:', JSON.stringify(query, null, 2));
 
-    // Age range filter
-    if (userProfile.ageRange && userProfile.ageRange.min && userProfile.ageRange.max) {
-      query.age = {
-        $gte: Number(userProfile.ageRange.min),
-        $lte: Number(userProfile.ageRange.max)
-      };
+    // Age range filter (handle empty max age)
+    // Only apply age filter if user has set preferences, otherwise show all ages
+    if (userProfile.ageRange && userProfile.ageRange.min) {
+      if (userProfile.ageRange.max && userProfile.ageRange.max !== '') {
+        query.age = {
+          $gte: Number(userProfile.ageRange.min),
+          $lte: Number(userProfile.ageRange.max)
+        };
+      } else {
+        // If max is empty, only filter by min age
+        query.age = {
+          $gte: Number(userProfile.ageRange.min)
+        };
+      }
       console.log('Age filter:', query.age);
+    } else {
+      // If no age range set, show profiles of all ages (18+)
+      console.log('⚠️ No age range set, showing all ages');
     }
 
     // Gender filter (lookingFor)
@@ -174,17 +181,26 @@ export const getDiscoveryFeed = async (req, res) => {
         if (lf === 'everyone') return ['male', 'female', 'other'];
         return genderMap[lf] || [];
       });
-      query.gender = { $in: targetGenders };
+      if (targetGenders.length > 0) {
+        query.gender = { $in: targetGenders };
+        console.log('Gender filter:', targetGenders);
+      }
+    } else {
+      // If no lookingFor set, show all genders
+      console.log('⚠️ No lookingFor preference set, showing all genders');
     }
 
-    // Location filter (if coordinates available)
+    // STEP 2: Distance Preference Filter
+    // Only apply distance filter if user has valid location and preference
+    // If not set, show profiles from all locations
     if (userProfile.location?.coordinates && userProfile.distancePref) {
       const coordinates = userProfile.location.coordinates;
       const distancePref = Number(userProfile.distancePref) || 25;
       
       // Validate coordinates are numbers
       if (Array.isArray(coordinates) && coordinates.length === 2 && 
-          typeof coordinates[0] === 'number' && typeof coordinates[1] === 'number') {
+          typeof coordinates[0] === 'number' && typeof coordinates[1] === 'number' &&
+          coordinates[0] !== 0 && coordinates[1] !== 0) { // Not default [0,0]
         query['location.coordinates'] = {
           $near: {
             $geometry: {
@@ -194,57 +210,123 @@ export const getDiscoveryFeed = async (req, res) => {
             $maxDistance: distancePref * 1000 // Convert km to meters
           }
         };
-        console.log('Location filter applied:', distancePref, 'km');
+        console.log('Distance filter applied:', distancePref, 'km');
       } else {
-        console.log('⚠️ Invalid coordinates format, skipping location filter');
+        console.log('⚠️ Invalid coordinates format, skipping distance filter - showing all locations');
+      }
+    } else {
+      console.log('⚠️ No location/distance preference set, showing profiles from all locations');
+    }
+
+    // STEP 3: Get all candidates
+    let profiles = await Profile.find(query)
+      .populate('userId', 'isPremium lastActiveAt')
+      .sort({ createdAt: -1 }); // Sort by newest first
+    
+    console.log('Found profiles:', profiles.length);
+    console.log('Excluded user IDs:', excludedUserIds.length);
+    console.log('Excluded IDs:', excludedUserIds.map(id => id.toString()));
+    console.log('User profile:', {
+      age: userProfile.age,
+      ageRange: userProfile.ageRange,
+      lookingFor: userProfile.lookingFor,
+      location: userProfile.location?.city,
+      coordinates: userProfile.location?.coordinates,
+      distancePref: userProfile.distancePref
+    });
+    console.log('Query filters:', JSON.stringify(query, null, 2));
+    
+    // If no profiles found, try with more lenient filters
+    if (profiles.length === 0) {
+      console.log('⚠️ No profiles found with strict filters. Trying lenient filters...');
+      
+      // Try without age filter (if it was applied)
+      if (query.age) {
+        delete query.age;
+        console.log('   - Removed age filter, trying again...');
+        profiles = await Profile.find(query)
+          .populate('userId', 'isPremium lastActiveAt')
+          .sort({ createdAt: -1 });
+        console.log('   - Found profiles without age filter:', profiles.length);
+      }
+      
+      // If still no profiles, try without distance filter
+      if (profiles.length === 0 && query['location.coordinates']) {
+        delete query['location.coordinates'];
+        console.log('   - Removed distance filter, trying again...');
+        profiles = await Profile.find(query)
+          .populate('userId', 'isPremium lastActiveAt')
+          .sort({ createdAt: -1 });
+        console.log('   - Found profiles without distance filter:', profiles.length);
+      }
+      
+      // If still no profiles, log detailed info
+      if (profiles.length === 0) {
+        console.log('⚠️ No profiles found even with lenient filters. Possible reasons:');
+        console.log('   - All profiles already interacted with');
+        console.log('   - Gender filter too strict');
+        console.log('   - All profiles incomplete (< 60% completion)');
+        
+        // Check total profiles in database for debugging
+        const totalProfiles = await Profile.countDocuments({ isActive: true, isVisible: true });
+        const totalMatchingBasic = await Profile.countDocuments({
+          isActive: true,
+          isVisible: true,
+          name: { $exists: true, $ne: null },
+          gender: { $exists: true, $ne: null },
+          completionPercentage: { $gte: 60 }
+        });
+        console.log('   - Total active profiles:', totalProfiles);
+        console.log('   - Total profiles with basic info (60%+):', totalMatchingBasic);
+        
+        // Return empty array with helpful message
+        return res.status(200).json({
+          success: true,
+          count: 0,
+          total: 0,
+          profiles: [],
+          message: 'No profiles found. Try adjusting your preferences or complete your profile.'
+        });
       }
     }
 
-    // Get profiles
-    let profiles = await Profile.find(query)
-      .populate('userId', 'isPremium lastActiveAt')
-      .limit(validLimit)
-      .skip((validPage - 1) * validLimit)
-      .sort({ createdAt: -1 });
-    
-    console.log('Found profiles:', profiles.length);
-    
-    // If no profiles found and user just has basic info, return empty array
-    // Frontend will handle redirect to onboarding
-    if (profiles.length === 0) {
-      console.log('No profiles found - user may need to complete profile or wait for more users');
-    }
+    // Add distance and active status for display (no scoring)
+    const profilesWithInfo = profiles.map(profile => {
+      const otherUser = profile.userId; // Populated User
+      const lastActiveAt = otherUser?.lastActiveAt;
+      const activeStatus = checkUserActiveStatus(lastActiveAt);
 
-    // Calculate match scores
-    const profilesWithScores = profiles.map(profile => {
-      const matchResult = calculateMatchScore(userProfile, profile);
-      const distance = userProfile.location?.coordinates && profile.location?.coordinates
-        ? calculateDistance(
-            userProfile.location.coordinates[1],
-            userProfile.location.coordinates[0],
-            profile.location.coordinates[1],
-            profile.location.coordinates[0]
-          )
-        : null;
+      // Calculate distance for display
+      let distance = null;
+      if (userProfile.location?.coordinates && profile.location?.coordinates) {
+        distance = calculateDistance(
+          userProfile.location.coordinates[1],
+          userProfile.location.coordinates[0],
+          profile.location.coordinates[1],
+          profile.location.coordinates[0]
+        );
+      }
 
       return {
         ...profile.toObject(),
-        matchScore: matchResult.score,
-        matchReasons: matchResult.reasons,
+        activeStatus: activeStatus,
         distance: distance ? Math.round(distance) : null
       };
     });
-
-    // Sort by match score
-    profilesWithScores.sort((a, b) => b.matchScore - a.matchScore);
+    
+    // Apply pagination
+    const paginatedProfiles = profilesWithInfo
+      .slice((validPage - 1) * validLimit, validPage * validLimit);
 
     console.log('=== DISCOVERY FEED SUCCESS ===');
-    console.log('Returning', profilesWithScores.length, 'profiles\n');
+    console.log('Total candidates:', profilesWithInfo.length);
+    console.log('Returning', paginatedProfiles.length, 'profiles (page', validPage, ')\n');
 
     res.status(200).json({
       success: true,
-      count: profilesWithScores.length,
-      profiles: profilesWithScores
+      count: paginatedProfiles.length,
+      total: profilesWithInfo.length,
+      profiles: paginatedProfiles
     });
   } catch (error) {
     console.error('\n❌ === GET DISCOVERY FEED ERROR ===');
@@ -266,6 +348,10 @@ export const getDiscoveryFeed = async (req, res) => {
 export const likeProfile = async (req, res) => {
   try {
     const userId = req.user._id;
+    
+    // Update lastActiveAt
+    await User.findByIdAndUpdate(userId, { lastActiveAt: new Date() });
+    
     const { targetUserId, type = 'like' } = req.body;
 
     if (!targetUserId) {
@@ -373,6 +459,10 @@ export const likeProfile = async (req, res) => {
 export const passProfile = async (req, res) => {
   try {
     const userId = req.user._id;
+    
+    // Update lastActiveAt
+    await User.findByIdAndUpdate(userId, { lastActiveAt: new Date() });
+    
     const { targetUserId } = req.body;
 
     if (!targetUserId) {
@@ -493,4 +583,156 @@ export const getMatches = async (req, res) => {
     });
   }
 };
+
+// @desc    Get next best match (single user)
+// @route   GET /api/discovery/next-user
+// @access  Private
+export const getNextUser = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    
+    // Update lastActiveAt
+    await User.findByIdAndUpdate(userId, { lastActiveAt: new Date() });
+
+    // Get user's profile
+    const userProfile = await Profile.findOne({ userId: userId });
+    if (!userProfile) {
+      return res.status(404).json({
+        success: false,
+        message: 'Profile not found. Please complete basic information first.'
+      });
+    }
+
+    // Check basic info
+    if (!userProfile.name || !userProfile.gender || !userProfile.orientation || !userProfile.lookingFor || userProfile.lookingFor.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please complete your basic information first',
+        requiresBasicInfo: true
+      });
+    }
+
+    // Get user's interactions (likes, passes, matches)
+    const interactions = await Interaction.find({ fromUser: userId });
+    const matches = await Match.find({ users: userId, isActive: true });
+    
+    const excludedUserIds = [
+      userId,
+      ...interactions.map(i => i.toUser),
+      ...matches.flatMap(m => m.users.filter(u => u.toString() !== userId.toString()))
+    ];
+
+    // STEP 2: Filter by Preferences
+    let query = {
+      userId: { $nin: excludedUserIds },
+      isActive: true,
+      isVisible: true,
+      name: { $exists: true, $ne: null },
+      gender: { $exists: true, $ne: null },
+      orientation: { $exists: true, $ne: null },
+      lookingFor: { $exists: true, $ne: [] },
+      // Exclude incomplete profiles (< 60% completion)
+      completionPercentage: { $gte: 60 }
+    };
+
+    // Age range filter (handle empty max age)
+    if (userProfile.ageRange && userProfile.ageRange.min) {
+      if (userProfile.ageRange.max && userProfile.ageRange.max !== '') {
+        query.age = {
+          $gte: Number(userProfile.ageRange.min),
+          $lte: Number(userProfile.ageRange.max)
+        };
+      } else {
+        // If max is empty, only filter by min age
+        query.age = {
+          $gte: Number(userProfile.ageRange.min)
+        };
+      }
+    }
+
+    // Gender filter
+    if (userProfile.lookingFor && userProfile.lookingFor.length > 0) {
+      const genderMap = {
+        'men': 'male',
+        'women': 'female',
+        'everyone': ['male', 'female', 'other']
+      };
+      const targetGenders = userProfile.lookingFor.flatMap(lf => {
+        if (lf === 'everyone') return ['male', 'female', 'other'];
+        return genderMap[lf] || [];
+      });
+      query.gender = { $in: targetGenders };
+    }
+
+    // STEP 2: Distance Preference Filter
+    if (userProfile.location?.coordinates && userProfile.distancePref) {
+      const coordinates = userProfile.location.coordinates;
+      const distancePref = Number(userProfile.distancePref) || 25;
+      
+      if (Array.isArray(coordinates) && coordinates.length === 2 && 
+          typeof coordinates[0] === 'number' && typeof coordinates[1] === 'number' &&
+          coordinates[0] !== 0 && coordinates[1] !== 0) { // Not default [0,0]
+        query['location.coordinates'] = {
+          $near: {
+            $geometry: {
+              type: 'Point',
+              coordinates: coordinates
+            },
+            $maxDistance: distancePref * 1000
+          }
+        };
+      }
+    }
+
+    // STEP 3: Get all candidates
+    let profiles = await Profile.find(query)
+      .populate('userId', 'isPremium lastActiveAt')
+      .sort({ createdAt: -1 }) // Sort by newest first
+      .limit(1); // Get first profile
+
+    if (profiles.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: 'No more profiles available',
+        profile: null
+      });
+    }
+
+    // Add distance and active status for display (no scoring)
+    const profile = profiles[0];
+    const otherUser = profile.userId; // Populated User
+    const lastActiveAt = otherUser?.lastActiveAt;
+    const activeStatus = checkUserActiveStatus(lastActiveAt);
+
+    // Calculate distance for display
+    let distance = null;
+    if (userProfile.location?.coordinates && profile.location?.coordinates) {
+      distance = calculateDistance(
+        userProfile.location.coordinates[1],
+        userProfile.location.coordinates[0],
+        profile.location.coordinates[1],
+        profile.location.coordinates[0]
+      );
+    }
+
+    const profileWithInfo = {
+      ...profile.toObject(),
+      activeStatus: activeStatus,
+      distance: distance ? Math.round(distance) : null
+    };
+
+    res.status(200).json({
+      success: true,
+      profile: profileWithInfo
+    });
+  } catch (error) {
+    console.error('Get next user error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching next user',
+      error: error.message
+    });
+  }
+};
+
 

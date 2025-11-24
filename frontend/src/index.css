@@ -10,9 +10,9 @@
   --color-baby-pink-lighter: #FFE5E5;
   
   /* Accent Colors - Pink */
-  --color-dark-pink: #FF91A4;
-  --color-dark-pink-hover: #FF69B4;
-  --color-light-pink-border: #FFB6C1;
+  --color-primary: #64B5F6;
+  --color-primary-hover: #42A5F5;
+  --color-border: #E8E8E8;
   
   /* Neutral Colors */
   --color-grey: #757575;
@@ -25,7 +25,7 @@
   --color-error: #E53935;
   --color-success: #4CAF50;
   --color-warning: #FF9800;
-  --color-info: #FF91A4;
+  --color-info: #64B5F6;
   
   /* Border Radius */
   --border-radius-sm: 0.75rem;   /* 12px */
@@ -287,7 +287,7 @@ html {
 
 /* Enhanced focus states */
 *:focus-visible {
-  outline: 2px solid #FF91A4;
+  outline: 2px solid #64B5F6;
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -323,16 +323,16 @@ html {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #FF91A4 0%, #FF69B4 100%);
+  background: linear-gradient(135deg, #64B5F6 0%, #42A5F5 100%);
   cursor: pointer;
   border: 3px solid white;
-  box-shadow: 0 2px 8px rgba(255, 145, 164, 0.4);
+  box-shadow: 0 2px 8px rgba(100, 181, 246, 0.4);
   transition: all 0.2s ease;
 }
 
 .distance-slider::-webkit-slider-thumb:hover {
   transform: scale(1.15);
-  box-shadow: 0 4px 12px rgba(255, 145, 164, 0.6);
+  box-shadow: 0 4px 12px rgba(100, 181, 246, 0.6);
 }
 
 .distance-slider::-webkit-slider-thumb:active {
@@ -343,16 +343,16 @@ html {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #FF91A4 0%, #FF69B4 100%);
+  background: linear-gradient(135deg, #64B5F6 0%, #42A5F5 100%);
   cursor: pointer;
   border: 3px solid white;
-  box-shadow: 0 2px 8px rgba(255, 145, 164, 0.4);
+  box-shadow: 0 2px 8px rgba(100, 181, 246, 0.4);
   transition: all 0.2s ease;
 }
 
 .distance-slider::-moz-range-thumb:hover {
   transform: scale(1.15);
-  box-shadow: 0 4px 12px rgba(255, 145, 164, 0.6);
+  box-shadow: 0 4px 12px rgba(100, 181, 246, 0.6);
 }
 
 .distance-slider::-moz-range-thumb:active {
@@ -363,8 +363,8 @@ html {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #FF91A4 0%, #FF69B4 100%);
+  background: linear-gradient(135deg, #64B5F6 0%, #42A5F5 100%);
   cursor: pointer;
   border: 3px solid white;
-  box-shadow: 0 2px 8px rgba(255, 145, 164, 0.4);
+  box-shadow: 0 2px 8px rgba(100, 181, 246, 0.4);
 }

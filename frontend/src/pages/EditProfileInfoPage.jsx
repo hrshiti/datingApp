@@ -16,11 +16,14 @@ export default function EditProfileInfoPage() {
   const [activeTab, setActiveTab] = useState('edit'); // 'edit' or 'preview'
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   
+  // Track initial state of photos and bio to prevent sections from disappearing while uploading/typing
+  const [initialPhotos, setInitialPhotos] = useState([]);
+  const [initialBio, setInitialBio] = useState('');
+  
   // Onboarding fields state
   const [formData, setFormData] = useState({
     // Step 1
     name: '',
-    email: '',
     dob: '',
     gender: '',
     customGender: '',
@@ -65,6 +68,49 @@ export default function EditProfileInfoPage() {
   
   const [showCustomGender, setShowCustomGender] = useState(false);
   const [showCustomOrientation, setShowCustomOrientation] = useState(false);
+  const [initialOptionalState, setInitialOptionalState] = useState({
+    education: '',
+    profession: '',
+    languages: [],
+    horoscope: ''
+  }); // Track initial state of optional fields
+  
+  // Track initial state of ALL fields to prevent fields from disappearing while typing
+  const [initialFormState, setInitialFormState] = useState({
+    name: '',
+    dob: '',
+    gender: '',
+    orientation: '',
+    lookingFor: '',
+    city: '',
+    ageRange: { min: 18, max: '' },
+    distancePref: 25,
+    interests: [],
+    personality: {
+      social: '',
+      planning: '',
+      romantic: '',
+      morning: '',
+      homebody: '',
+      serious: '',
+      decision: '',
+      communication: ''
+    },
+    dealbreakers: {
+      kids: '',
+      smoking: '',
+      pets: '',
+      drinking: '',
+      religion: ''
+    },
+    prompts: [],
+    optional: {
+      education: '',
+      profession: '',
+      languages: [],
+      horoscope: ''
+    }
+  });
 
   const maxBioLength = 200;
   const minPhotos = 1;
@@ -93,24 +139,51 @@ export default function EditProfileInfoPage() {
   const showOnlyIncomplete = location.state?.showOnlyIncomplete || false;
   
   // Function to check which sections are incomplete - memoized to recalculate when formData or photos change
+  // Use initialFormState to prevent sections/fields from disappearing while user is typing
   const incompleteSections = useMemo(() => {
     if (!showOnlyIncomplete) return {};
     
+    // Use optional chaining to safely check initialFormState
+    // Use initialPhotos and initialBio to prevent sections from disappearing while uploading/typing
+    // IMPORTANT: Only check initialOptionalState, never formData, to prevent sections from disappearing during typing/selection
+    const hasLanguages = initialOptionalState?.languages && Array.isArray(initialOptionalState.languages) && initialOptionalState.languages.length > 0;
+    
+    // Section visibility logic:
+    // - Language is mandatory, so section shows if language is missing
+    // - Optional fields (education, profession, horoscope) are optional
+    // - In "Complete Profile" mode, we want to show optional fields so user can fill them
+    // - Section should show if language is missing OR if any optional field is empty
+    // - Individual optional fields will show/hide based on their own initial state
+    // The fix: Section shows if language is missing (mandatory) OR if any optional field is empty
+    // This ensures section doesn't disappear when only language is filled - it will show optional fields
+    const hasEducation = initialOptionalState?.education && initialOptionalState.education.trim() !== '';
+    const hasProfession = initialOptionalState?.profession && initialOptionalState.profession.trim() !== '';
+    const hasHoroscope = initialOptionalState?.horoscope && initialOptionalState.horoscope.trim() !== '';
+    
+    // Section shows if:
+    // 1. Language is missing (mandatory field), OR
+    // 2. Any optional field is empty (so user can fill optional fields)
+    // This ensures section doesn't disappear when only language is saved
+    const showSection = !initialOptionalState || !hasLanguages || !hasEducation || !hasProfession || !hasHoroscope;
+    
     return {
-      photos: !photos || photos.length < 4,
-      bio: !bio || bio.trim().length === 0,
-      step1: !formData.name || !formData.dob || !formData.gender || !formData.orientation || !formData.lookingFor,
-      step2: !formData.city,
-      step3: !formData.interests || formData.interests.length < 3,
-      step4: !formData.personality || !formData.personality.social || !formData.personality.planning || 
-             !formData.personality.romantic || !formData.personality.morning || !formData.personality.homebody ||
-             !formData.personality.serious || !formData.personality.decision || !formData.personality.communication,
-      step5: !formData.dealbreakers || !formData.dealbreakers.kids || !formData.dealbreakers.smoking ||
-             !formData.dealbreakers.pets || !formData.dealbreakers.drinking, // religion is optional
-      step6: !formData.prompts || formData.prompts.length < 3 || formData.prompts.some(p => !p.answer || p.answer.trim() === ''),
-      step7: !formData.optional || !formData.optional.education || !formData.optional.profession || !formData.optional.languages || formData.optional.languages.length === 0 || !formData.optional.horoscope // Show if ANY optional field is missing
+      photos: !initialPhotos || initialPhotos.length < 4,
+      bio: !initialBio || initialBio.trim().length === 0,
+      // Use initialFormState to prevent fields from disappearing while typing - with optional chaining
+      step1: !initialFormState?.name || !initialFormState?.dob || !initialFormState?.gender || !initialFormState?.orientation || !initialFormState?.lookingFor,
+      step2: !initialFormState?.city || !initialFormState?.ageRange?.max || !initialFormState?.distancePref,
+      step3: !initialFormState?.interests || initialFormState.interests?.length < 3,
+      step4: !initialFormState?.personality || !initialFormState.personality?.social || !initialFormState.personality?.planning || 
+             !initialFormState.personality?.romantic || !initialFormState.personality?.morning || !initialFormState.personality?.homebody ||
+             !initialFormState.personality?.serious || !initialFormState.personality?.decision || !initialFormState.personality?.communication,
+      // Step 5: Show section if any mandatory field is missing OR if religion is missing (optional but we want to show it)
+      step5: !initialFormState?.dealbreakers || !initialFormState.dealbreakers?.kids || !initialFormState.dealbreakers?.smoking ||
+             !initialFormState.dealbreakers?.pets || !initialFormState.dealbreakers?.drinking || !initialFormState.dealbreakers?.religion,
+      step6: !initialFormState?.prompts || initialFormState.prompts?.length < 3 || initialFormState.prompts?.some(p => !p.answer || p.answer.trim() === ''),
+      // Use the calculated showSection value
+      step7: showSection
     };
-  }, [showOnlyIncomplete, photos, bio, formData]);
+  }, [showOnlyIncomplete, initialPhotos, initialBio, initialFormState, initialOptionalState]);
 
   useEffect(() => {
     // Check if coming from profile photo click with preview tab state
@@ -123,17 +196,38 @@ export default function EditProfileInfoPage() {
     }
 
     // Load profile data from backend API
+    // Always reload from backend to get latest data, especially after saving from OnboardingPage
     const loadProfileFromBackend = async () => {
       try {
         console.log('📥 Loading profile from backend API...');
+        console.log('📍 Current location:', location.pathname, location.key, location.state);
         const response = await profileService.getMyProfile();
         
         if (response.success && response.profile) {
           const profile = response.profile;
           console.log('✅ Profile loaded from backend:', profile);
+          console.log('📋 Dealbreakers from backend:', JSON.stringify(profile.dealbreakers, null, 2));
+          console.log('📋 Optional fields from backend:', JSON.stringify(profile.optional, null, 2));
           
           // Only set fields that have actual data (not empty/null/undefined)
-          const updatedFormData = { ...formData };
+          // Start with a fresh copy to avoid stale data - use current formData as base but reset nested objects
+          const updatedFormData = {
+            ...formData,
+            // Initialize nested objects fresh from backend to ensure proper merging
+            dealbreakers: {
+              kids: '',
+              smoking: '',
+              pets: '',
+              drinking: '',
+              religion: ''
+            },
+            optional: {
+              education: '',
+              profession: '',
+              languages: [],
+              horoscope: ''
+            }
+          };
           
           // Basic Info - only if exists
           if (profile.name) updatedFormData.name = profile.name;
@@ -156,20 +250,29 @@ export default function EditProfileInfoPage() {
               setShowCustomOrientation(true);
             }
           }
-          if (profile.lookingFor && profile.lookingFor.length > 0) {
+          // Looking For - ALWAYS set, even if empty (to ensure proper loading)
+          if (profile.lookingFor) {
             // If lookingFor is array, take first item, otherwise use as is
             updatedFormData.lookingFor = Array.isArray(profile.lookingFor) 
-              ? profile.lookingFor[0] 
+              ? (profile.lookingFor.length > 0 ? profile.lookingFor[0] : '')
               : profile.lookingFor;
+          } else {
+            updatedFormData.lookingFor = '';
           }
-          
+          console.log('✅ Looking For loaded from backend:', updatedFormData.lookingFor);
+
           // Location - only if exists
           if (profile.location && profile.location.city) {
             updatedFormData.city = profile.location.city;
           }
           if (profile.ageRange) {
             if (profile.ageRange.min) updatedFormData.ageRange.min = profile.ageRange.min;
-            if (profile.ageRange.max) updatedFormData.ageRange.max = profile.ageRange.max;
+            // Treat 100 as empty (default value that shouldn't be shown)
+            if (profile.ageRange.max && profile.ageRange.max !== 100) {
+              updatedFormData.ageRange.max = profile.ageRange.max;
+            } else {
+              updatedFormData.ageRange.max = '';
+            }
           }
           if (profile.distancePref) {
             updatedFormData.distancePref = profile.distancePref;
@@ -182,6 +285,10 @@ export default function EditProfileInfoPage() {
           
           // Personality - only if exists and has values
           if (profile.personality) {
+            // Initialize personality object if it doesn't exist
+            if (!updatedFormData.personality) {
+              updatedFormData.personality = {};
+            }
             Object.keys(profile.personality).forEach(key => {
               if (profile.personality[key] && profile.personality[key] !== '') {
                 updatedFormData.personality[key] = profile.personality[key];
@@ -189,102 +296,173 @@ export default function EditProfileInfoPage() {
             });
           }
           
-          // Dealbreakers - only if exists and has values
-          if (profile.dealbreakers) {
-            Object.keys(profile.dealbreakers).forEach(key => {
-              if (profile.dealbreakers[key] && profile.dealbreakers[key] !== '') {
-                updatedFormData.dealbreakers[key] = profile.dealbreakers[key];
-              }
-            });
+          // Dealbreakers - ALWAYS replace entire object from backend (even if profile.dealbreakers is null/undefined)
+          // This ensures we always have the latest data from backend, including fields filled from People page
+          updatedFormData.dealbreakers = {
+            kids: (profile.dealbreakers && profile.dealbreakers.kids) ? profile.dealbreakers.kids : '',
+            smoking: (profile.dealbreakers && profile.dealbreakers.smoking) ? profile.dealbreakers.smoking : '',
+            pets: (profile.dealbreakers && profile.dealbreakers.pets) ? profile.dealbreakers.pets : '',
+            drinking: (profile.dealbreakers && profile.dealbreakers.drinking) ? profile.dealbreakers.drinking : '',
+            religion: (profile.dealbreakers && profile.dealbreakers.religion) ? profile.dealbreakers.religion : ''
+          };
+          console.log('✅ Dealbreakers loaded from backend:', JSON.stringify(updatedFormData.dealbreakers, null, 2));
+          
+          // Optional - ALWAYS replace entire object from backend (even if profile.optional is null/undefined)
+          // This ensures we always have the latest data from backend
+          updatedFormData.optional = {
+            education: (profile.optional && profile.optional.education) ? profile.optional.education : '',
+            profession: (profile.optional && profile.optional.profession) ? profile.optional.profession : '',
+            languages: (profile.optional && profile.optional.languages) ? profile.optional.languages : [],
+            horoscope: (profile.optional && profile.optional.horoscope) ? profile.optional.horoscope : ''
+          };
+          // Load prompts from optional.prompts
+          if (profile.optional && profile.optional.prompts && profile.optional.prompts.length > 0) {
+            updatedFormData.prompts = profile.optional.prompts;
           }
           
-          // Optional - only if exists
-          if (profile.optional) {
-            if (profile.optional.education) updatedFormData.optional.education = profile.optional.education;
-            if (profile.optional.profession) updatedFormData.optional.profession = profile.optional.profession;
-            if (profile.optional.languages && profile.optional.languages.length > 0) {
-              updatedFormData.optional.languages = profile.optional.languages;
-            }
-            if (profile.optional.horoscope) updatedFormData.optional.horoscope = profile.optional.horoscope;
-            // Load prompts from optional.prompts
-            if (profile.optional.prompts && profile.optional.prompts.length > 0) {
-              updatedFormData.prompts = profile.optional.prompts;
-            }
-          }
+          console.log('✅ Optional fields loaded from backend:', JSON.stringify(updatedFormData.optional, null, 2));
+          
+          // Store initial state for conditional rendering - ALWAYS set, even if empty
+          setInitialOptionalState({
+            education: (profile.optional && profile.optional.education) ? profile.optional.education : '',
+            profession: (profile.optional && profile.optional.profession) ? profile.optional.profession : '',
+            languages: (profile.optional && profile.optional.languages) ? profile.optional.languages : [],
+            horoscope: (profile.optional && profile.optional.horoscope) ? profile.optional.horoscope : ''
+          });
           
           // Photos - only if exists
           if (profile.photos && profile.photos.length > 0) {
-            setPhotos(profile.photos.map(photo => ({
+            const photosData = profile.photos.map(photo => ({
               id: photo._id || photo.id,
               preview: photo.url,
               url: photo.url,
               isMain: photo.isMain || false,
               order: photo.order || 0
-            })));
+            }));
+            setPhotos(photosData);
+            setInitialPhotos(photosData); // Set initial photos state
+          } else {
+            setInitialPhotos([]); // Set empty if no photos
           }
           
           // Bio - only if exists
           if (profile.bio) {
             setBio(profile.bio);
-          }
+            setInitialBio(profile.bio); // Set initial bio state
+          } else {
+            setInitialBio(''); // Set empty if no bio
+        }
+        
+          console.log('📋 Updated formData dealbreakers:', JSON.stringify(updatedFormData.dealbreakers, null, 2));
+          console.log('📋 Updated formData optional:', JSON.stringify(updatedFormData.optional, null, 2));
+          console.log('📋 Updated formData.optional.education:', updatedFormData.optional.education);
           
           setFormData(updatedFormData);
+          
+          // Store initial state of ALL fields
+          setInitialFormState({
+            name: updatedFormData.name || '',
+            dob: updatedFormData.dob || '',
+            gender: updatedFormData.gender || '',
+            orientation: updatedFormData.orientation || '',
+            lookingFor: updatedFormData.lookingFor || '',
+            city: updatedFormData.city || '',
+            ageRange: updatedFormData.ageRange || { min: 18, max: '' },
+            distancePref: updatedFormData.distancePref || 25,
+            interests: updatedFormData.interests || [],
+            personality: updatedFormData.personality || {
+              social: '',
+              planning: '',
+              romantic: '',
+              morning: '',
+              homebody: '',
+              serious: '',
+              decision: '',
+              communication: ''
+            },
+            dealbreakers: updatedFormData.dealbreakers ? {
+              kids: updatedFormData.dealbreakers.kids || '',
+              smoking: updatedFormData.dealbreakers.smoking || '',
+              pets: updatedFormData.dealbreakers.pets || '',
+              drinking: updatedFormData.dealbreakers.drinking || '',
+              religion: updatedFormData.dealbreakers.religion || ''
+            } : {
+              kids: '',
+              smoking: '',
+              pets: '',
+              drinking: '',
+              religion: ''
+            },
+            prompts: updatedFormData.prompts || [],
+            optional: updatedFormData.optional ? {
+              education: updatedFormData.optional.education || '',
+              profession: updatedFormData.optional.profession || '',
+              languages: updatedFormData.optional.languages || [],
+              horoscope: updatedFormData.optional.horoscope || ''
+            } : {
+              education: '',
+              profession: '',
+              languages: [],
+              horoscope: ''
+            }
+          });
+          
           console.log('✅ Form data updated with backend data');
         } else {
           console.log('⚠️ No profile found in response');
+          // Initialize empty states if no profile found
+          setInitialFormState({
+            name: '',
+            dob: '',
+            gender: '',
+            orientation: '',
+            lookingFor: '',
+            city: '',
+            ageRange: { min: 18, max: '' },
+            distancePref: 25,
+            interests: [],
+            personality: {
+              social: '',
+              planning: '',
+              romantic: '',
+              morning: '',
+              homebody: '',
+              serious: '',
+              decision: '',
+              communication: ''
+            },
+            dealbreakers: {
+              kids: '',
+              smoking: '',
+              pets: '',
+              drinking: '',
+              religion: ''
+            },
+            prompts: [],
+            optional: {
+              education: '',
+              profession: '',
+              languages: [],
+              horoscope: ''
+            }
+          });
+          setInitialOptionalState({
+            education: '',
+            profession: '',
+            languages: [],
+            horoscope: ''
+          });
+          setInitialPhotos([]);
+          setInitialBio('');
         }
       } catch (error) {
         console.error('❌ Error loading profile from backend:', error);
-        // Fallback to localStorage if API fails
-        console.log('📦 Falling back to localStorage...');
-        
-        const savedData = localStorage.getItem('profileSetup');
-        const onboardingData = localStorage.getItem('onboardingData');
-        
-        if (savedData) {
-          try {
-            const parsed = JSON.parse(savedData);
-            setPhotos(parsed.photos || []);
-            setBio(parsed.bio || '');
-          } catch (e) {
-            console.error('Error loading saved data:', e);
-          }
-        }
-        
-        if (onboardingData) {
-          try {
-            const parsed = JSON.parse(onboardingData);
-            let lookingFor = parsed.step1?.lookingFor || '';
-            if (Array.isArray(lookingFor) && lookingFor.length > 0) {
-              lookingFor = lookingFor[0];
-            }
-            
-            setFormData({
-              ...parsed.step1,
-              lookingFor: lookingFor,
-              ...parsed.step2,
-              ...parsed.step3,
-              personality: parsed.step4?.personality || formData.personality,
-              dealbreakers: parsed.step5?.dealbreakers || formData.dealbreakers,
-              prompts: parsed.step6?.prompts || [],
-              optional: parsed.step7?.optional || formData.optional
-            });
-            
-            if (parsed.step1?.gender === 'other') {
-              setShowCustomGender(true);
-            }
-            if (parsed.step1?.orientation === 'other') {
-              setShowCustomOrientation(true);
-            }
-          } catch (e) {
-            console.error('Error loading onboarding data:', e);
-          }
-        }
+        alert('Error loading profile. Please refresh the page.');
       }
     };
     
     loadProfileFromBackend();
-  }, [location.state]);
+  }, [location.state?.showOnlyIncomplete, location.state?.activeTab, location.state?.timestamp, location.pathname, location.key]);
 
   // Reset photo index when tab changes to preview
   useEffect(() => {
@@ -409,8 +587,188 @@ export default function EditProfileInfoPage() {
         console.log('✅ Bio saved');
       }
 
-      alert('Profile updated successfully!');
+      // After saving, reload profile data to update initialFormState and initialOptionalState
+      if (showOnlyIncomplete) {
+        // Reload profile data to get updated state
+        const response = await profileService.getMyProfile();
+        if (response.success && response.profile) {
+          const profile = response.profile;
+          const updatedFormData = { ...formData };
+          
+          // Update all form data from backend
+          if (profile.name) updatedFormData.name = profile.name;
+          if (profile.dob) {
+            const dobDate = new Date(profile.dob);
+            updatedFormData.dob = dobDate.toISOString().split('T')[0];
+          }
+          if (profile.gender) updatedFormData.gender = profile.gender;
+          if (profile.orientation) updatedFormData.orientation = profile.orientation;
+          // Looking For - ALWAYS set, even if empty
+          if (profile.lookingFor) {
+            updatedFormData.lookingFor = Array.isArray(profile.lookingFor) 
+              ? (profile.lookingFor.length > 0 ? profile.lookingFor[0] : '')
+              : profile.lookingFor;
+          } else {
+            updatedFormData.lookingFor = '';
+          }
+          if (profile.location && profile.location.city) updatedFormData.city = profile.location.city;
+          if (profile.ageRange) {
+            if (profile.ageRange.min) updatedFormData.ageRange.min = profile.ageRange.min;
+            // Treat 100 as empty (default value that shouldn't be shown)
+            if (profile.ageRange.max && profile.ageRange.max !== 100) {
+              updatedFormData.ageRange.max = profile.ageRange.max;
+            } else {
+              updatedFormData.ageRange.max = '';
+            }
+          }
+          if (profile.interests && profile.interests.length > 0) updatedFormData.interests = profile.interests;
+          if (profile.personality) {
+            Object.keys(profile.personality).forEach(key => {
+              if (profile.personality[key] && profile.personality[key] !== '') {
+                updatedFormData.personality[key] = profile.personality[key];
+              }
+            });
+          }
+          if (profile.dealbreakers) {
+            Object.keys(profile.dealbreakers).forEach(key => {
+              if (profile.dealbreakers[key] && profile.dealbreakers[key] !== '') {
+                updatedFormData.dealbreakers[key] = profile.dealbreakers[key];
+              }
+            });
+          }
+          if (profile.optional) {
+            if (profile.optional.education) updatedFormData.optional.education = profile.optional.education;
+            if (profile.optional.profession) updatedFormData.optional.profession = profile.optional.profession;
+            if (profile.optional.languages && profile.optional.languages.length > 0) {
+              updatedFormData.optional.languages = profile.optional.languages;
+            }
+            if (profile.optional.horoscope) updatedFormData.optional.horoscope = profile.optional.horoscope;
+            if (profile.optional.prompts && profile.optional.prompts.length > 0) {
+              updatedFormData.prompts = profile.optional.prompts;
+            }
+          }
+          
+          setFormData(updatedFormData);
+          
+          // Update initialFormState with saved data - use actual saved values, not defaults
+          const savedInitialState = {
+            name: profile.name || '',
+            dob: profile.dob ? new Date(profile.dob).toISOString().split('T')[0] : '',
+            gender: profile.gender || '',
+            orientation: profile.orientation || '',
+            lookingFor: profile.lookingFor 
+              ? (Array.isArray(profile.lookingFor) 
+                  ? (profile.lookingFor.length > 0 ? profile.lookingFor[0] : '')
+                  : profile.lookingFor)
+              : '',
+            city: profile.location?.city || '',
+            ageRange: profile.ageRange ? {
+              min: profile.ageRange.min || 18,
+              max: (profile.ageRange.max && profile.ageRange.max !== 100) ? profile.ageRange.max : ''
+            } : { min: 18, max: '' },
+            distancePref: profile.distancePref || 25,
+            interests: profile.interests || [],
+            personality: profile.personality || {
+              social: '',
+              planning: '',
+              romantic: '',
+              morning: '',
+              homebody: '',
+              serious: '',
+              decision: '',
+              communication: ''
+            },
+            dealbreakers: profile.dealbreakers || {
+              kids: '',
+              smoking: '',
+              pets: '',
+              drinking: '',
+              religion: ''
+            },
+            prompts: profile.optional?.prompts || [],
+            optional: profile.optional || {
+              education: '',
+              profession: '',
+              languages: [],
+              horoscope: ''
+            }
+          };
+          
+          setInitialFormState(savedInitialState);
+          console.log('✅ Initial form state updated after save:', savedInitialState);
+          
+          // Update initialOptionalState with saved data
+          if (profile.optional) {
+            setInitialOptionalState({
+              education: profile.optional.education || '',
+              profession: profile.optional.profession || '',
+              languages: profile.optional.languages || [],
+              horoscope: profile.optional.horoscope || ''
+            });
+          } else {
+            setInitialOptionalState({
+              education: '',
+              profession: '',
+              languages: [],
+              horoscope: ''
+            });
+          }
+          
+          // Update initialPhotos and initialBio with saved data
+          if (profile.photos && profile.photos.length > 0) {
+            const photosData = profile.photos.map(photo => ({
+              id: photo._id || photo.id,
+              preview: photo.url,
+              url: photo.url,
+              isMain: photo.isMain || false,
+              order: photo.order || 0
+            }));
+            setInitialPhotos(photosData);
+            setPhotos(photosData); // Also update current photos
+          } else {
+            setInitialPhotos([]);
+          }
+          
+          if (profile.bio) {
+            setInitialBio(profile.bio);
+            setBio(profile.bio); // Also update current bio
+          } else {
+            setInitialBio('');
+          }
+          
+          // Update formData with saved values
+          setFormData(updatedFormData);
+          
+          // Check if profile is now complete after saving
+          try {
+            const completionResponse = await profileService.checkProfileCompletion();
+            if (completionResponse.success && completionResponse.isComplete) {
+              // Profile is complete, navigate to profile page
       navigate('/profile');
+              return;
+            }
+    } catch (error) {
+            console.error('Error checking profile completion:', error);
+          }
+        }
+        
+        alert('Profile updated successfully! Only unfilled fields will now be shown.');
+      } else {
+        // Check if profile is complete before showing alert
+        try {
+          const completionResponse = await profileService.checkProfileCompletion();
+          if (completionResponse.success && completionResponse.isComplete) {
+            // Profile is complete, navigate to profile page
+            navigate('/profile');
+            return;
+          }
+        } catch (error) {
+          console.error('Error checking profile completion:', error);
+        }
+        
+        alert('Profile updated successfully!');
+        navigate('/profile');
+      }
     } catch (error) {
       console.error('❌ Error saving profile:', error);
       alert('Error saving profile. Please try again.');
@@ -439,23 +797,19 @@ export default function EditProfileInfoPage() {
 
   return (
     <div className="h-screen heart-background flex flex-col overflow-hidden relative">
-      <span className="heart-decoration">💕</span>
-      <span className="heart-decoration">💖</span>
-      <span className="heart-decoration">💗</span>
-      <span className="heart-decoration">💝</span>
-      <span className="heart-decoration">❤️</span>
-      <span className="heart-decoration">💓</span>
-      <div className="decoration-circle"></div>
-      <div className="decoration-circle"></div>
+      {/* Premium Decorative Background Elements */}
+      <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-gradient-to-br from-[#64B5F6]/8 to-transparent rounded-full blur-3xl -translate-x-1/3 -translate-y-1/3"></div>
+      <div className="absolute bottom-0 right-0 w-[700px] h-[700px] bg-gradient-to-tl from-[#42A5F5]/8 to-transparent rounded-full blur-3xl translate-x-1/3 translate-y-1/3"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-r from-[#90CAF9]/5 to-transparent rounded-full blur-3xl"></div>
       
       <div className="w-full h-full relative z-10 flex flex-col">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-gradient-to-br from-white to-[#FFF0F5] h-full w-full md:max-w-4xl md:mx-auto flex flex-col p-4 sm:p-6 md:p-6 relative overflow-hidden"
+          className="bg-gradient-to-br from-[#F5F7FA] via-[#E8ECF1] to-[#F5F7FA] h-full w-full md:max-w-4xl md:mx-auto flex flex-col p-4 sm:p-6 md:p-6 relative overflow-hidden"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent pointer-events-none"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-[#64B5F6]/5 to-transparent pointer-events-none"></div>
           
           {/* Header */}
           <div className="mb-6 sm:mb-8 relative z-10 flex-shrink-0">
@@ -463,14 +817,14 @@ export default function EditProfileInfoPage() {
               onClick={() => navigate('/profile')}
               whileHover={{ scale: 1.05, x: -2 }}
               whileTap={{ scale: 0.95 }}
-              className="flex items-center text-[#757575] hover:text-[#212121] mb-4 sm:mb-5 transition-colors"
+              className="flex items-center text-[#616161] hover:text-[#1A1A1A] mb-4 sm:mb-5 transition-colors"
             >
               <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
               <span className="text-sm sm:text-base font-medium">Back</span>
             </motion.button>
             <div className="flex items-center gap-3 mb-4">
               <div>
-                <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent">
+                <h1 className="text-xl sm:text-2xl font-bold text-[#1A1A1A] tracking-tight">
                   Edit Info
                 </h1>
               </div>
@@ -484,8 +838,8 @@ export default function EditProfileInfoPage() {
                 whileTap={{ scale: 0.98 }}
                 className={`flex-1 px-4 py-2.5 rounded-xl font-semibold text-sm sm:text-base transition-all ${
                   activeTab === 'edit'
-                    ? 'bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] text-white shadow-lg'
-                    : 'bg-white text-[#757575] border-2 border-[#FFB6C1] hover:border-[#FF91A4]'
+                    ? 'bg-[#64B5F6] hover:bg-[#42A5F5] text-white shadow-[0_4px_16px_rgba(100,181,246,0.3)]'
+                    : 'bg-white text-[#616161] border border-[#E8E8E8] hover:border-[#64B5F6] shadow-sm'
                 }`}
               >
                 Edit
@@ -496,8 +850,8 @@ export default function EditProfileInfoPage() {
                 whileTap={{ scale: 0.98 }}
                 className={`flex-1 px-4 py-2.5 rounded-xl font-semibold text-sm sm:text-base transition-all ${
                   activeTab === 'preview'
-                    ? 'bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] text-white shadow-lg'
-                    : 'bg-white text-[#757575] border-2 border-[#FFB6C1] hover:border-[#FF91A4]'
+                    ? 'bg-[#64B5F6] hover:bg-[#42A5F5] text-white shadow-[0_4px_16px_rgba(100,181,246,0.3)]'
+                    : 'bg-white text-[#616161] border border-[#E8E8E8] hover:border-[#64B5F6] shadow-sm'
                 }`}
               >
                 Preview
@@ -521,17 +875,15 @@ export default function EditProfileInfoPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl p-5 sm:p-6 border-2 border-[#FFB6C1] shadow-md hover:shadow-lg transition-shadow"
+                  className="bg-white rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-[#E8E8E8] shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)] transition-shadow"
                 >
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-md">
-                      <Upload className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                    </div>
+                    <Upload className="w-5 h-5 sm:w-6 sm:h-6 text-[#64B5F6]" />
                     <div>
-                      <label className="block text-sm sm:text-base font-bold text-[#212121]">
-                        Upload Your Photos <span className="text-[#FF91A4]">*</span>
+                      <label className="block text-sm sm:text-base font-bold text-[#1A1A1A] tracking-tight">
+                        Upload Your Photos <span className="text-[#64B5F6]">*</span>
                       </label>
-                      <p className="text-xs sm:text-sm text-[#757575] mt-1">
+                      <p className="text-xs sm:text-sm text-[#616161] mt-1 font-medium">
                         Add photos to show others who you are
                       </p>
                     </div>
@@ -546,7 +898,7 @@ export default function EditProfileInfoPage() {
                     <motion.p
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="text-xs sm:text-sm text-[#757575] mt-3"
+                      className="text-xs sm:text-sm text-[#616161] mt-3"
                     >
                       ✓ {photos.length} photo{photos.length > 1 ? 's' : ''} uploaded
                     </motion.p>
@@ -560,17 +912,15 @@ export default function EditProfileInfoPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl p-5 sm:p-6 border-2 border-[#FFB6C1] shadow-md hover:shadow-lg transition-shadow"
+                  className="bg-white rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-[#E8E8E8] shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)] transition-shadow"
                 >
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-md">
-                      <User className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                    </div>
+                    <User className="w-5 h-5 sm:w-6 sm:h-6 text-[#64B5F6]" />
                     <div>
-                      <label className="block text-sm sm:text-base font-bold text-[#212121]">
-                        Write Your Bio <span className="text-[#757575] text-xs font-normal">(Optional)</span>
+                      <label className="block text-sm sm:text-base font-bold text-[#1A1A1A] tracking-tight">
+                        Write Your Bio <span className="text-[#616161] text-xs font-normal">(Optional)</span>
                       </label>
-                      <p className="text-xs sm:text-sm text-[#757575] mt-1">
+                      <p className="text-xs sm:text-sm text-[#616161] mt-1 font-medium">
                         Tell others about yourself, your interests, and what you're looking for
                       </p>
                     </div>
@@ -584,13 +934,13 @@ export default function EditProfileInfoPage() {
                     }}
                     placeholder="Tell others about yourself..."
                     rows={5}
-                    className="w-full px-4 py-3 border-2 border-[#FFB6C1] rounded-xl sm:rounded-2xl text-sm sm:text-base text-[#212121] bg-white focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 focus:border-[#FF91A4] transition-all resize-none shadow-sm hover:shadow-md"
+                    className="w-full px-4 py-3 border border-[#E8E8E8] rounded-xl sm:rounded-2xl text-sm sm:text-base text-[#1A1A1A] bg-white focus:outline-none focus:ring-2 focus:ring-[#64B5F6] focus:ring-opacity-20 focus:border-[#64B5F6] transition-all resize-none shadow-sm hover:shadow-md font-medium"
                   />
                   <div className="flex justify-between items-center mt-3">
                     <p className={`text-xs sm:text-sm font-medium ${
                       bio.length > maxBioLength * 0.9 
-                        ? 'text-[#FF91A4]' 
-                        : 'text-[#757575]'
+                        ? 'text-[#64B5F6]' 
+                        : 'text-[#616161]'
                     }`}>
                       {bio.length}/{maxBioLength} characters
                     </p>
@@ -598,7 +948,7 @@ export default function EditProfileInfoPage() {
                       <motion.span
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="text-xs text-[#FF91A4] font-medium"
+                        className="text-xs text-[#64B5F6] font-medium"
                       >
                         ✓ Bio added
                       </motion.span>
@@ -613,49 +963,36 @@ export default function EditProfileInfoPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl p-5 sm:p-6 border-2 border-[#FFB6C1] shadow-md hover:shadow-lg transition-shadow"
+                  className="bg-white rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-[#E8E8E8] shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)] transition-shadow"
                 >
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-md">
-                      <UserCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                    </div>
-                    <label className="block text-sm sm:text-base font-bold text-[#212121]">
+                    <UserCircle className="w-5 h-5 sm:w-6 sm:h-6 text-[#64B5F6]" />
+                    <label className="block text-sm sm:text-base font-bold text-[#1A1A1A] tracking-tight">
                       Basic Information
                     </label>
                   </div>
                   
                   {/* Name */}
+                  {(!showOnlyIncomplete || !initialFormState?.name) && (
                   <div className="mb-4">
-                    <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5">
-                      Name <span className="text-[#FF91A4]">*</span>
+                    <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-1.5">
+                      Name <span className="text-[#64B5F6]">*</span>
                     </label>
                     <input
                       type="text"
                       value={formData.name}
                       onChange={(e) => handleChange('name', e.target.value)}
                       placeholder="Enter your full name"
-                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-[#FFB6C1] rounded-xl text-sm text-[#212121] focus:border-[#FF91A4] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-all shadow-sm"
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-[#E8E8E8] rounded-xl text-sm text-[#1A1A1A] focus:border-[#64B5F6] focus:outline-none focus:ring-2 focus:ring-[#64B5F6] focus:ring-opacity-20 transition-all shadow-sm font-medium"
                     />
                   </div>
-
-                  {/* Email */}
-                  <div className="mb-4">
-                    <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5">
-                      Email <span className="text-[#FF91A4]">*</span>
-                    </label>
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => handleChange('email', e.target.value)}
-                      placeholder="Enter your email address"
-                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-[#FFB6C1] rounded-xl text-sm text-[#212121] focus:border-[#FF91A4] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-all shadow-sm"
-                    />
-                  </div>
+                  )}
 
                   {/* Date of Birth */}
+                  {(!showOnlyIncomplete || !initialFormState?.dob) && (
                   <div className="mb-4">
-                    <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5">
-                      Age / Date of Birth <span className="text-[#FF91A4]">*</span>
+                    <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-1.5">
+                      Age / Date of Birth <span className="text-[#64B5F6]">*</span>
                     </label>
                     <CustomDatePicker
                       value={formData.dob}
@@ -663,14 +1000,16 @@ export default function EditProfileInfoPage() {
                       maxDate={getMaxDate()}
                     />
                     {age !== null && age >= 18 && (
-                      <p className="text-xs text-[#757575] mt-1">Age: {age} years</p>
+                      <p className="text-xs text-[#616161] mt-1">Age: {age} years</p>
                     )}
                   </div>
+                  )}
 
                   {/* Gender */}
+                  {(!showOnlyIncomplete || !initialFormState?.gender) && (
                   <div className="mb-4">
-                    <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5">
-                      Gender Identity <span className="text-[#FF91A4]">*</span>
+                    <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-1.5">
+                      Gender Identity <span className="text-[#64B5F6]">*</span>
                     </label>
                     <CustomDropdown
                       options={[
@@ -693,15 +1032,17 @@ export default function EditProfileInfoPage() {
                         value={formData.customGender}
                         onChange={(e) => handleChange('customGender', e.target.value)}
                         placeholder="Please specify your gender"
-                        className="w-full mt-2 px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-[#FFB6C1] rounded-xl text-sm text-[#212121] focus:border-[#FF91A4] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-all shadow-sm"
+                        className="w-full mt-2 px-3 sm:px-4 py-2.5 sm:py-3 border border-[#E8E8E8] rounded-xl text-sm text-[#1A1A1A] focus:border-[#64B5F6] focus:outline-none focus:ring-2 focus:ring-[#64B5F6] focus:ring-opacity-20 transition-all shadow-sm"
                       />
                     )}
                   </div>
+                  )}
 
                   {/* Orientation */}
+                  {(!showOnlyIncomplete || !initialFormState?.orientation) && (
                   <div className="mb-4">
-                    <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5">
-                      Sexual Orientation <span className="text-[#FF91A4]">*</span>
+                    <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-1.5">
+                      Sexual Orientation <span className="text-[#64B5F6]">*</span>
                     </label>
                     <CustomDropdown
                       options={[
@@ -725,29 +1066,31 @@ export default function EditProfileInfoPage() {
                         value={formData.customOrientation}
                         onChange={(e) => handleChange('customOrientation', e.target.value)}
                         placeholder="Please specify your orientation"
-                        className="w-full mt-2 px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-[#FFB6C1] rounded-xl text-sm text-[#212121] focus:border-[#FF91A4] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-all shadow-sm"
+                        className="w-full mt-2 px-3 sm:px-4 py-2.5 sm:py-3 border border-[#E8E8E8] rounded-xl text-sm text-[#1A1A1A] focus:border-[#64B5F6] focus:outline-none focus:ring-2 focus:ring-[#64B5F6] focus:ring-opacity-20 transition-all shadow-sm"
                       />
                     )}
                   </div>
+                  )}
 
                   {/* Looking For */}
+                  {(!showOnlyIncomplete || !initialFormState?.lookingFor) && (
                   <div className="mb-4">
-                    <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5">
-                      Looking For <span className="text-[#FF91A4]">*</span>
+                    <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-1.5">
+                      Looking For <span className="text-[#64B5F6]">*</span>
                     </label>
                     <CustomDropdown
                       options={[
-                        { value: '', label: 'Select what you are looking for' },
-                        { value: 'casual', label: 'Casual' },
-                        { value: 'relationship', label: 'Relationship' },
-                        { value: 'marriage', label: 'Marriage' },
-                        { value: 'friends', label: 'Friends' }
+                        { value: '', label: 'Select who you are looking for' },
+                        { value: 'men', label: 'Men' },
+                        { value: 'women', label: 'Women' },
+                        { value: 'everyone', label: 'Everyone' }
                       ]}
                       value={formData.lookingFor}
                       onChange={(value) => handleChange('lookingFor', value)}
-                      placeholder="Select what you are looking for"
+                      placeholder="Select who you are looking for"
                     />
                   </div>
+                  )}
                 </motion.div>
                 )}
 
@@ -757,35 +1100,37 @@ export default function EditProfileInfoPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl p-5 sm:p-6 border-2 border-[#FFB6C1] shadow-md hover:shadow-lg transition-shadow"
+                  className="bg-white rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-[#E8E8E8] shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)] transition-shadow"
                 >
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-md">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#64B5F6] rounded-xl flex items-center justify-center shadow-md">
                       <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
-                    <label className="block text-sm sm:text-base font-bold text-[#212121]">
+                    <label className="block text-sm sm:text-base font-bold text-[#1A1A1A]">
                       Location & Preferences
                     </label>
                   </div>
                   
                   {/* City */}
+                  {(!showOnlyIncomplete || !initialFormState?.city) && (
                   <div className="mb-4">
-                    <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5">
-                      City <span className="text-[#FF91A4]">*</span>
+                    <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-1.5">
+                      City <span className="text-[#64B5F6]">*</span>
                     </label>
                     <input
                       type="text"
                       value={formData.city}
                       onChange={(e) => handleChange('city', e.target.value)}
                       placeholder="Enter your city"
-                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-[#FFB6C1] rounded-xl text-sm text-[#212121] focus:border-[#FF91A4] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-all shadow-sm"
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-[#E8E8E8] rounded-xl text-sm text-[#1A1A1A] focus:border-[#64B5F6] focus:outline-none focus:ring-2 focus:ring-[#64B5F6] focus:ring-opacity-20 transition-all shadow-sm"
                     />
                   </div>
+                  )}
 
-                  {/* Age Range - Show if max is not filled */}
-                  {(!showOnlyIncomplete || !formData.ageRange?.max) && (
+                  {/* Age Range - Show if max is not filled initially */}
+                  {(!showOnlyIncomplete || !initialFormState.ageRange?.max) && (
                   <div className="mb-4">
-                    <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5">
+                    <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-1.5">
                       Age Range Preference
                     </label>
                     <div className="grid grid-cols-2 gap-3">
@@ -796,7 +1141,7 @@ export default function EditProfileInfoPage() {
                           value={formData.ageRange.min}
                           onChange={(e) => handleChange('ageRange', { ...formData.ageRange, min: parseInt(e.target.value) || 18 })}
                           placeholder="Min"
-                          className="w-full px-3 py-2.5 border-2 border-[#FFB6C1] rounded-xl text-sm text-[#212121] focus:border-[#FF91A4] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-all shadow-sm"
+                          className="w-full px-3 py-2.5 border border-[#E8E8E8] rounded-xl text-sm text-[#1A1A1A] focus:border-[#64B5F6] focus:outline-none focus:ring-2 focus:ring-[#64B5F6] focus:ring-opacity-20 transition-all shadow-sm"
                         />
                       </div>
                       <div>
@@ -806,7 +1151,7 @@ export default function EditProfileInfoPage() {
                           value={formData.ageRange.max}
                           onChange={(e) => handleChange('ageRange', { ...formData.ageRange, max: e.target.value ? parseInt(e.target.value) : '' })}
                           placeholder="Max"
-                          className="w-full px-3 py-2.5 border-2 border-[#FFB6C1] rounded-xl text-sm text-[#212121] focus:border-[#FF91A4] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-all shadow-sm"
+                          className="w-full px-3 py-2.5 border border-[#E8E8E8] rounded-xl text-sm text-[#1A1A1A] focus:border-[#64B5F6] focus:outline-none focus:ring-2 focus:ring-[#64B5F6] focus:ring-opacity-20 transition-all shadow-sm"
                         />
                       </div>
                     </div>
@@ -814,9 +1159,10 @@ export default function EditProfileInfoPage() {
                   )}
 
                   {/* Distance Preference */}
+                  {(!showOnlyIncomplete || !initialFormState?.distancePref) && (
                   <div className="mb-4">
-                    <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-1.5">
-                      Maximum Distance (km)
+                    <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-1.5">
+                      Maximum Distance (km) <span className="text-[#64B5F6]">*</span>
                     </label>
                     <div className="relative">
                       <input
@@ -829,19 +1175,20 @@ export default function EditProfileInfoPage() {
                         className="distance-slider w-full h-2 sm:h-3 bg-[#E0E0E0] rounded-lg appearance-none cursor-pointer"
                         style={{
                           background: `linear-gradient(to right, 
-                            #FF91A4 0%, 
-                            #FF69B4 ${((formData.distancePref - 5) / (100 - 5)) * 100}%, 
+                            #64B5F6 0%, 
+                            #42A5F5 ${((formData.distancePref - 5) / (100 - 5)) * 100}%, 
                             #E0E0E0 ${((formData.distancePref - 5) / (100 - 5)) * 100}%, 
                             #E0E0E0 100%)`
                         }}
                       />
                     </div>
-                    <div className="flex justify-between text-xs sm:text-sm text-[#757575] mt-1.5">
+                    <div className="flex justify-between text-xs sm:text-sm text-[#616161] mt-1.5">
                       <span>5 km</span>
-                      <span className="font-semibold text-[#FF91A4]">{formData.distancePref} km</span>
+                      <span className="font-semibold text-[#64B5F6]">{formData.distancePref} km</span>
                       <span>100 km</span>
                     </div>
                   </div>
+                  )}
                 </motion.div>
                 )}
 
@@ -851,13 +1198,13 @@ export default function EditProfileInfoPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
-                  className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl p-5 sm:p-6 border-2 border-[#FFB6C1] shadow-md hover:shadow-lg transition-shadow"
+                  className="bg-white rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-[#E8E8E8] shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)] transition-shadow"
                 >
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-md">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#64B5F6] rounded-xl flex items-center justify-center shadow-md">
                       <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
-                    <label className="block text-sm sm:text-base font-bold text-[#212121]">
+                    <label className="block text-sm sm:text-base font-bold text-[#1A1A1A]">
                       Your Interests
                     </label>
                   </div>
@@ -884,11 +1231,11 @@ export default function EditProfileInfoPage() {
                           whileTap={{ scale: 0.98 }}
                           className={`flex flex-col items-center justify-center gap-2 p-4 rounded-2xl transition-all border-2 ${
                             isSelected
-                              ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white border-[#FF91A4] shadow-md'
-                              : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
+                              ? 'bg-[#64B5F6] text-white border-[#64B5F6] shadow-md'
+                              : 'bg-white text-[#1A1A1A] border-[#E8E8E8] hover:border-[#64B5F6]'
                           }`}
                         >
-                          <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${isSelected ? 'text-white' : 'text-[#212121]'}`} />
+                          <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${isSelected ? 'text-white' : 'text-[#1A1A1A]'}`} />
                           <span className="text-xs sm:text-sm font-medium text-center">{interest.name}</span>
                         </motion.button>
                       );
@@ -903,13 +1250,13 @@ export default function EditProfileInfoPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.6 }}
-                  className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl p-5 sm:p-6 border-2 border-[#FFB6C1] shadow-md hover:shadow-lg transition-shadow"
+                  className="bg-white rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-[#E8E8E8] shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)] transition-shadow"
                 >
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-md">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#64B5F6] rounded-xl flex items-center justify-center shadow-md">
                       <Smile className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
-                    <label className="block text-sm sm:text-base font-bold text-[#212121]">
+                    <label className="block text-sm sm:text-base font-bold text-[#1A1A1A]">
                       Personality Traits
                     </label>
                   </div>
@@ -917,7 +1264,7 @@ export default function EditProfileInfoPage() {
                   <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-2">
                     {/* Social vs Introvert */}
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-2">
                         Social Style
                       </label>
                       <div className="grid grid-cols-2 gap-3">
@@ -936,11 +1283,11 @@ export default function EditProfileInfoPage() {
                               whileTap={{ scale: 0.98 }}
                               className={`px-4 py-3 rounded-xl border-2 text-sm font-semibold transition-all flex flex-col items-center gap-2 ${
                                 isSelected
-                                  ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white border-[#FF91A4] shadow-md'
-                                  : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
+                                  ? 'bg-[#64B5F6] text-white border-[#64B5F6] shadow-md'
+                                  : 'bg-white text-[#1A1A1A] border-[#E8E8E8] hover:border-[#64B5F6]'
                               }`}
                             >
-                              <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-[#FF91A4]'}`} />
+                              <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-[#64B5F6]'}`} />
                               <span>{option.label}</span>
                             </motion.button>
                           );
@@ -950,7 +1297,7 @@ export default function EditProfileInfoPage() {
 
                     {/* Planner vs Spontaneous */}
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-2">
                         Planning Style
                       </label>
                       <div className="grid grid-cols-2 gap-3">
@@ -969,11 +1316,11 @@ export default function EditProfileInfoPage() {
                               whileTap={{ scale: 0.98 }}
                               className={`px-4 py-3 rounded-xl border-2 text-sm font-semibold transition-all flex flex-col items-center gap-2 ${
                                 isSelected
-                                  ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white border-[#FF91A4] shadow-md'
-                                  : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
+                                  ? 'bg-[#64B5F6] text-white border-[#64B5F6] shadow-md'
+                                  : 'bg-white text-[#1A1A1A] border-[#E8E8E8] hover:border-[#64B5F6]'
                               }`}
                             >
-                              <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-[#FF91A4]'}`} />
+                              <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-[#64B5F6]'}`} />
                               <span>{option.label}</span>
                             </motion.button>
                           );
@@ -983,7 +1330,7 @@ export default function EditProfileInfoPage() {
 
                     {/* Romantic vs Practical */}
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-2">
                         Approach
                       </label>
                       <div className="grid grid-cols-2 gap-3">
@@ -1002,11 +1349,11 @@ export default function EditProfileInfoPage() {
                               whileTap={{ scale: 0.98 }}
                               className={`px-4 py-3 rounded-xl border-2 text-sm font-semibold transition-all flex flex-col items-center gap-2 ${
                                 isSelected
-                                  ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white border-[#FF91A4] shadow-md'
-                                  : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
+                                  ? 'bg-[#64B5F6] text-white border-[#64B5F6] shadow-md'
+                                  : 'bg-white text-[#1A1A1A] border-[#E8E8E8] hover:border-[#64B5F6]'
                               }`}
                             >
-                              <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-[#FF91A4]'}`} />
+                              <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-[#64B5F6]'}`} />
                               <span>{option.label}</span>
                             </motion.button>
                           );
@@ -1016,7 +1363,7 @@ export default function EditProfileInfoPage() {
 
                     {/* Morning vs Night */}
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-2">
                         Energy Time
                       </label>
                       <div className="grid grid-cols-2 gap-3">
@@ -1035,11 +1382,11 @@ export default function EditProfileInfoPage() {
                               whileTap={{ scale: 0.98 }}
                               className={`px-4 py-3 rounded-xl border-2 text-sm font-semibold transition-all flex flex-col items-center gap-2 ${
                                 isSelected
-                                  ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white border-[#FF91A4] shadow-md'
-                                  : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
+                                  ? 'bg-[#64B5F6] text-white border-[#64B5F6] shadow-md'
+                                  : 'bg-white text-[#1A1A1A] border-[#E8E8E8] hover:border-[#64B5F6]'
                               }`}
                             >
-                              <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-[#FF91A4]'}`} />
+                              <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-[#64B5F6]'}`} />
                               <span>{option.label}</span>
                             </motion.button>
                           );
@@ -1049,7 +1396,7 @@ export default function EditProfileInfoPage() {
 
                     {/* Homebody vs Adventurous */}
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-2">
                         Lifestyle
                       </label>
                       <div className="grid grid-cols-2 gap-3">
@@ -1068,11 +1415,11 @@ export default function EditProfileInfoPage() {
                               whileTap={{ scale: 0.98 }}
                               className={`px-4 py-3 rounded-xl border-2 text-sm font-semibold transition-all flex flex-col items-center gap-2 ${
                                 isSelected
-                                  ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white border-[#FF91A4] shadow-md'
-                                  : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
+                                  ? 'bg-[#64B5F6] text-white border-[#64B5F6] shadow-md'
+                                  : 'bg-white text-[#1A1A1A] border-[#E8E8E8] hover:border-[#64B5F6]'
                               }`}
                             >
-                              <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-[#FF91A4]'}`} />
+                              <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-[#64B5F6]'}`} />
                               <span>{option.label}</span>
                             </motion.button>
                           );
@@ -1082,7 +1429,7 @@ export default function EditProfileInfoPage() {
 
                     {/* Serious vs Fun */}
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-2">
                         Approach to Dating
                       </label>
                       <div className="grid grid-cols-2 gap-3">
@@ -1101,11 +1448,11 @@ export default function EditProfileInfoPage() {
                               whileTap={{ scale: 0.98 }}
                               className={`px-4 py-3 rounded-xl border-2 text-sm font-semibold transition-all flex flex-col items-center gap-2 ${
                                 isSelected
-                                  ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white border-[#FF91A4] shadow-md'
-                                  : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
+                                  ? 'bg-[#64B5F6] text-white border-[#64B5F6] shadow-md'
+                                  : 'bg-white text-[#1A1A1A] border-[#E8E8E8] hover:border-[#64B5F6]'
                               }`}
                             >
-                              <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-[#FF91A4]'}`} />
+                              <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-[#64B5F6]'}`} />
                               <span>{option.label}</span>
                             </motion.button>
                           );
@@ -1115,7 +1462,7 @@ export default function EditProfileInfoPage() {
 
                     {/* Decision Maker vs Go with Flow */}
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-2">
                         Decision Style
                       </label>
                       <div className="grid grid-cols-2 gap-3">
@@ -1134,11 +1481,11 @@ export default function EditProfileInfoPage() {
                               whileTap={{ scale: 0.98 }}
                               className={`px-4 py-3 rounded-xl border-2 text-sm font-semibold transition-all flex flex-col items-center gap-2 ${
                                 isSelected
-                                  ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white border-[#FF91A4] shadow-md'
-                                  : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
+                                  ? 'bg-[#64B5F6] text-white border-[#64B5F6] shadow-md'
+                                  : 'bg-white text-[#1A1A1A] border-[#E8E8E8] hover:border-[#64B5F6]'
                               }`}
                             >
-                              <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-[#FF91A4]'}`} />
+                              <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-[#64B5F6]'}`} />
                               <span>{option.label}</span>
                             </motion.button>
                           );
@@ -1148,7 +1495,7 @@ export default function EditProfileInfoPage() {
 
                     {/* Direct vs Subtle Communication */}
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-2">
                         Communication Style
                       </label>
                       <div className="grid grid-cols-2 gap-3">
@@ -1167,11 +1514,11 @@ export default function EditProfileInfoPage() {
                               whileTap={{ scale: 0.98 }}
                               className={`px-4 py-3 rounded-xl border-2 text-sm font-semibold transition-all flex flex-col items-center gap-2 ${
                                 isSelected
-                                  ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white border-[#FF91A4] shadow-md'
-                                  : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
+                                  ? 'bg-[#64B5F6] text-white border-[#64B5F6] shadow-md'
+                                  : 'bg-white text-[#1A1A1A] border-[#E8E8E8] hover:border-[#64B5F6]'
                               }`}
                             >
-                              <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-[#FF91A4]'}`} />
+                              <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-[#64B5F6]'}`} />
                               <span>{option.label}</span>
                             </motion.button>
                           );
@@ -1188,96 +1535,106 @@ export default function EditProfileInfoPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.7 }}
-                  className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl p-5 sm:p-6 border-2 border-[#FFB6C1] shadow-md hover:shadow-lg transition-shadow"
+                  className="bg-white rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-[#E8E8E8] shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)] transition-shadow"
                 >
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-md">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#64B5F6] rounded-xl flex items-center justify-center shadow-md">
                       <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
-                    <label className="block text-sm sm:text-base font-bold text-[#212121]">
+                    <label className="block text-sm sm:text-base font-bold text-[#1A1A1A]">
                       Dealbreakers
                     </label>
                   </div>
                   
                   <div className="space-y-4">
                     {/* Kids */}
+                    {(!showOnlyIncomplete || !initialFormState?.dealbreakers?.kids) && (
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                        Kids
+                      <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-2">
+                        Kids <span className="text-[#64B5F6]">*</span>
                       </label>
                       <CustomDropdown
                         options={[
                           { value: '', label: 'Select preference' },
-                          { value: 'want', label: 'Want' },
-                          { value: 'dont-want', label: "Don't Want" },
-                          { value: 'have', label: 'Have' },
-                          { value: 'open', label: 'Open' }
+                          { value: 'have-kids', label: 'Have Kids' },
+                          { value: 'want-kids', label: 'Want Kids' },
+                          { value: 'dont-want-kids', label: "Don't Want Kids" },
+                          { value: 'not-sure', label: 'Not Sure' }
                         ]}
                         value={formData.dealbreakers.kids}
                         onChange={(value) => handleChange('dealbreakers.kids', value)}
                         placeholder="Select preference"
                       />
                     </div>
+                    )}
 
                     {/* Smoking */}
+                    {(!showOnlyIncomplete || !initialFormState?.dealbreakers?.smoking) && (
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                        Smoking
+                      <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-2">
+                        Smoking <span className="text-[#64B5F6]">*</span>
                       </label>
                       <CustomDropdown
                         options={[
                           { value: '', label: 'Select preference' },
-                          { value: 'yes', label: 'Yes' },
-                          { value: 'no', label: 'No' },
-                          { value: 'sometimes', label: 'Sometimes' }
+                          { value: 'smoker', label: 'Smoker' },
+                          { value: 'non-smoker', label: 'Non-smoker' },
+                          { value: 'social-smoker', label: 'Social Smoker' },
+                          { value: 'prefer-non-smoker', label: 'Prefer Non-smoker' }
                         ]}
                         value={formData.dealbreakers.smoking}
                         onChange={(value) => handleChange('dealbreakers.smoking', value)}
                         placeholder="Select preference"
                       />
                     </div>
+                    )}
 
                     {/* Pets */}
+                    {(!showOnlyIncomplete || !initialFormState?.dealbreakers?.pets) && (
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                        Pets
+                      <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-2">
+                        Pets <span className="text-[#64B5F6]">*</span>
                       </label>
                       <CustomDropdown
                         options={[
                           { value: '', label: 'Select preference' },
-                          { value: 'love', label: 'Love' },
+                          { value: 'love-pets', label: 'Love Pets' },
+                          { value: 'have-pets', label: 'Have Pets' },
                           { value: 'allergic', label: 'Allergic' },
-                          { value: 'have', label: 'Have' },
-                          { value: 'dont-like', label: "Don't Like" }
+                          { value: 'not-interested', label: "Not Interested" }
                         ]}
                         value={formData.dealbreakers.pets}
                         onChange={(value) => handleChange('dealbreakers.pets', value)}
                         placeholder="Select preference"
                       />
                     </div>
+                    )}
 
                     {/* Drinking */}
+                    {(!showOnlyIncomplete || !initialFormState?.dealbreakers?.drinking) && (
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
-                        Drinking
+                      <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-2">
+                        Drinking <span className="text-[#64B5F6]">*</span>
                       </label>
                       <CustomDropdown
                         options={[
                           { value: '', label: 'Select preference' },
-                          { value: 'yes', label: 'Yes' },
-                          { value: 'no', label: 'No' },
-                          { value: 'sometimes', label: 'Sometimes' }
+                          { value: 'never', label: 'Never' },
+                          { value: 'occasionally', label: 'Occasionally' },
+                          { value: 'socially', label: 'Socially' },
+                          { value: 'regularly', label: 'Regularly' }
                         ]}
                         value={formData.dealbreakers.drinking}
                         onChange={(value) => handleChange('dealbreakers.drinking', value)}
                         placeholder="Select preference"
                       />
                     </div>
+                    )}
 
-                    {/* Religion - Show if not filled */}
-                    {(!showOnlyIncomplete || !formData.dealbreakers?.religion) && (
+                    {/* Religion - Show if not filled initially */}
+                    {(!showOnlyIncomplete || !initialFormState.dealbreakers?.religion) && (
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-2">
                         Religion
                       </label>
                       <input
@@ -1285,7 +1642,7 @@ export default function EditProfileInfoPage() {
                         value={formData.dealbreakers.religion}
                         onChange={(e) => handleChange('dealbreakers.religion', e.target.value)}
                         placeholder="Enter religion (optional)"
-                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-[#FFB6C1] rounded-xl text-sm text-[#212121] focus:border-[#FF91A4] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-all shadow-sm"
+                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-[#E8E8E8] rounded-xl text-sm text-[#1A1A1A] focus:border-[#64B5F6] focus:outline-none focus:ring-2 focus:ring-[#64B5F6] focus:ring-opacity-20 transition-all shadow-sm"
                       />
                     </div>
                     )}
@@ -1299,18 +1656,18 @@ export default function EditProfileInfoPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.8 }}
-                  className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl p-5 sm:p-6 border-2 border-[#FFB6C1] shadow-md hover:shadow-lg transition-shadow"
+                  className="bg-white rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-[#E8E8E8] shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)] transition-shadow"
                 >
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-md">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#64B5F6] rounded-xl flex items-center justify-center shadow-md">
                       <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
-                    <label className="block text-sm sm:text-base font-bold text-[#212121]">
+                    <label className="block text-sm sm:text-base font-bold text-[#1A1A1A]">
                       Prompts
                     </label>
                   </div>
                   
-                  <p className="text-xs sm:text-sm text-[#757575] mb-4">
+                  <p className="text-xs sm:text-sm text-[#616161] mb-4">
                     Select at least 3 prompts and answer them to help others know you better
                   </p>
 
@@ -1366,13 +1723,13 @@ export default function EditProfileInfoPage() {
                             whileTap={{ scale: 0.98 }}
                             className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all ${
                               isSelected
-                                ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white border-[#FF91A4] shadow-md'
-                                : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
+                                ? 'bg-[#64B5F6] text-white border-[#64B5F6] shadow-md'
+                                : 'bg-white text-[#1A1A1A] border-[#E8E8E8] hover:border-[#64B5F6]'
                             }`}
                           >
                             <div className="flex items-center gap-2">
                               <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                                isSelected ? 'border-white' : 'border-[#FF91A4]'
+                                isSelected ? 'border-white' : 'border-[#64B5F6]'
                               }`}>
                                 {isSelected && (
                                   <motion.div
@@ -1402,7 +1759,7 @@ export default function EditProfileInfoPage() {
                                 }}
                                 placeholder="Type your answer here..."
                                 rows={3}
-                                className="w-full px-4 py-3 border-2 border-[#FFB6C1] rounded-xl text-sm text-[#212121] focus:border-[#FF91A4] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-all resize-none shadow-sm"
+                                className="w-full px-4 py-3 border border-[#E8E8E8] rounded-xl text-sm text-[#1A1A1A] focus:border-[#64B5F6] focus:outline-none focus:ring-2 focus:ring-[#64B5F6] focus:ring-opacity-20 transition-all resize-none shadow-sm"
                               />
                             </motion.div>
                           )}
@@ -1416,7 +1773,7 @@ export default function EditProfileInfoPage() {
                       initial={{ opacity: 0, y: -5 }}
                       animate={{ opacity: 1, y: 0 }}
                       className={`text-xs sm:text-sm mt-3 font-medium ${
-                        formData.prompts.length >= 3 ? 'text-[#FF91A4]' : 'text-[#757575]'
+                        formData.prompts.length >= 3 ? 'text-[#64B5F6]' : 'text-[#616161]'
                       }`}
                     >
                       {formData.prompts.length >= 3 ? '✓ ' : ''}
@@ -1426,61 +1783,69 @@ export default function EditProfileInfoPage() {
                 </motion.div>
                 )}
 
-                {/* Section 9: Optional Info (Step 7) */}
+                {/* Section 9: Optional Info (Step 7) - Always show section if incomplete, then show individual fields based on initial state */}
                 {(!showOnlyIncomplete || incompleteSections.step7) && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.9 }}
-                  className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-xl sm:rounded-2xl p-5 sm:p-6 border-2 border-[#FFB6C1] shadow-md hover:shadow-lg transition-shadow"
+                  className="bg-white rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-[#E8E8E8] shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)] transition-shadow"
                 >
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-xl flex items-center justify-center shadow-md">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#64B5F6] rounded-xl flex items-center justify-center shadow-md">
                       <Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
-                    <label className="block text-sm sm:text-base font-bold text-[#212121]">
+                    <label className="block text-sm sm:text-base font-bold text-[#1A1A1A]">
                       Additional Information
                     </label>
                   </div>
                   
                   <div className="space-y-4">
-                    {/* Education */}
+                    {/* Education - Show if not filled initially */}
+                    {(!showOnlyIncomplete || !initialOptionalState.education || initialOptionalState.education === '') && (
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-2">
                         Education
                       </label>
                       <CustomDropdown
                         options={[
-                          { value: '', label: 'Select education' },
-                          { value: 'high-school', label: 'High school' },
-                          { value: 'bachelors', label: "Bachelor's" },
-                          { value: 'masters', label: "Master's" },
+                          { value: '', label: 'Select education (optional)' },
+                          { value: 'high-school', label: 'High School' },
+                          { value: 'diploma', label: 'Diploma' },
+                          { value: 'bachelors', label: "Bachelor's Degree" },
+                          { value: 'masters', label: "Master's Degree" },
                           { value: 'phd', label: 'PhD' },
-                          { value: 'other', label: 'Other' }
+                          { value: 'professional', label: 'Professional Degree' },
+                          { value: 'other', label: 'Other' },
+                          { value: 'prefer-not-to-say', label: 'Prefer not to say' }
                         ]}
                         value={formData.optional.education}
                         onChange={(value) => handleChange('optional.education', value)}
-                        placeholder="Select education"
+                        placeholder="Select education (optional)"
                       />
                     </div>
+                    )}
 
-                    {/* Profession */}
+                    {/* Profession - Show if not filled initially (always show when section is visible) */}
+                    {(!showOnlyIncomplete || !initialOptionalState.profession || initialOptionalState.profession === '') && (
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-2">
                         Profession
                       </label>
                       <input
                         type="text"
-                        value={formData.optional.profession}
+                        value={formData.optional?.profession || ''}
                         onChange={(e) => handleChange('optional.profession', e.target.value)}
                         placeholder="Enter your profession"
-                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-[#FFB6C1] rounded-xl text-sm text-[#212121] focus:border-[#FF91A4] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20 transition-all shadow-sm"
+                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-[#E8E8E8] rounded-xl text-sm text-[#1A1A1A] focus:border-[#64B5F6] focus:outline-none focus:ring-2 focus:ring-[#64B5F6] focus:ring-opacity-20 transition-all shadow-sm"
                       />
                     </div>
+                    )}
 
-                    {/* Languages */}
+                    {/* Languages - Show if not filled initially */}
+                    {(!showOnlyIncomplete || !initialOptionalState || !initialOptionalState.languages || !Array.isArray(initialOptionalState.languages) || initialOptionalState.languages.length === 0) && (
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-2">
                         Languages
                       </label>
                       <div className="flex flex-wrap gap-2">
@@ -1502,8 +1867,8 @@ export default function EditProfileInfoPage() {
                               whileTap={{ scale: 0.95 }}
                               className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all border-2 ${
                                 isSelected
-                                  ? 'bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] text-white border-[#FF91A4] shadow-md'
-                                  : 'bg-white text-[#212121] border-[#FFB6C1] hover:border-[#FF91A4]'
+                                  ? 'bg-[#64B5F6] text-white border-[#64B5F6] shadow-md'
+                                  : 'bg-white text-[#1A1A1A] border-[#E8E8E8] hover:border-[#64B5F6]'
                               }`}
                             >
                               {lang}
@@ -1512,11 +1877,11 @@ export default function EditProfileInfoPage() {
                         })}
                       </div>
                     </div>
-
-                    {/* Horoscope - Show if not filled */}
-                    {(!showOnlyIncomplete || !formData.optional?.horoscope) && (
+                    )}
+                    {/* Horoscope - Show if not filled initially (based on initial state) */}
+                    {(!showOnlyIncomplete || !initialOptionalState.horoscope || initialOptionalState.horoscope === '') && (
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-[#212121] mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-[#1A1A1A] mb-2">
                         Horoscope Sign
                       </label>
                       <CustomDropdown
@@ -1550,13 +1915,13 @@ export default function EditProfileInfoPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1.0 }}
-                  className="pt-4 sm:pt-6 border-t border-[#FFB6C1] relative z-10 flex-shrink-0"
+                  className="pt-4 sm:pt-6 border-t border-[#E8E8E8] relative z-10 flex-shrink-0"
                 >
                   <motion.button
                     onClick={handleSave}
                     whileHover={{ scale: 1.02, y: -1 }}
                     whileTap={{ scale: 0.98 }}
-                    className="w-full bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] text-white font-semibold py-3 sm:py-4 rounded-xl sm:rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+                    className="w-full bg-[#64B5F6] hover:bg-[#42A5F5] text-white font-semibold py-3 sm:py-4 rounded-xl sm:rounded-2xl transition-all flex items-center justify-center gap-2 shadow-[0_4px_16px_rgba(100,181,246,0.3)] hover:shadow-[0_8px_24px_rgba(100,181,246,0.4)]"
                   >
                     <span className="text-sm sm:text-base">Save Changes</span>
                   </motion.button>
@@ -1582,17 +1947,17 @@ export default function EditProfileInfoPage() {
                           onClick={() => setCurrentPhotoIndex(index)}
                           className={`h-1 flex-1 rounded-full transition-all duration-300 ${
                             index === currentPhotoIndex
-                              ? 'bg-gradient-to-r from-[#FF91A4] to-[#FF69B4]'
+                              ? 'bg-[#64B5F6] hover:bg-[#42A5F5]'
                               : index < currentPhotoIndex
-                              ? 'bg-[#FF91A4]'
-                              : 'bg-[#FFB6C1]/30'
+                              ? 'bg-[#64B5F6]/50'
+                              : 'bg-[#E8E8E8]'
                           }`}
                         />
                       ))}
                     </div>
 
                     {/* Photo Display Area */}
-                    <div className="relative w-full aspect-[9/16] max-h-[80vh] rounded-2xl overflow-hidden shadow-xl border-2 border-[#FFB6C1] bg-black">
+                    <div className="relative w-full aspect-[9/16] max-h-[80vh] rounded-2xl overflow-hidden shadow-xl border border-[#E8E8E8] bg-black">
                       <AnimatePresence mode="wait">
                         <motion.div
                           key={currentPhotoIndex}
@@ -1650,8 +2015,8 @@ export default function EditProfileInfoPage() {
                           onClick={() => setCurrentPhotoIndex(index)}
                           className={`w-2 h-2 rounded-full transition-all ${
                             index === currentPhotoIndex
-                              ? 'bg-[#FF91A4] w-6'
-                              : 'bg-[#FFB6C1]/50 hover:bg-[#FFB6C1]'
+                              ? 'bg-[#64B5F6] w-6'
+                              : 'bg-[#E8E8E8] hover:bg-[#64B5F6]/50'
                           }`}
                         />
                       ))}
@@ -1659,8 +2024,8 @@ export default function EditProfileInfoPage() {
                   </div>
                 ) : (
                   <div className="text-center">
-                    <User className="w-24 h-24 sm:w-32 sm:h-32 text-[#FF91A4] mx-auto mb-4" />
-                    <p className="text-[#757575] text-sm sm:text-base">
+                    <User className="w-24 h-24 sm:w-32 sm:h-32 text-[#64B5F6] mx-auto mb-4" />
+                    <p className="text-[#616161] text-sm sm:text-base">
                       No photos uploaded yet
                     </p>
                   </div>
