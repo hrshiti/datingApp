@@ -208,12 +208,12 @@ export default function CustomDatePicker({
           error
             ? 'border-red-500 focus:border-red-600'
             : isOpen
-            ? 'border-[#FF91A4] bg-white'
-            : 'border-[#FFB6C1] hover:border-[#FF91A4]'
-        } bg-white text-[#212121] focus:outline-none focus:ring-2 focus:ring-[#FF91A4] focus:ring-opacity-20`}
+            ? 'border-[#64B5F6] bg-white'
+            : 'border-[#E8E8E8] hover:border-[#64B5F6]'
+        } bg-white text-[#1A1A1A] focus:outline-none focus:ring-2 focus:ring-[#64B5F6] focus:ring-opacity-20 shadow-sm`}
       >
-        <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#757575] w-4 h-4 pointer-events-none" />
-        <span className={value ? 'text-[#212121]' : 'text-[#757575]'}>
+        <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#616161] w-4 h-4 pointer-events-none" />
+        <span className={value ? 'text-[#1A1A1A]' : 'text-[#616161]'}>
           {formatDate(value)}
         </span>
         </button>
@@ -227,7 +227,7 @@ export default function CustomDatePicker({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-            className="fixed bg-white border-2 border-[#FFB6C1] rounded-xl shadow-2xl p-3 md:p-2 w-full md:w-auto"
+            className="fixed bg-white border border-[#E8E8E8] rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] p-3 md:p-2 w-full md:w-auto"
             style={{ 
               position: 'fixed',
               top: `${calendarPosition.top}px`,
@@ -246,10 +246,10 @@ export default function CustomDatePicker({
                   e.stopPropagation();
                   navigateMonth('prev');
                 }}
-                className="p-1 md:p-0.5 hover:bg-[#FFF0F0] rounded transition-colors"
+                className="p-1 md:p-0.5 hover:bg-[#F5F5F5] rounded transition-colors"
                 title="Previous month"
               >
-                <ChevronLeft className="w-5 h-5 md:w-4 md:h-4 text-[#757575]" />
+                <ChevronLeft className="w-5 h-5 md:w-4 md:h-4 text-[#616161]" />
               </button>
               <div className="flex items-center gap-2">
                 {/* Month Selector */}
@@ -260,7 +260,7 @@ export default function CustomDatePicker({
                     e.stopPropagation();
                     setShowYearPicker(false);
                   }}
-                  className="px-2 py-1 md:px-1.5 md:py-0.5 text-sm md:text-xs font-semibold text-[#212121] hover:bg-[#FFF0F0] rounded transition-colors"
+                  className="px-2 py-1 md:px-1.5 md:py-0.5 text-sm md:text-xs font-semibold text-[#1A1A1A] hover:bg-[#F5F5F5] rounded transition-colors"
                 >
                   {monthNames[currentMonth.getMonth()]}
                 </button>
@@ -273,11 +273,11 @@ export default function CustomDatePicker({
                       e.stopPropagation();
                       setShowYearPicker(!showYearPicker);
                     }}
-                    className="px-2 py-1 md:px-1.5 md:py-0.5 text-sm md:text-xs font-semibold text-[#FF91A4] hover:bg-[#FFE4E1] rounded transition-colors flex items-center gap-1"
+                    className="px-2 py-1 md:px-1.5 md:py-0.5 text-sm md:text-xs font-semibold text-[#64B5F6] hover:bg-[#E3F2FD] rounded transition-colors flex items-center gap-1"
                   >
                     {currentMonth.getFullYear()}
                     <ChevronRight 
-                      className={`w-3 h-3 md:w-2.5 md:h-2.5 text-[#FF91A4] transition-transform ${showYearPicker ? 'rotate-90' : ''}`} 
+                      className={`w-3 h-3 md:w-2.5 md:h-2.5 text-[#64B5F6] transition-transform ${showYearPicker ? 'rotate-90' : ''}`} 
                     />
                   </button>
                   
@@ -289,7 +289,7 @@ export default function CustomDatePicker({
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -10, scale: 0.95 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute top-full left-0 mt-1 bg-white border-2 border-[#FFB6C1] rounded-xl shadow-2xl p-2 md:p-1.5 max-h-48 md:max-h-40 overflow-y-auto"
+                        className="absolute top-full left-0 mt-1 bg-white border border-[#E8E8E8] rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] p-2 md:p-1.5 max-h-48 md:max-h-40 overflow-y-auto"
                         style={{ zIndex: 100000, width: '120px' }}
                       >
                         <div className="flex items-center justify-between mb-2 md:mb-1 px-1">
@@ -302,12 +302,12 @@ export default function CustomDatePicker({
                               const newYear = Math.max(currentYear - 10, getYearList()[getYearList().length - 1]);
                               handleYearSelect(newYear);
                             }}
-                            className="p-1 md:p-0.5 hover:bg-[#FFF0F0] rounded transition-colors"
+                            className="p-1 md:p-0.5 hover:bg-[#F5F5F5] rounded transition-colors"
                             title="Previous 10 years"
                           >
                             <ChevronLeft className="w-4 h-4 md:w-3 md:h-3 text-[#757575]" />
                           </button>
-                          <span className="text-xs md:text-[10px] font-medium text-[#757575]">Year</span>
+                          <span className="text-xs md:text-[10px] font-medium text-[#616161]">Year</span>
                           <button
                             type="button"
                             onClick={(e) => {
@@ -318,7 +318,7 @@ export default function CustomDatePicker({
                               const newYear = Math.min(currentYear + 10, maxYear);
                               handleYearSelect(newYear);
                             }}
-                            className="p-1 md:p-0.5 hover:bg-[#FFF0F0] rounded transition-colors"
+                            className="p-1 md:p-0.5 hover:bg-[#F5F5F5] rounded transition-colors"
                             title="Next 10 years"
                           >
                             <ChevronRight className="w-4 h-4 md:w-3 md:h-3 text-[#757575]" />
@@ -343,8 +343,8 @@ export default function CustomDatePicker({
                                   isDisabled
                                     ? 'text-[#E0E0E0] cursor-not-allowed'
                                     : isSelected
-                                    ? 'bg-[#FF91A4] text-white font-semibold'
-                                    : 'text-[#212121] hover:bg-[#FFF0F0]'
+                                    ? 'bg-[#64B5F6] text-white font-semibold'
+                                    : 'text-[#1A1A1A] hover:bg-[#F5F5F5]'
                                 }`}
                               >
                                 {year}
@@ -364,17 +364,17 @@ export default function CustomDatePicker({
                   e.stopPropagation();
                   navigateMonth('next');
                 }}
-                className="p-1 md:p-0.5 hover:bg-[#FFF0F0] rounded transition-colors"
+                className="p-1 md:p-0.5 hover:bg-[#F5F5F5] rounded transition-colors"
                 title="Next month"
               >
-                <ChevronRight className="w-5 h-5 md:w-4 md:h-4 text-[#757575]" />
+                <ChevronRight className="w-5 h-5 md:w-4 md:h-4 text-[#616161]" />
               </button>
             </div>
 
             {/* Week Days */}
             <div className="grid grid-cols-7 gap-1 md:gap-0.5 mb-2 md:mb-1">
               {weekDays.map(day => (
-                <div key={day} className="text-xs md:text-[10px] text-center text-[#757575] font-medium py-1 md:py-0.5">
+                <div key={day} className="text-xs md:text-[10px] text-center text-[#616161] font-medium py-1 md:py-0.5">
                   {day}
                 </div>
               ))}
@@ -404,8 +404,8 @@ export default function CustomDatePicker({
                       disabled
                         ? 'text-[#E0E0E0] cursor-not-allowed'
                         : selected
-                        ? 'bg-[#FF91A4] text-white'
-                        : 'text-[#212121] hover:bg-[#FFF0F0]'
+                        ? 'bg-[#64B5F6] text-white'
+                        : 'text-[#1A1A1A] hover:bg-[#F5F5F5]'
                     }`}
                   >
                     {day}
