@@ -13,6 +13,9 @@ export default function OnboardingPage() {
   const location = useLocation();
   const totalSteps = 10;
   
+  // Check if we should show only incomplete fields
+  const [showOnlyIncomplete, setShowOnlyIncomplete] = useState(location.state?.showOnlyIncomplete || false);
+  
   // Check if we should start from step 2 (after basic info)
   const startStep = location.state?.startFromStep || location.state?.skipBasicInfo ? 2 : 1;
   const [currentStep, setCurrentStep] = useState(startStep);
@@ -76,76 +79,307 @@ export default function OnboardingPage() {
   const [showCustomGender, setShowCustomGender] = useState(false);
   const [showCustomOrientation, setShowCustomOrientation] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+  
+  // Track initial state to determine which fields are filled
+  const [initialFormState, setInitialFormState] = useState({
+    name: '',
+    dob: '',
+    gender: '',
+    orientation: '',
+    lookingFor: '',
+    city: '',
+    ageRange: { min: 18, max: '' },
+    distancePref: 25,
+    interests: [],
+    personality: {
+      social: '',
+      planning: '',
+      romantic: '',
+      morning: '',
+      homebody: '',
+      serious: '',
+      decision: '',
+      communication: ''
+    },
+    dealbreakers: {
+      kids: '',
+      smoking: '',
+      pets: '',
+      drinking: '',
+      religion: ''
+    },
+    prompts: [],
+    optional: {
+      education: '',
+      profession: '',
+      languages: [],
+      horoscope: ''
+    },
+    photos: [],
+    bio: ''
+  });
   
   const maxBioLength = 200;
   const minPhotos = 4;
   const maxPhotos = 6;
 
-  // Load saved data from localStorage and check if coming from "Complete Details"
+  // Load saved data from backend and check if coming from "Complete Details"
   useEffect(() => {
+    const shouldSkipBasicInfo = location.state?.skipBasicInfo || location.state?.startFromStep === 2;
+    // Update showOnlyIncomplete from location state
+    setShowOnlyIncomplete(location.state?.showOnlyIncomplete || false);
+    
+    // Always load from backend first to get latest data
+    const loadProfileFromBackend = async () => {
+      setIsLoadingProfile(true);
+      try {
+        const response = await profileService.getMyProfile();
+        
+        if (response.success && response.profile) {
+          const profile = response.profile;
+          
+          // Load all profile data
+          const loadedData = {
+            // Step 1
+            name: profile.name || '',
+            dob: profile.dob ? new Date(profile.dob).toISOString().split('T')[0] : '',
+            gender: profile.gender || '',
+            customGender: profile.customGender || '',
+            orientation: profile.orientation || '',
+            customOrientation: profile.customOrientation || '',
+            lookingFor: Array.isArray(profile.lookingFor) ? profile.lookingFor[0] : profile.lookingFor || '',
+            // Step 2
+            city: profile.location?.city || '',
+            ageRange: profile.ageRange ? {
+              min: profile.ageRange.min || 18,
+              max: (profile.ageRange.max && profile.ageRange.max !== 100) ? profile.ageRange.max : ''
+            } : { min: 18, max: '' },
+            distancePref: profile.distancePref || 25,
+            // Step 3
+            interests: profile.interests || [],
+            // Step 4
+            personality: profile.personality || {
+              social: '',
+              planning: '',
+              romantic: '',
+              morning: '',
+              homebody: '',
+              serious: '',
+              decision: '',
+              communication: ''
+            },
+            // Step 5
+            dealbreakers: profile.dealbreakers || {
+              kids: '',
+              smoking: '',
+              pets: '',
+              drinking: '',
+              religion: ''
+            },
+            // Step 6
+            prompts: profile.optional?.prompts || [],
+            // Step 7
+            optional: profile.optional || {
+              education: '',
+              profession: '',
+              languages: [],
+              horoscope: ''
+            },
+            // Step 8
+            photos: profile.photos?.map(p => ({
+              id: p._id || p.id,
+              preview: p.url,
+              url: p.url,
+              isMain: p.isMain || false,
+              order: p.order || 0
+            })) || [],
+            bio: profile.bio || ''
+          };
+          
+          setFormData(prev => ({ ...prev, ...loadedData }));
+          
+          // Store initial state to track which fields are filled
+          setInitialFormState({
+            name: loadedData.name,
+            dob: loadedData.dob,
+            gender: loadedData.gender,
+            orientation: loadedData.orientation,
+            lookingFor: loadedData.lookingFor,
+            city: loadedData.city,
+            ageRange: loadedData.ageRange,
+            distancePref: loadedData.distancePref,
+            interests: loadedData.interests,
+            personality: loadedData.personality,
+            dealbreakers: loadedData.dealbreakers,
+            prompts: loadedData.prompts,
+            optional: loadedData.optional,
+            photos: loadedData.photos,
+            bio: loadedData.bio
+          });
+          
+          // Set custom gender/orientation visibility
+          if (loadedData.gender === 'other') {
+            setShowCustomGender(true);
+          }
+          if (loadedData.orientation === 'other') {
+            setShowCustomOrientation(true);
+          }
+          
+          // If showOnlyIncomplete is true, always find first incomplete step (ignore shouldSkipBasicInfo)
+          const isShowOnlyIncomplete = location.state?.showOnlyIncomplete || false;
+          if (isShowOnlyIncomplete) {
+            // Find first incomplete step - check all mandatory fields
+            let firstIncompleteStep = 1;
+            
+            // Check Step 1 (Basic Info)
+            if (!loadedData.name || !loadedData.dob || !loadedData.gender || !loadedData.orientation || !loadedData.lookingFor) {
+              firstIncompleteStep = 1;
+            }
+            // Check Step 2 (Location & Preferences)
+            else if (!loadedData.city || !loadedData.ageRange?.max || !loadedData.distancePref) {
+              firstIncompleteStep = 2;
+            }
+            // Check Step 3 (Interests)
+            else if (!loadedData.interests || loadedData.interests.length < 3) {
+              firstIncompleteStep = 3;
+            }
+            // Check Step 4 (Personality)
+            else if (!loadedData.personality || !loadedData.personality.social || !loadedData.personality.planning || 
+                     !loadedData.personality.romantic || !loadedData.personality.morning || !loadedData.personality.homebody ||
+                     !loadedData.personality.serious || !loadedData.personality.decision || !loadedData.personality.communication) {
+              firstIncompleteStep = 4;
+            }
+            // Check Step 5 (Dealbreakers)
+            else if (!loadedData.dealbreakers || !loadedData.dealbreakers.kids || !loadedData.dealbreakers.smoking ||
+                     !loadedData.dealbreakers.pets || !loadedData.dealbreakers.drinking) {
+              firstIncompleteStep = 5;
+            }
+            // Check Step 6 (Prompts)
+            else if (!loadedData.prompts || loadedData.prompts.length < 3 || 
+                     loadedData.prompts.some(p => !p.answer || p.answer.trim() === '')) {
+              firstIncompleteStep = 6;
+            }
+            // Check Step 7 (Optional Info - Languages mandatory)
+            else if (!loadedData.optional || !loadedData.optional.languages || loadedData.optional.languages.length === 0) {
+              firstIncompleteStep = 7;
+            }
+            // Check Step 8 (Photos - 4 photos mandatory)
+            else if (!loadedData.photos || loadedData.photos.length < 4) {
+              firstIncompleteStep = 8;
+            }
+            // All mandatory steps complete - check if profile is actually complete
+            else {
+              // Check if profile is complete using backend API
+              try {
+                const completionResponse = await profileService.checkProfileCompletion();
+                if (completionResponse.success && completionResponse.isComplete) {
+                  // Profile is complete, navigate to people page
+                  navigate('/people');
+                  return;
+                } else {
+                  // Profile not complete, but all mandatory steps are done
+                  // This shouldn't happen, but if it does, navigate to people page
+                  navigate('/people');
+                  return;
+                }
+              } catch (error) {
+                console.error('Error checking profile completion:', error);
+                // If error, assume complete and navigate to people page
+                navigate('/people');
+                return;
+              }
+            }
+            
+            setCurrentStep(firstIncompleteStep);
+          } else if (shouldSkipBasicInfo) {
+            // Start from step 2 (after basic info) - only if not showOnlyIncomplete
+            setCurrentStep(2);
+          } else {
+            // Find first incomplete step (normal flow)
+            let firstIncompleteStep = 1;
+            
+            // Check Step 1
+            if (!loadedData.name || !loadedData.dob || !loadedData.gender || !loadedData.orientation || !loadedData.lookingFor) {
+              firstIncompleteStep = 1;
+            }
+            // Check Step 2
+            else if (!loadedData.city || !loadedData.ageRange?.max || !loadedData.distancePref) {
+              firstIncompleteStep = 2;
+            }
+            // Check Step 3
+            else if (!loadedData.interests || loadedData.interests.length < 3) {
+              firstIncompleteStep = 3;
+            }
+            // Check Step 4
+            else if (!loadedData.personality || !loadedData.personality.social || !loadedData.personality.planning || 
+                     !loadedData.personality.romantic || !loadedData.personality.morning || !loadedData.personality.homebody ||
+                     !loadedData.personality.serious || !loadedData.personality.decision || !loadedData.personality.communication) {
+              firstIncompleteStep = 4;
+            }
+            // Check Step 5
+            else if (!loadedData.dealbreakers || !loadedData.dealbreakers.kids || !loadedData.dealbreakers.smoking ||
+                     !loadedData.dealbreakers.pets || !loadedData.dealbreakers.drinking) {
+              firstIncompleteStep = 5;
+            }
+            // Check Step 6
+            else if (!loadedData.prompts || loadedData.prompts.length < 3 || 
+                     loadedData.prompts.some(p => !p.answer || p.answer.trim() === '')) {
+              firstIncompleteStep = 6;
+            }
+            // Check Step 7
+            else if (!loadedData.optional || !loadedData.optional.languages || loadedData.optional.languages.length === 0) {
+              firstIncompleteStep = 7;
+            }
+            // Check Step 8
+            else if (!loadedData.photos || loadedData.photos.length < 4) {
+              firstIncompleteStep = 8;
+            }
+            // All mandatory steps complete - check if profile is actually complete
+            else {
+              // Check if profile is complete using backend API
+              try {
+                const completionResponse = await profileService.checkProfileCompletion();
+                if (completionResponse.success && completionResponse.isComplete) {
+                  // Profile is complete, navigate to people page
+                  navigate('/people');
+                  return;
+                } else {
+                  // Profile not complete, show verification step
+                  firstIncompleteStep = 9;
+                }
+              } catch (error) {
+                console.error('Error checking profile completion:', error);
+                firstIncompleteStep = 9; // Default to verification step
+              }
+            }
+            
+            setCurrentStep(firstIncompleteStep);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading profile from backend:', error);
+        // If error, start from step 1 or 2 based on shouldSkipBasicInfo
+        setCurrentStep(shouldSkipBasicInfo ? 2 : 1);
+      } finally {
+        setIsLoadingProfile(false);
+      }
+    };
+    
+    loadProfileFromBackend();
+    
+    // Don't process localStorage if coming from Complete Details
+    // Backend loading will handle everything
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigate, location.state?.skipBasicInfo, location.state?.startFromStep, location.state?.showOnlyIncomplete]);
+  
+  // Fallback useEffect for localStorage (only if backend loading didn't work)
+  useEffect(() => {
+    // Only run if we haven't loaded from backend yet
+    if (isLoadingProfile) return;
+    
     const savedData = localStorage.getItem('onboardingData');
     const isEditingOnboarding = localStorage.getItem('editingOnboarding') === 'true';
-    const shouldSkipBasicInfo = location.state?.skipBasicInfo || location.state?.startFromStep === 2;
-    
-    // If coming from "Complete Details" button, load basic info from backend and start from step 2
-    if (shouldSkipBasicInfo) {
-      const loadBasicInfo = async () => {
-        try {
-          const { profileService } = await import('../services/profileService');
-          const response = await profileService.getMyProfile();
-          
-          if (response.success && response.profile) {
-            const profile = response.profile;
-            setFormData(prev => ({
-              ...prev,
-              // Step 1 data (already filled, but load for display)
-              name: profile.name || '',
-              dob: profile.dob ? new Date(profile.dob).toISOString().split('T')[0] : '',
-              gender: profile.gender || '',
-              customGender: profile.customGender || '',
-              orientation: profile.orientation || '',
-              customOrientation: profile.customOrientation || '',
-              lookingFor: Array.isArray(profile.lookingFor) ? profile.lookingFor[0] : profile.lookingFor || '',
-              // Step 2 data (if exists)
-              city: profile.location?.city || '',
-              ageRange: profile.ageRange || { min: 18, max: '' },
-              distancePref: profile.distancePref || 25,
-              // Step 3 data
-              interests: profile.interests || [],
-              // Step 4 data
-              personality: profile.personality || prev.personality,
-              // Step 5 data
-              dealbreakers: profile.dealbreakers || prev.dealbreakers,
-              // Step 6 data
-              prompts: profile.prompts || [],
-              // Step 7 data
-              optional: profile.optional || prev.optional,
-              // Step 8 data
-              photos: profile.photos?.map(p => (typeof p === 'string' ? p : p.url)) || [],
-              bio: profile.bio || ''
-            }));
-            
-            // Set custom gender/orientation visibility
-            if (profile.gender === 'other') {
-              setShowCustomGender(true);
-            }
-            if (profile.orientation === 'other') {
-              setShowCustomOrientation(true);
-            }
-            
-            // Start from step 2 (after basic info)
-            setCurrentStep(2);
-          }
-        } catch (error) {
-          console.error('Error loading profile data:', error);
-          // If error, still start from step 2
-          setCurrentStep(2);
-        }
-      };
-      
-      loadBasicInfo();
-      return; // Don't process localStorage data when coming from Complete Details
-    }
     
     if (savedData) {
       try {
@@ -231,11 +465,9 @@ export default function OnboardingPage() {
         // If error, start fresh from step 1
         setCurrentStep(1);
       }
-    } else {
-      // No saved data - new user starting onboarding from step 1
-      setCurrentStep(1);
     }
-  }, [navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoadingProfile]);
 
   // Calculate age from date of birth
   const calculateAge = (dob) => {
@@ -438,6 +670,66 @@ export default function OnboardingPage() {
     handleChange('lookingFor', value);
   };
 
+  // Helper function to find next incomplete step
+  const findNextIncompleteStep = (profileData) => {
+    // Check Step 1
+    if (!profileData.name || !profileData.dob || !profileData.gender || !profileData.orientation || !profileData.lookingFor) {
+      return 1;
+    }
+    // Check Step 2
+    if (!profileData.city || !profileData.ageRange?.max || !profileData.distancePref) {
+      return 2;
+    }
+    // Check Step 3
+    if (!profileData.interests || profileData.interests.length < 3) {
+      return 3;
+    }
+    // Check Step 4
+    if (!profileData.personality || !profileData.personality.social || !profileData.personality.planning || 
+        !profileData.personality.romantic || !profileData.personality.morning || !profileData.personality.homebody ||
+        !profileData.personality.serious || !profileData.personality.decision || !profileData.personality.communication) {
+      return 4;
+    }
+    // Check Step 5
+    if (!profileData.dealbreakers || !profileData.dealbreakers.kids || !profileData.dealbreakers.smoking ||
+        !profileData.dealbreakers.pets || !profileData.dealbreakers.drinking) {
+      return 5;
+    }
+    // Check Step 6
+    if (!profileData.prompts || profileData.prompts.length < 3 || 
+        profileData.prompts.some(p => !p.answer || p.answer.trim() === '')) {
+      return 6;
+    }
+    // Check Step 7
+    if (!profileData.optional || !profileData.optional.languages || profileData.optional.languages.length === 0) {
+      return 7;
+    }
+    // Check Step 8
+    if (!profileData.photos || profileData.photos.length < 4) {
+      return 8;
+    }
+    // All mandatory steps complete
+    return null; // Return null to indicate all steps are complete
+  };
+
+  // Helper function to check if profile is complete and navigate to people page
+  const checkAndNavigateIfComplete = async (nextStep) => {
+    // If nextStep is null, all mandatory steps are complete
+    if (nextStep === null) {
+      // Check if profile is actually complete using backend API
+      try {
+        const completionResponse = await profileService.checkProfileCompletion();
+        if (completionResponse.success && completionResponse.isComplete) {
+          navigate('/people');
+          return true; // Indicates navigation happened
+        }
+      } catch (error) {
+        console.error('Error checking profile completion:', error);
+      }
+    }
+    return false; // Indicates no navigation happened
+  };
+
   // Save progress to localStorage
   const saveProgress = () => {
     const savedData = {
@@ -485,9 +777,32 @@ export default function OnboardingPage() {
 
     if (currentStep === 1) {
       if (validateStep1()) {
-        saveProgress();
-        // After basic information, navigate directly to people page
-        navigate('/people');
+        setIsSaving(true);
+        try {
+          const basicInfo = {
+            name: formData.name.trim(),
+            dob: formData.dob,
+            gender: formData.gender,
+            customGender: formData.customGender || '',
+            orientation: formData.orientation,
+            customOrientation: formData.customOrientation || '',
+            lookingFor: Array.isArray(formData.lookingFor) ? formData.lookingFor : [formData.lookingFor]
+          };
+
+          const response = await profileService.saveBasicInfo(basicInfo);
+          if (response.success) {
+            saveProgress();
+            // After basic information, navigate directly to people page
+            navigate('/people');
+          } else {
+            alert('Failed to save basic information. Please try again.');
+          }
+        } catch (error) {
+          console.error('Error saving step 1:', error);
+          alert('Error saving basic information. Please try again.');
+        } finally {
+          setIsSaving(false);
+        }
         return;
       }
     } else if (currentStep === 2) {
@@ -501,7 +816,7 @@ export default function OnboardingPage() {
             },
             ageRange: {
               min: formData.ageRange.min || 18,
-              max: formData.ageRange.max || 100
+              max: formData.ageRange.max || ''
             },
             distancePref: formData.distancePref || 25
           };
@@ -509,7 +824,36 @@ export default function OnboardingPage() {
           const response = await profileService.updateOnboardingStep(2, step2Data);
           if (response.success) {
             saveProgress();
-            setCurrentStep(3);
+            // Reload profile to get updated state and find next incomplete step
+            const profileResponse = await profileService.getMyProfile();
+            if (profileResponse.success && profileResponse.profile) {
+              const profile = profileResponse.profile;
+              // Use current formData for Step 1 and Step 2 (just saved) to ensure accuracy
+              // This prevents going back to Step 1 if backend data is not synced yet
+              const nextStep = findNextIncompleteStep({
+                name: profile.name || formData.name, // Use formData if profile doesn't have it
+                dob: profile.dob ? new Date(profile.dob).toISOString().split('T')[0] : formData.dob,
+                gender: profile.gender || formData.gender,
+                orientation: profile.orientation || formData.orientation,
+                lookingFor: Array.isArray(profile.lookingFor) ? profile.lookingFor[0] : (profile.lookingFor || formData.lookingFor),
+                city: formData.city, // Use current formData since we just saved it
+                ageRange: formData.ageRange, // Use current formData since we just saved it
+                distancePref: formData.distancePref, // Use current formData since we just saved it
+                interests: profile.interests,
+                personality: profile.personality,
+                dealbreakers: profile.dealbreakers,
+                prompts: profile.optional?.prompts,
+                optional: profile.optional,
+                photos: profile.photos
+              });
+              // Check if all steps are complete and navigate to people page
+              const navigated = await checkAndNavigateIfComplete(nextStep);
+              if (!navigated) {
+                setCurrentStep(nextStep || 9); // Default to step 9 if null
+              }
+            } else {
+              setCurrentStep(3);
+            }
           } else {
             alert('Failed to save location and preferences. Please try again.');
           }
@@ -531,7 +875,35 @@ export default function OnboardingPage() {
           const response = await profileService.updateOnboardingStep(3, step3Data);
           if (response.success) {
             saveProgress();
-            setCurrentStep(4);
+            // Reload profile to get updated state and find next incomplete step
+            const profileResponse = await profileService.getMyProfile();
+            if (profileResponse.success && profileResponse.profile) {
+              const profile = profileResponse.profile;
+              // Use current formData for steps 1-3 (just saved) to ensure accuracy
+              const nextStep = findNextIncompleteStep({
+                name: profile.name || formData.name,
+                dob: profile.dob ? new Date(profile.dob).toISOString().split('T')[0] : formData.dob,
+                gender: profile.gender || formData.gender,
+                orientation: profile.orientation || formData.orientation,
+                lookingFor: Array.isArray(profile.lookingFor) ? profile.lookingFor[0] : (profile.lookingFor || formData.lookingFor),
+                city: profile.location?.city || formData.city,
+                ageRange: profile.ageRange || formData.ageRange,
+                distancePref: profile.distancePref || formData.distancePref,
+                interests: formData.interests, // Use current formData since we just saved it
+                personality: profile.personality,
+                dealbreakers: profile.dealbreakers,
+                prompts: profile.optional?.prompts,
+                optional: profile.optional,
+                photos: profile.photos
+              });
+              // Check if all steps are complete and navigate to people page
+              const navigated = await checkAndNavigateIfComplete(nextStep);
+              if (!navigated) {
+                setCurrentStep(nextStep || 9); // Default to step 9 if null
+              }
+            } else {
+              setCurrentStep(4);
+            }
           } else {
             alert('Failed to save interests. Please try again.');
           }
@@ -569,7 +941,35 @@ export default function OnboardingPage() {
           
           if (response.success) {
             saveProgress();
-            setCurrentStep(5);
+            // Reload profile to get updated state and find next incomplete step
+            const profileResponse = await profileService.getMyProfile();
+            if (profileResponse.success && profileResponse.profile) {
+              const profile = profileResponse.profile;
+              // Use current formData for steps 1-4 (just saved) to ensure accuracy
+              const nextStep = findNextIncompleteStep({
+                name: profile.name || formData.name,
+                dob: profile.dob ? new Date(profile.dob).toISOString().split('T')[0] : formData.dob,
+                gender: profile.gender || formData.gender,
+                orientation: profile.orientation || formData.orientation,
+                lookingFor: Array.isArray(profile.lookingFor) ? profile.lookingFor[0] : (profile.lookingFor || formData.lookingFor),
+                city: profile.location?.city || formData.city,
+                ageRange: profile.ageRange || formData.ageRange,
+                distancePref: profile.distancePref || formData.distancePref,
+                interests: profile.interests || formData.interests,
+                personality: formData.personality, // Use current formData since we just saved it
+                dealbreakers: profile.dealbreakers,
+                prompts: profile.optional?.prompts,
+                optional: profile.optional,
+                photos: profile.photos
+              });
+              // Check if all steps are complete and navigate to people page
+              const navigated = await checkAndNavigateIfComplete(nextStep);
+              if (!navigated) {
+                setCurrentStep(nextStep || 9); // Default to step 9 if null
+              }
+            } else {
+              setCurrentStep(5);
+            }
           } else {
             console.error('❌ Step 4 - Failed:', response);
             alert(response.message || 'Failed to save personality. Please try again.');
@@ -597,7 +997,47 @@ export default function OnboardingPage() {
           const response = await profileService.updateOnboardingStep(5, step5Data);
           if (response.success) {
             saveProgress();
-            setCurrentStep(6);
+            // Reload profile to get updated state and find next incomplete step
+            const profileResponse = await profileService.getMyProfile();
+            if (profileResponse.success && profileResponse.profile) {
+              const profile = profileResponse.profile;
+              
+              // Update initialFormState with saved dealbreakers so filled fields disappear
+              if (showOnlyIncomplete && profile.dealbreakers) {
+                setInitialFormState(prev => ({
+                  ...prev,
+                  dealbreakers: {
+                    ...prev.dealbreakers,
+                    ...profile.dealbreakers
+                  }
+                }));
+              }
+              
+              // Use current formData for steps 1-5 (just saved) to ensure accuracy
+              const nextStep = findNextIncompleteStep({
+                name: profile.name || formData.name,
+                dob: profile.dob ? new Date(profile.dob).toISOString().split('T')[0] : formData.dob,
+                gender: profile.gender || formData.gender,
+                orientation: profile.orientation || formData.orientation,
+                lookingFor: Array.isArray(profile.lookingFor) ? profile.lookingFor[0] : (profile.lookingFor || formData.lookingFor),
+                city: profile.location?.city || formData.city,
+                ageRange: profile.ageRange || formData.ageRange,
+                distancePref: profile.distancePref || formData.distancePref,
+                interests: profile.interests || formData.interests,
+                personality: profile.personality || formData.personality,
+                dealbreakers: formData.dealbreakers, // Use current formData since we just saved it
+                prompts: profile.optional?.prompts,
+                optional: profile.optional,
+                photos: profile.photos
+              });
+              // Check if all steps are complete and navigate to people page
+              const navigated = await checkAndNavigateIfComplete(nextStep);
+              if (!navigated) {
+                setCurrentStep(nextStep || 9); // Default to step 9 if null
+              }
+            } else {
+              setCurrentStep(6);
+            }
           } else {
             alert('Failed to save dealbreakers. Please try again.');
           }
@@ -610,8 +1050,9 @@ export default function OnboardingPage() {
       }
     } else if (currentStep === 6) {
       if (validateStep6()) {
-        // Step 6 (Prompts) - Save to localStorage only, will be combined with Step 7
+        // Step 6 (Prompts) - Save to localStorage, will be combined with Step 7
         saveProgress();
+        // Move to Step 7 (Optional Info) which will save prompts along with optional data
         setCurrentStep(7);
       }
     } else if (currentStep === 7) {
@@ -631,7 +1072,35 @@ export default function OnboardingPage() {
           const response = await profileService.updateOnboardingStep(6, step6Data);
           if (response.success) {
             saveProgress();
-            setCurrentStep(8);
+            // Reload profile to get updated state and find next incomplete step
+            const profileResponse = await profileService.getMyProfile();
+            if (profileResponse.success && profileResponse.profile) {
+              const profile = profileResponse.profile;
+              // Use current formData for steps 1-7 (just saved) to ensure accuracy
+              const nextStep = findNextIncompleteStep({
+                name: profile.name || formData.name,
+                dob: profile.dob ? new Date(profile.dob).toISOString().split('T')[0] : formData.dob,
+                gender: profile.gender || formData.gender,
+                orientation: profile.orientation || formData.orientation,
+                lookingFor: Array.isArray(profile.lookingFor) ? profile.lookingFor[0] : (profile.lookingFor || formData.lookingFor),
+                city: profile.location?.city || formData.city,
+                ageRange: profile.ageRange || formData.ageRange,
+                distancePref: profile.distancePref || formData.distancePref,
+                interests: profile.interests || formData.interests,
+                personality: profile.personality || formData.personality,
+                dealbreakers: profile.dealbreakers || formData.dealbreakers,
+                prompts: formData.prompts, // Use current formData since we just saved it
+                optional: formData.optional, // Use current formData since we just saved it
+                photos: profile.photos
+              });
+              // Check if all steps are complete and navigate to people page
+              const navigated = await checkAndNavigateIfComplete(nextStep);
+              if (!navigated) {
+                setCurrentStep(nextStep || 9); // Default to step 9 if null
+              }
+            } else {
+              setCurrentStep(8);
+            }
           } else {
             alert('Failed to save optional information. Please try again.');
           }
@@ -665,7 +1134,35 @@ export default function OnboardingPage() {
           }
 
           saveProgress();
-          setCurrentStep(9);
+          // Reload profile to get updated state and find next incomplete step
+          const profileResponse = await profileService.getMyProfile();
+          if (profileResponse.success && profileResponse.profile) {
+            const profile = profileResponse.profile;
+            // Use current formData for all steps (just saved) to ensure accuracy
+            const nextStep = findNextIncompleteStep({
+              name: profile.name || formData.name,
+              dob: profile.dob ? new Date(profile.dob).toISOString().split('T')[0] : formData.dob,
+              gender: profile.gender || formData.gender,
+              orientation: profile.orientation || formData.orientation,
+              lookingFor: Array.isArray(profile.lookingFor) ? profile.lookingFor[0] : (profile.lookingFor || formData.lookingFor),
+              city: profile.location?.city || formData.city,
+              ageRange: profile.ageRange || formData.ageRange,
+              distancePref: profile.distancePref || formData.distancePref,
+              interests: profile.interests || formData.interests,
+              personality: profile.personality || formData.personality,
+              dealbreakers: profile.dealbreakers || formData.dealbreakers,
+              prompts: profile.optional?.prompts || formData.prompts,
+              optional: profile.optional || formData.optional,
+              photos: profile.photos || formData.photos // Use current formData since we just saved it
+            });
+            // Check if all steps are complete and navigate to people page
+            const navigated = await checkAndNavigateIfComplete(nextStep);
+            if (!navigated) {
+              setCurrentStep(nextStep || 9); // Default to step 9 if null
+            }
+          } else {
+            setCurrentStep(9);
+          }
         } catch (error) {
           console.error('Error saving photos and bio:', error);
           alert('Error saving photos and bio. Please try again.');
@@ -970,15 +1467,14 @@ export default function OnboardingPage() {
                 </label>
                 <CustomDropdown
                   options={[
-                    { value: '', label: 'Select what you are looking for' },
-                    { value: 'casual', label: 'Casual' },
-                    { value: 'relationship', label: 'Relationship' },
-                    { value: 'marriage', label: 'Marriage' },
-                    { value: 'friends', label: 'Friends' }
+                    { value: '', label: 'Select who you are looking for' },
+                    { value: 'men', label: 'Men' },
+                    { value: 'women', label: 'Women' },
+                    { value: 'everyone', label: 'Everyone' }
                   ]}
                   value={formData.lookingFor}
                   onChange={handleLookingForChange}
-                  placeholder="Select what you are looking for"
+                  placeholder="Select who you are looking for"
                   error={!!errors.lookingFor}
                 />
                 {errors.lookingFor && (
@@ -1779,185 +2275,195 @@ export default function OnboardingPage() {
 
               {/* Dealbreakers Questions */}
               <div className="space-y-4 sm:space-y-5 md:space-y-2 max-h-[45vh] md:max-h-[50vh] overflow-y-auto pr-2 relative z-10 flex-1">
-                {/* Kids */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="mb-4 sm:mb-5 md:mb-2"
-                >
-                  <div className="flex items-center gap-2 mb-3 md:mb-1.5">
-                    <Baby className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 text-[#FF91A4]" />
-                    <label className="text-base sm:text-lg md:text-sm font-semibold text-[#212121]">
-                      Kids <span className="text-[#FF91A4]">*</span>
-                    </label>
-                  </div>
-                  <CustomDropdown
-                    options={[
-                      { value: '', label: 'Select an option' },
-                      { value: 'have-kids', label: 'Have Kids' },
-                      { value: 'want-kids', label: 'Want Kids' },
-                      { value: 'dont-want-kids', label: "Don't Want Kids" },
-                      { value: 'not-sure', label: 'Not Sure' }
-                    ]}
-                    value={formData.dealbreakers.kids}
-                    onChange={(value) => handleChange('dealbreakers', { ...formData.dealbreakers, kids: value })}
-                    placeholder="Select an option"
-                    error={!!errors.kids}
-                  />
-                  {errors.kids && (
-                    <motion.p
-                      initial={{ opacity: 0, y: -5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="text-sm sm:text-base md:text-xs text-[#FF91A4] mt-2 md:mt-1"
-                    >
-                      {errors.kids}
-                    </motion.p>
-                  )}
-                </motion.div>
+                {/* Kids - Only show if not filled when showOnlyIncomplete is true */}
+                {(!showOnlyIncomplete || !initialFormState?.dealbreakers?.kids || initialFormState.dealbreakers.kids.trim() === '') && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="mb-4 sm:mb-5 md:mb-2"
+                  >
+                    <div className="flex items-center gap-2 mb-3 md:mb-1.5">
+                      <Baby className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 text-[#FF91A4]" />
+                      <label className="text-base sm:text-lg md:text-sm font-semibold text-[#212121]">
+                        Kids <span className="text-[#FF91A4]">*</span>
+                      </label>
+                    </div>
+                    <CustomDropdown
+                      options={[
+                        { value: '', label: 'Select an option' },
+                        { value: 'have-kids', label: 'Have Kids' },
+                        { value: 'want-kids', label: 'Want Kids' },
+                        { value: 'dont-want-kids', label: "Don't Want Kids" },
+                        { value: 'not-sure', label: 'Not Sure' }
+                      ]}
+                      value={formData.dealbreakers.kids}
+                      onChange={(value) => handleChange('dealbreakers', { ...formData.dealbreakers, kids: value })}
+                      placeholder="Select an option"
+                      error={!!errors.kids}
+                    />
+                    {errors.kids && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-sm sm:text-base md:text-xs text-[#FF91A4] mt-2 md:mt-1"
+                      >
+                        {errors.kids}
+                      </motion.p>
+                    )}
+                  </motion.div>
+                )}
 
-                {/* Smoking */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 }}
-                  className="mb-4 sm:mb-5 md:mb-2"
-                >
-                  <div className="flex items-center gap-2 mb-3 md:mb-1.5">
-                    <Cigarette className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 text-[#FF91A4]" />
-                    <label className="text-base sm:text-lg md:text-sm font-semibold text-[#212121]">
-                      Smoking <span className="text-[#FF91A4]">*</span>
-                    </label>
-                  </div>
-                  <CustomDropdown
-                    options={[
-                      { value: '', label: 'Select an option' },
-                      { value: 'smoker', label: 'Smoker' },
-                      { value: 'non-smoker', label: 'Non-smoker' },
-                      { value: 'social-smoker', label: 'Social Smoker' },
-                      { value: 'prefer-non-smoker', label: 'Prefer Non-smoker' }
-                    ]}
-                    value={formData.dealbreakers.smoking}
-                    onChange={(value) => handleChange('dealbreakers', { ...formData.dealbreakers, smoking: value })}
-                    placeholder="Select an option"
-                    error={!!errors.smoking}
-                  />
-                  {errors.smoking && (
-                    <motion.p
-                      initial={{ opacity: 0, y: -5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="text-sm sm:text-base md:text-xs text-[#FF91A4] mt-2 md:mt-1"
-                    >
-                      {errors.smoking}
-                    </motion.p>
-                  )}
-                </motion.div>
+                {/* Smoking - Only show if not filled when showOnlyIncomplete is true */}
+                {(!showOnlyIncomplete || !initialFormState?.dealbreakers?.smoking || initialFormState.dealbreakers.smoking.trim() === '') && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                    className="mb-4 sm:mb-5 md:mb-2"
+                  >
+                    <div className="flex items-center gap-2 mb-3 md:mb-1.5">
+                      <Cigarette className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 text-[#FF91A4]" />
+                      <label className="text-base sm:text-lg md:text-sm font-semibold text-[#212121]">
+                        Smoking <span className="text-[#FF91A4]">*</span>
+                      </label>
+                    </div>
+                    <CustomDropdown
+                      options={[
+                        { value: '', label: 'Select an option' },
+                        { value: 'smoker', label: 'Smoker' },
+                        { value: 'non-smoker', label: 'Non-smoker' },
+                        { value: 'social-smoker', label: 'Social Smoker' },
+                        { value: 'prefer-non-smoker', label: 'Prefer Non-smoker' }
+                      ]}
+                      value={formData.dealbreakers.smoking}
+                      onChange={(value) => handleChange('dealbreakers', { ...formData.dealbreakers, smoking: value })}
+                      placeholder="Select an option"
+                      error={!!errors.smoking}
+                    />
+                    {errors.smoking && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-sm sm:text-base md:text-xs text-[#FF91A4] mt-2 md:mt-1"
+                      >
+                        {errors.smoking}
+                      </motion.p>
+                    )}
+                  </motion.div>
+                )}
 
-                {/* Pets */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="mb-4 sm:mb-5 md:mb-2"
-                >
-                  <div className="flex items-center gap-2 mb-3 md:mb-1.5">
-                    <Dog className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 text-[#FF91A4]" />
-                    <label className="text-base sm:text-lg md:text-sm font-semibold text-[#212121]">
-                      Pets <span className="text-[#FF91A4]">*</span>
-                    </label>
-                  </div>
-                  <CustomDropdown
-                    options={[
-                      { value: '', label: 'Select an option' },
-                      { value: 'love-pets', label: 'Love Pets' },
-                      { value: 'have-pets', label: 'Have Pets' },
-                      { value: 'allergic', label: 'Allergic' },
-                      { value: 'not-interested', label: 'Not Interested' }
-                    ]}
-                    value={formData.dealbreakers.pets}
-                    onChange={(value) => handleChange('dealbreakers', { ...formData.dealbreakers, pets: value })}
-                    placeholder="Select an option"
-                    error={!!errors.pets}
-                  />
-                  {errors.pets && (
-                    <motion.p
-                      initial={{ opacity: 0, y: -5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="text-sm sm:text-base md:text-xs text-[#FF91A4] mt-2 md:mt-1"
-                    >
-                      {errors.pets}
-                    </motion.p>
-                  )}
-                </motion.div>
+                {/* Pets - Only show if not filled when showOnlyIncomplete is true */}
+                {(!showOnlyIncomplete || !initialFormState?.dealbreakers?.pets || initialFormState.dealbreakers.pets.trim() === '') && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="mb-4 sm:mb-5 md:mb-2"
+                  >
+                    <div className="flex items-center gap-2 mb-3 md:mb-1.5">
+                      <Dog className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 text-[#FF91A4]" />
+                      <label className="text-base sm:text-lg md:text-sm font-semibold text-[#212121]">
+                        Pets <span className="text-[#FF91A4]">*</span>
+                      </label>
+                    </div>
+                    <CustomDropdown
+                      options={[
+                        { value: '', label: 'Select an option' },
+                        { value: 'love-pets', label: 'Love Pets' },
+                        { value: 'have-pets', label: 'Have Pets' },
+                        { value: 'allergic', label: 'Allergic' },
+                        { value: 'not-interested', label: 'Not Interested' }
+                      ]}
+                      value={formData.dealbreakers.pets}
+                      onChange={(value) => handleChange('dealbreakers', { ...formData.dealbreakers, pets: value })}
+                      placeholder="Select an option"
+                      error={!!errors.pets}
+                    />
+                    {errors.pets && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-sm sm:text-base md:text-xs text-[#FF91A4] mt-2 md:mt-1"
+                      >
+                        {errors.pets}
+                      </motion.p>
+                    )}
+                  </motion.div>
+                )}
 
-                {/* Drinking */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.25 }}
-                  className="mb-4 sm:mb-5 md:mb-2"
-                >
-                  <div className="flex items-center gap-2 mb-3 md:mb-1.5">
-                    <GlassWater className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 text-[#FF91A4]" />
-                    <label className="text-base sm:text-lg md:text-sm font-semibold text-[#212121]">
-                      Drinking <span className="text-[#FF91A4]">*</span>
-                    </label>
-                  </div>
-                  <CustomDropdown
-                    options={[
-                      { value: '', label: 'Select an option' },
-                      { value: 'never', label: 'Never' },
-                      { value: 'occasionally', label: 'Occasionally' },
-                      { value: 'socially', label: 'Socially' },
-                      { value: 'regularly', label: 'Regularly' }
-                    ]}
-                    value={formData.dealbreakers.drinking}
-                    onChange={(value) => handleChange('dealbreakers', { ...formData.dealbreakers, drinking: value })}
-                    placeholder="Select an option"
-                    error={!!errors.drinking}
-                  />
-                  {errors.drinking && (
-                    <motion.p
-                      initial={{ opacity: 0, y: -5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="text-sm sm:text-base md:text-xs text-[#FF91A4] mt-2 md:mt-1"
-                    >
-                      {errors.drinking}
-                    </motion.p>
-                  )}
-                </motion.div>
+                {/* Drinking - Only show if not filled when showOnlyIncomplete is true */}
+                {(!showOnlyIncomplete || !initialFormState?.dealbreakers?.drinking || initialFormState.dealbreakers.drinking.trim() === '') && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.25 }}
+                    className="mb-4 sm:mb-5 md:mb-2"
+                  >
+                    <div className="flex items-center gap-2 mb-3 md:mb-1.5">
+                      <GlassWater className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 text-[#FF91A4]" />
+                      <label className="text-base sm:text-lg md:text-sm font-semibold text-[#212121]">
+                        Drinking <span className="text-[#FF91A4]">*</span>
+                      </label>
+                    </div>
+                    <CustomDropdown
+                      options={[
+                        { value: '', label: 'Select an option' },
+                        { value: 'never', label: 'Never' },
+                        { value: 'occasionally', label: 'Occasionally' },
+                        { value: 'socially', label: 'Socially' },
+                        { value: 'regularly', label: 'Regularly' }
+                      ]}
+                      value={formData.dealbreakers.drinking}
+                      onChange={(value) => handleChange('dealbreakers', { ...formData.dealbreakers, drinking: value })}
+                      placeholder="Select an option"
+                      error={!!errors.drinking}
+                    />
+                    {errors.drinking && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-sm sm:text-base md:text-xs text-[#FF91A4] mt-2 md:mt-1"
+                      >
+                        {errors.drinking}
+                      </motion.p>
+                    )}
+                  </motion.div>
+                )}
 
-                {/* Religion (Optional) */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="mb-4 sm:mb-5 md:mb-2"
-                >
-                  <div className="flex items-center gap-2 mb-3 md:mb-1.5">
-                    <Heart className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 text-[#FF91A4]" />
-                    <label className="text-base sm:text-lg md:text-sm font-semibold text-[#212121]">
-                      Religion <span className="text-[#757575] text-xs md:text-[10px] font-normal">(Optional)</span>
-                    </label>
-                  </div>
-                  <CustomDropdown
-                    options={[
-                      { value: '', label: 'Select religion (optional)' },
-                      { value: 'hindu', label: 'Hindu' },
-                      { value: 'muslim', label: 'Muslim' },
-                      { value: 'christian', label: 'Christian' },
-                      { value: 'sikh', label: 'Sikh' },
-                      { value: 'buddhist', label: 'Buddhist' },
-                      { value: 'jain', label: 'Jain' },
-                      { value: 'other', label: 'Other' },
-                      { value: 'prefer-not-to-say', label: 'Prefer not to say' }
-                    ]}
-                    value={formData.dealbreakers.religion}
-                    onChange={(value) => handleChange('dealbreakers', { ...formData.dealbreakers, religion: value })}
-                    placeholder="Select religion (optional)"
-                    error={false}
-                  />
-                </motion.div>
+                {/* Religion (Optional) - Show if showOnlyIncomplete is false OR if religion is not filled */}
+                {(!showOnlyIncomplete || !initialFormState?.dealbreakers?.religion || initialFormState.dealbreakers.religion.trim() === '') && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="mb-4 sm:mb-5 md:mb-2"
+                  >
+                    <div className="flex items-center gap-2 mb-3 md:mb-1.5">
+                      <Heart className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 text-[#FF91A4]" />
+                      <label className="text-base sm:text-lg md:text-sm font-semibold text-[#212121]">
+                        Religion <span className="text-[#757575] text-xs md:text-[10px] font-normal">(Optional)</span>
+                      </label>
+                    </div>
+                    <CustomDropdown
+                      options={[
+                        { value: '', label: 'Select religion (optional)' },
+                        { value: 'hindu', label: 'Hindu' },
+                        { value: 'muslim', label: 'Muslim' },
+                        { value: 'christian', label: 'Christian' },
+                        { value: 'sikh', label: 'Sikh' },
+                        { value: 'buddhist', label: 'Buddhist' },
+                        { value: 'jain', label: 'Jain' },
+                        { value: 'other', label: 'Other' },
+                        { value: 'prefer-not-to-say', label: 'Prefer not to say' }
+                      ]}
+                      value={formData.dealbreakers.religion}
+                      onChange={(value) => handleChange('dealbreakers', { ...formData.dealbreakers, religion: value })}
+                      placeholder="Select religion (optional)"
+                      error={false}
+                    />
+                  </motion.div>
+                )}
               </div>
 
               {/* Navigation Buttons */}
@@ -1973,7 +2479,20 @@ export default function OnboardingPage() {
                 </motion.button>
                 <motion.button
                   onClick={handleNext}
-                  disabled={isSaving || !formData.dealbreakers.kids || !formData.dealbreakers.smoking || !formData.dealbreakers.pets || !formData.dealbreakers.drinking}
+                  disabled={
+                    isSaving || 
+                    // Check mandatory fields - if showOnlyIncomplete is true, only check fields that are visible (not in initialFormState)
+                    (showOnlyIncomplete ? (
+                      // Check if any visible mandatory field is empty
+                      ((!initialFormState?.dealbreakers?.kids || initialFormState.dealbreakers.kids.trim() === '') && !formData.dealbreakers.kids) ||
+                      ((!initialFormState?.dealbreakers?.smoking || initialFormState.dealbreakers.smoking.trim() === '') && !formData.dealbreakers.smoking) ||
+                      ((!initialFormState?.dealbreakers?.pets || initialFormState.dealbreakers.pets.trim() === '') && !formData.dealbreakers.pets) ||
+                      ((!initialFormState?.dealbreakers?.drinking || initialFormState.dealbreakers.drinking.trim() === '') && !formData.dealbreakers.drinking)
+                    ) : (
+                      // Normal mode: check all mandatory fields
+                      !formData.dealbreakers.kids || !formData.dealbreakers.smoking || !formData.dealbreakers.pets || !formData.dealbreakers.drinking
+                    ))
+                  }
                   whileHover={{ scale: isSaving ? 1 : 1.02, y: isSaving ? 0 : -1 }}
                   whileTap={{ scale: isSaving ? 1 : 0.98 }}
                   className="flex-1 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] hover:from-[#FF69B4] hover:to-[#FF91A4] disabled:from-[#E0E0E0] disabled:to-[#E0E0E0] disabled:cursor-not-allowed text-white font-bold py-3.5 sm:py-4 md:py-2.5 rounded-xl transition-all disabled:transform-none text-base sm:text-lg md:text-base shadow-xl hover:shadow-2xl disabled:shadow-none"

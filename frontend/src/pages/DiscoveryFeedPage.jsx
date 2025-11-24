@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Filter, Crown, Sparkles, MessageCircle, User, Heart, Users, UserCircle, Eye, ArrowLeft, X, Star, MapPin, GraduationCap, Languages, Coffee, Briefcase, BookOpen, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProfileCard from '../components/ProfileCard';
-import { mockProfiles, calculateMatchScore, calculateDistance } from '../data/mockProfiles';
+import { mockProfiles, calculateDistance } from '../data/mockProfiles';
 import { authService } from '../services/authService';
 import { profileService } from '../services/profileService';
 
@@ -41,7 +41,7 @@ export default function DiscoveryFeedPage() {
       navigate('/welcome');
       return;
     }
-    
+
     // Load profile completion status from backend
     const loadProfileCompletion = async () => {
       try {
@@ -82,39 +82,59 @@ export default function DiscoveryFeedPage() {
       setIsLoadingProfiles(true);
       
       // Load user profile first
-      loadUserProfile();
+      const userProfileData = loadUserProfile();
       
-      // Load saved likes and passes
-      const savedLikes = localStorage.getItem('discoveryLikes');
-      const savedPasses = localStorage.getItem('discoveryPasses');
-      const loadedLikes = savedLikes ? JSON.parse(savedLikes) : [];
-      const loadedPasses = savedPasses ? JSON.parse(savedPasses) : [];
-      
-      // Get user profile for filtering
-      const savedProfile = localStorage.getItem('userProfile');
-      const userProfile = savedProfile ? JSON.parse(savedProfile) : null;
-      
-      if (userProfile && Object.keys(userProfile).length > 0) {
-        setCurrentUserProfile(userProfile);
-        if (userProfile.location) {
-          setCurrentUserLocation(userProfile.location);
-        }
-        // Filter and score profiles
-        const filteredProfiles = filterAndScoreProfiles(mockProfiles, userProfile, loadedLikes, loadedPasses);
-        setProfiles(filteredProfiles);
-      } else {
-        // If no user profile, show all profiles (excluding liked/passed)
-        const availableProfiles = mockProfiles.filter(
-          profile => !loadedLikes.includes(profile.id) && !loadedPasses.includes(profile.id)
+      try {
+        // ✅ Load from localStorage/mockProfiles (NOT from backend)
+        const savedLikes = localStorage.getItem('discoveryLikes');
+        const savedPasses = localStorage.getItem('discoveryPasses');
+        const loadedLikes = savedLikes ? JSON.parse(savedLikes) : [];
+        const loadedPasses = savedPasses ? JSON.parse(savedPasses) : [];
+        
+        // Get user profile for filtering
+        const savedProfile = localStorage.getItem('userProfile');
+        const userProfile = currentUserProfile || (savedProfile ? JSON.parse(savedProfile) : {});
+        
+        // Filter out already liked/passed profiles
+        const availableProfiles = mockProfiles.filter(profile => 
+          !loadedLikes.includes(profile.id) && !loadedPasses.includes(profile.id)
         );
-        setProfiles(availableProfiles);
+        
+        // Add distance and active status for display
+        const profilesWithInfo = availableProfiles.map(profile => {
+          let distance = null;
+          if (userProfile.location && profile.location) {
+            distance = calculateDistance(
+              userProfile.location.lat || userProfile.location.coordinates?.[1],
+              userProfile.location.lng || userProfile.location.coordinates?.[0],
+              profile.location.lat,
+              profile.location.lng
+            );
+          }
+          
+          return {
+            ...profile,
+            distance: distance ? Math.round(distance) : null,
+            activeStatus: 'Active recently' // Mock status
+          };
+        });
+        
+        setProfiles(profilesWithInfo);
+        console.log(`✅ Loaded ${profilesWithInfo.length} profiles from localStorage/mock data`);
+        
+        if (profilesWithInfo.length === 0) {
+          console.warn('⚠️ No profiles available. All profiles have been liked or passed.');
+        }
+      } catch (error) {
+        console.error('Error loading profiles:', error);
+        setProfiles([]);
+      } finally {
+        setIsLoadingProfiles(false);
       }
-      
-      setIsLoadingProfiles(false);
     };
 
     loadProfiles();
-  }, []);
+  }, [location.pathname, location.key]);
 
   // Handle navigation from chat to show specific user profile
   useEffect(() => {
@@ -136,66 +156,53 @@ export default function DiscoveryFeedPage() {
     dragDistance.current = 0;
   }, [currentIndex]);
 
-  // Reload profiles when coming back from filter page
+  // Reload profiles when coming back from filter page or tab regains focus
   useEffect(() => {
     const handleFocus = () => {
-      if (currentUserProfile) {
-        const savedLikes = localStorage.getItem('discoveryLikes');
-        const savedPasses = localStorage.getItem('discoveryPasses');
-        const loadedLikes = savedLikes ? JSON.parse(savedLikes) : [];
-        const loadedPasses = savedPasses ? JSON.parse(savedPasses) : [];
-        
-        let filteredProfiles = filterAndScoreProfiles(mockProfiles, currentUserProfile, loadedLikes, loadedPasses);
-        
-        // If no profiles after filtering, show all available profiles (excluding liked/passed)
-        if (filteredProfiles.length === 0) {
-          filteredProfiles = mockProfiles
-            .filter(profile => !loadedLikes.includes(profile.id) && !loadedPasses.includes(profile.id))
-            .map(profile => {
-              const matchResult = calculateMatchScore(currentUserProfile, profile);
-              return {
-                ...profile,
-                matchScore: matchResult.score,
-                reasons: matchResult.reasons
-              };
-            })
-            .sort((a, b) => b.matchScore - a.matchScore);
+      // Reload profiles from localStorage when tab regains focus
+      const savedLikes = localStorage.getItem('discoveryLikes');
+      const savedPasses = localStorage.getItem('discoveryPasses');
+      const loadedLikes = savedLikes ? JSON.parse(savedLikes) : [];
+      const loadedPasses = savedPasses ? JSON.parse(savedPasses) : [];
+      
+      const userProfile = currentUserProfile || JSON.parse(localStorage.getItem('userProfile') || '{}');
+      
+      const availableProfiles = mockProfiles.filter(profile => 
+        !loadedLikes.includes(profile.id) && !loadedPasses.includes(profile.id)
+      );
+      
+      // Add distance and active status
+      const profilesWithInfo = availableProfiles.map(profile => {
+        let distance = null;
+        if (userProfile.location && profile.location) {
+          distance = calculateDistance(
+            userProfile.location.lat || userProfile.location.coordinates?.[1],
+            userProfile.location.lng || userProfile.location.coordinates?.[0],
+            profile.location.lat,
+            profile.location.lng
+          );
         }
-        
-        // Add dummy prompts to profiles if they don't have any
-        const profilesWithPrompts = filteredProfiles.map(profile => {
-          if (!profile.prompts || profile.prompts.length === 0) {
-            return {
-              ...profile,
-              prompts: [
-                {
-                  prompt: "What's the best way to ask you out?",
-                  answer: "Just be yourself and ask me directly! I appreciate honesty and straightforwardness."
-                },
-                {
-                  prompt: "I'm a great +1 for...",
-                  answer: "Concerts, food festivals, and any adventure that involves trying something new!"
-                },
-                {
-                  prompt: "The way to my heart is...",
-                  answer: "Through good conversation, shared laughter, and genuine connection."
-                }
-              ]
-            };
-          }
-          return profile;
-        });
-        
-        setProfiles(profilesWithPrompts);
+        return {
+          ...profile,
+          distance: distance ? Math.round(distance) : null,
+          activeStatus: 'Active recently'
+        };
+      });
+      
+      setProfiles(profilesWithInfo);
+      // Reset to first profile if current index is out of bounds
+      if (currentIndex >= profilesWithInfo.length) {
         setCurrentIndex(0);
       }
     };
 
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
-  }, [currentUserProfile]);
+  }, [currentIndex, currentUserProfile]);
 
-  const filterAndScoreProfiles = (allProfiles, userProfile, loadedLikes = [], loadedPasses = []) => {
+  // This function is no longer used - profiles are now loaded from localStorage/mockProfiles
+  // Keeping it commented for reference
+  /* const filterAndScoreProfiles = (allProfiles, userProfile, loadedLikes = [], loadedPasses = []) => {
     // Load filters from localStorage
     const savedFilters = localStorage.getItem('discoveryFilters');
     let filters = null;
@@ -220,23 +227,27 @@ export default function DiscoveryFeedPage() {
         const optionalFilter = filters?.optional || {};
 
         // Age range filter (relaxed - use default range if not set)
-        const effectiveAgeRange = ageRange || { min: 18, max: 100 };
+        const effectiveAgeRange = ageRange || { min: 18, max: '' };
+        // If max is empty/null, don't filter by max age (show all ages above min)
         if (profile.age < effectiveAgeRange.min || 
-            (effectiveAgeRange.max && profile.age > effectiveAgeRange.max)) {
+            (effectiveAgeRange.max && effectiveAgeRange.max !== '' && profile.age > effectiveAgeRange.max)) {
           return false;
         }
 
         // Distance filter (relaxed for dummy data - allow up to 500km if no distance pref set)
         if (userProfile.location && profile.location) {
-          const distance = calculateDistance(
-            userProfile.location.lat,
-            userProfile.location.lng,
-            profile.location.lat,
-            profile.location.lng
-          );
-          const maxDistance = distancePref || 500; // Default to 500km if no preference
-          if (distance > maxDistance) {
-            return false;
+          // Handle both old format (lat/lng) and new format (coordinates array)
+          const userLat = userProfile.location.coordinates?.[1] || userProfile.location.lat;
+          const userLng = userProfile.location.coordinates?.[0] || userProfile.location.lng;
+          const profileLat = profile.location.coordinates?.[1] || profile.location.lat;
+          const profileLng = profile.location.coordinates?.[0] || profile.location.lng;
+          
+          if (userLat && userLng && profileLat && profileLng) {
+            const distance = calculateDistance(userLat, userLng, profileLat, profileLng);
+            const maxDistance = distancePref || 500; // Default to 500km if no preference
+            if (distance > maxDistance) {
+              return false;
+            }
           }
         }
 
@@ -319,15 +330,16 @@ export default function DiscoveryFeedPage() {
         return true;
       })
       .map(profile => {
-        const matchResult = calculateMatchScore(userProfile, profile);
+        // calculateMatchScore is no longer available (was from mockProfiles)
+        // Backend now provides matchScore in the API response
         return {
           ...profile,
-          matchScore: matchResult.score,
-          reasons: matchResult.reasons
+          matchScore: profile.matchScore || 0,
+          reasons: profile.matchReasons || []
         };
       })
       .sort((a, b) => b.matchScore - a.matchScore);
-  };
+  }; */
 
   const loadUserActions = () => {
     const savedMatches = localStorage.getItem('discoveryMatches');
@@ -360,7 +372,7 @@ export default function DiscoveryFeedPage() {
   };
 
   const handleLike = async () => {
-    // Check if profile is complete using backend API
+    // Check if profile is complete
     const isComplete = await checkProfileCompletion();
     if (!isComplete) {
       setShowCompleteDetailsModal(true);
@@ -375,44 +387,60 @@ export default function DiscoveryFeedPage() {
     const currentProfile = profiles[currentIndex];
     if (!currentProfile) return;
 
-    const isMatch = Math.random() > 0.7;
-
-    const newLikes = [...likes, currentProfile.id];
-    setLikes(newLikes);
-    localStorage.setItem('discoveryLikes', JSON.stringify(newLikes));
-
-    if (!isPremium) {
-      const newDailyLikes = { ...dailyLikes, count: dailyLikes.count + 1 };
-      setDailyLikes(newDailyLikes);
-      localStorage.setItem('dailyLikes', JSON.stringify(newDailyLikes));
-    }
-
-    // Start swipe animation
-    setSwipeDirection('right');
-    
-    if (isMatch) {
-      const newMatches = [...matches, { ...currentProfile, matchedAt: new Date().toISOString() }];
-      setMatches(newMatches);
-      localStorage.setItem('discoveryMatches', JSON.stringify(newMatches));
+    try {
+      // ✅ Save to localStorage (NOT backend)
+      const savedLikes = localStorage.getItem('discoveryLikes');
+      const likes = savedLikes ? JSON.parse(savedLikes) : [];
       
-      // Show match modal after swipe animation completes
+      // Check if already liked
+      if (likes.includes(currentProfile.id)) {
+        // Already liked - just remove from list and move to next
+        const newProfiles = profiles.filter((p, idx) => idx !== currentIndex);
+        setProfiles(newProfiles);
+        const newIndex = currentIndex >= newProfiles.length ? newProfiles.length - 1 : currentIndex;
+        setCurrentIndex(newIndex >= 0 ? newIndex : 0);
+        return;
+      }
+      
+      // Add to likes
+      likes.push(currentProfile.id);
+      localStorage.setItem('discoveryLikes', JSON.stringify(likes));
+      setLikes(likes);
+      
+      // Update daily likes
+      if (!isPremium) {
+        const newDailyLikes = { ...dailyLikes, count: dailyLikes.count + 1 };
+        setDailyLikes(newDailyLikes);
+        localStorage.setItem('dailyLikes', JSON.stringify(newDailyLikes));
+      }
+
+      // Check if it's a match (simplified - check if other user also liked this user)
+      // For now, we'll skip match logic since it's localStorage only
+      // You can add match logic later if needed
+
+      // Start swipe animation
+      setSwipeDirection('right');
+      
+      // Move to next profile
       setTimeout(() => {
-        setMatchedProfile(currentProfile);
-        setShowMatchModal(true);
-      }, 400);
+        // Remove liked profile from list
+        const newProfiles = profiles.filter((p, idx) => idx !== currentIndex);
+        setProfiles(newProfiles);
+        
+        const newIndex = currentIndex >= newProfiles.length ? newProfiles.length - 1 : currentIndex;
+        setCurrentIndex(newIndex >= 0 ? newIndex : 0);
+        setCurrentPhotoIndex(0);
+        setSwipeDirection(null);
+        setDragX(0);
+      }, 350);
+    } catch (error) {
+      console.error('Error liking profile:', error);
+      alert(error.message || 'Error liking profile. Please try again.');
     }
-    
-    // Wait for exit animation to complete before showing next card
-    setTimeout(() => {
-      setCurrentIndex(currentIndex + 1);
-      setCurrentPhotoIndex(0);
-      setSwipeDirection(null);
-      setDragX(0); // Reset drag position
-    }, 350); // Wait for exit animation (300ms) + small buffer
   };
 
   const handlePass = async () => {
-    // Check if profile is complete using backend API
+    // Check if profile is complete
     const isComplete = await checkProfileCompletion();
     if (!isComplete) {
       setShowCompleteDetailsModal(true);
@@ -422,20 +450,52 @@ export default function DiscoveryFeedPage() {
     const currentProfile = profiles[currentIndex];
     if (!currentProfile) return;
 
-    // Start swipe animation
-    setSwipeDirection('left');
+    try {
+      // ✅ Save to localStorage (NOT backend)
+      const savedPasses = localStorage.getItem('discoveryPasses');
+      const passes = savedPasses ? JSON.parse(savedPasses) : [];
+      
+      // Check if already passed
+      if (passes.includes(currentProfile.id)) {
+        // Already passed - just remove from list and move to next
+        const newProfiles = profiles.filter((p, idx) => idx !== currentIndex);
+        setProfiles(newProfiles);
+        const newIndex = currentIndex >= newProfiles.length ? newProfiles.length - 1 : currentIndex;
+        setCurrentIndex(newIndex >= 0 ? newIndex : 0);
+        return;
+      }
+      
+      // Add to passes
+      passes.push(currentProfile.id);
+      localStorage.setItem('discoveryPasses', JSON.stringify(passes));
+      setPasses(passes);
 
-    const newPasses = [...passes, currentProfile.id];
-    setPasses(newPasses);
-    localStorage.setItem('discoveryPasses', JSON.stringify(newPasses));
-    
-    // Wait for exit animation to complete before showing next card
-    setTimeout(() => {
-      setCurrentIndex(currentIndex + 1);
-      setCurrentPhotoIndex(0); // Reset photo index for new profile
-      setSwipeDirection(null);
-      setDragX(0); // Reset drag position
-    }, 350); // Wait for exit animation (300ms) + small buffer
+      // Start swipe animation
+      setSwipeDirection('left');
+
+      // Move to next profile
+      setTimeout(() => {
+        // Remove passed profile from list
+        const newProfiles = profiles.filter((p, idx) => idx !== currentIndex);
+        setProfiles(newProfiles);
+        
+        const newIndex = currentIndex >= newProfiles.length ? newProfiles.length - 1 : currentIndex;
+        setCurrentIndex(newIndex >= 0 ? newIndex : 0);
+        setCurrentPhotoIndex(0);
+        setSwipeDirection(null);
+        setDragX(0);
+      }, 350);
+    } catch (error) {
+      console.error('Error passing profile:', error);
+      alert(error.message || 'Error passing profile. Please try again.');
+    }
+  };
+
+  // Load next profile from localStorage (not needed anymore since we load all at once)
+  const loadNextProfile = () => {
+    // Profiles are already loaded from localStorage in loadProfiles()
+    // This function is kept for compatibility but does nothing
+    console.log('loadNextProfile called - profiles already loaded from localStorage');
   };
 
   // Check if profile is complete (using backend API)
@@ -521,10 +581,10 @@ export default function DiscoveryFeedPage() {
   // Show loading state
   if (isLoadingProfiles) {
     return (
-      <div className="h-screen heart-background flex items-center justify-center">
+      <div className="h-screen bg-gradient-to-br from-[#F5F7FA] via-[#E8ECF1] to-[#F5F7FA] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF91A4] mx-auto mb-4"></div>
-          <div className="text-[#212121] font-medium">Loading profiles...</div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#64B5F6] mx-auto mb-4"></div>
+          <div className="text-[#1A1A1A] font-medium">Loading profiles...</div>
         </div>
       </div>
     );
@@ -534,10 +594,13 @@ export default function DiscoveryFeedPage() {
   // Even if no profiles, show the page structure (user can see filters, navigation, etc.)
 
   return (
-    <div className="h-screen flex flex-col relative overflow-hidden bg-gradient-to-br from-[#FFF0F5] via-[#FFE4E1] to-[#FFF0F5]">
+    <div className="h-screen flex flex-col relative overflow-hidden bg-gradient-to-br from-[#F5F7FA] via-[#E8ECF1] to-[#F5F7FA]">
+      {/* Premium Decorative Background Elements */}
+      <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-gradient-to-br from-[#64B5F6]/8 to-transparent rounded-full blur-3xl -translate-x-1/3 -translate-y-1/3"></div>
+      <div className="absolute bottom-0 right-0 w-[700px] h-[700px] bg-gradient-to-tl from-[#42A5F5]/8 to-transparent rounded-full blur-3xl translate-x-1/3 translate-y-1/3"></div>
 
       {/* Left Sidebar Navigation - Desktop Only (Instagram Style) */}
-      <div className="hidden md:flex fixed left-0 top-0 bottom-0 w-16 bg-white border-r border-[#E0E0E0] z-30 flex-col items-center justify-center py-4">
+      <div className="hidden md:flex fixed left-0 top-0 bottom-0 w-16 bg-white/80 backdrop-blur-xl border-r border-[#E0E0E0]/50 z-30 flex-col items-center justify-center py-4 shadow-[4px_0_16px_rgba(0,0,0,0.04)]">
         <div className="flex flex-col items-center gap-2">
           {/* Profile */}
           <motion.button
@@ -546,9 +609,9 @@ export default function DiscoveryFeedPage() {
             whileTap={{ scale: 0.95 }}
             className="flex items-center justify-center w-12 h-12 transition-colors relative group"
           >
-            <UserCircle className={`w-6 h-6 ${location.pathname === '/profile' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            <UserCircle className={`w-6 h-6 ${location.pathname === '/profile' ? 'text-[#64B5F6]' : 'text-[#616161]'}`} />
             {location.pathname === '/profile' && (
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#64B5F6] rounded-r-full"></div>
             )}
           </motion.button>
 
@@ -559,9 +622,9 @@ export default function DiscoveryFeedPage() {
             whileTap={{ scale: 0.95 }}
             className="flex items-center justify-center w-12 h-12 transition-colors relative group"
           >
-            <Sparkles className={`w-6 h-6 ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            <Sparkles className={`w-6 h-6 ${location.pathname === '/discover' ? 'text-[#64B5F6]' : 'text-[#616161]'}`} />
             {location.pathname === '/discover' && (
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#64B5F6] rounded-r-full"></div>
             )}
           </motion.button>
 
@@ -572,9 +635,9 @@ export default function DiscoveryFeedPage() {
             whileTap={{ scale: 0.95 }}
             className="flex items-center justify-center w-12 h-12 transition-colors relative group"
           >
-            <Users className={`w-6 h-6 ${location.pathname === '/people' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            <Users className={`w-6 h-6 ${location.pathname === '/people' ? 'text-[#64B5F6]' : 'text-[#616161]'}`} />
             {location.pathname === '/people' && (
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#64B5F6] rounded-r-full"></div>
             )}
           </motion.button>
 
@@ -585,9 +648,9 @@ export default function DiscoveryFeedPage() {
             whileTap={{ scale: 0.95 }}
             className="flex items-center justify-center w-12 h-12 transition-colors relative group"
           >
-            <Heart className={`w-6 h-6 ${location.pathname === '/liked-you' ? 'text-[#FF91A4] fill-[#FF91A4]' : 'text-[#212121]'}`} />
+            <Heart className={`w-6 h-6 ${location.pathname === '/liked-you' ? 'text-[#64B5F6] fill-[#64B5F6]' : 'text-[#616161]'}`} />
             {location.pathname === '/liked-you' && (
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#64B5F6] rounded-r-full"></div>
             )}
           </motion.button>
 
@@ -598,40 +661,40 @@ export default function DiscoveryFeedPage() {
             whileTap={{ scale: 0.95 }}
             className="flex items-center justify-center w-12 h-12 transition-colors relative group"
           >
-            <MessageCircle className={`w-6 h-6 ${location.pathname === '/chats' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+            <MessageCircle className={`w-6 h-6 ${location.pathname === '/chats' ? 'text-[#64B5F6]' : 'text-[#616161]'}`} />
             {location.pathname === '/chats' && (
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#FF91A4] rounded-r-full"></div>
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#64B5F6] rounded-r-full"></div>
             )}
           </motion.button>
         </div>
       </div>
 
-      {/* Enhanced Header */}
+      {/* Premium Header - Fixed with Glassmorphism */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-        className="fixed top-0 left-0 right-0 z-20 bg-gradient-to-b from-white via-white/98 to-white/95 backdrop-blur-lg border-b border-[#FFB6C1]/30 shadow-lg"
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="fixed top-0 left-0 right-0 z-20 backdrop-blur-xl bg-white/80 border-b border-[#E0E0E0]/50 shadow-[0_8px_32px_rgba(0,0,0,0.06)]"
       >
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-6">
           <div className="flex items-center justify-between">
             {/* Left Arrow */}
             <motion.button
               onClick={() => navigate('/profile')}
-              whileHover={{ scale: 1.1, rotate: -5 }}
-              whileTap={{ scale: 0.9 }}
-              className="p-2.5 hover:bg-[#FFE4E1] rounded-xl transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-3 hover:bg-[#F5F5F5] rounded-xl transition-all duration-200"
             >
-              <ArrowLeft className="w-5 h-5 text-[#212121]" />
+              <ArrowLeft className="w-5 h-5 text-[#616161]" />
             </motion.button>
 
             {/* Center - Discover & Location */}
             <div className="flex-1 text-center">
               <motion.div
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.02 }}
                 className="inline-block"
               >
-                <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent">
+                <h1 className="text-2xl sm:text-3xl font-bold text-[#1A1A1A] tracking-tight">
                   Discover
                 </h1>
                 {currentUserLocation?.city && (
@@ -640,7 +703,7 @@ export default function DiscoveryFeedPage() {
                     animate={{ opacity: 1, y: 0 }}
                     className="flex items-center justify-center gap-1.5 mt-1"
                   >
-                    <MapPin className="w-3.5 h-3.5 text-[#FF91A4]" />
+                    <MapPin className="w-3.5 h-3.5 text-[#64B5F6]" />
                     <p className="text-xs sm:text-sm text-[#757575] font-medium">
                       {currentUserLocation.city}
                     </p>
@@ -652,11 +715,11 @@ export default function DiscoveryFeedPage() {
             {/* Right - Filter Button */}
             <motion.button
               onClick={() => navigate('/filters')}
-              whileHover={{ scale: 1.1, rotate: 5 }}
-              whileTap={{ scale: 0.9 }}
-              className="p-2.5 hover:bg-[#FFE4E1] rounded-xl transition-colors relative"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-3 hover:bg-[#F5F5F5] rounded-xl transition-all duration-200 relative"
             >
-              <Filter className="w-5 h-5 text-[#212121]" />
+              <Filter className="w-5 h-5 text-[#616161]" />
             </motion.button>
           </div>
         </div>
@@ -980,20 +1043,24 @@ export default function DiscoveryFeedPage() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none" />
                       
                       {/* Distance Badge */}
-                      {currentUserLocation && currentProfile.location && (
-                        <div className="absolute top-4 left-4 bg-white text-[#212121] px-3 py-1.5 rounded-full text-xs font-bold shadow-lg z-10 border border-[#E0E0E0] pointer-events-none">
+                      {currentProfile.distance !== null && currentProfile.distance !== undefined ? (
+                        <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm text-[#1A1A1A] px-3 py-1.5 rounded-full text-xs font-semibold shadow-[0_4px_16px_rgba(0,0,0,0.1)] z-10 border border-[#E8E8E8] pointer-events-none">
+                          {currentProfile.distance} km
+                        </div>
+                      ) : currentUserLocation && currentProfile.location && currentProfile.location.coordinates ? (
+                        <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm text-[#1A1A1A] px-3 py-1.5 rounded-full text-xs font-semibold shadow-[0_4px_16px_rgba(0,0,0,0.1)] z-10 border border-[#E8E8E8] pointer-events-none">
                           {Math.round(calculateDistance(
-                            currentUserLocation.lat,
-                            currentUserLocation.lng,
-                            currentProfile.location.lat,
-                            currentProfile.location.lng
+                            currentUserLocation.coordinates?.[1] || currentUserLocation.lat,
+                            currentUserLocation.coordinates?.[0] || currentUserLocation.lng,
+                            currentProfile.location.coordinates[1],
+                            currentProfile.location.coordinates[0]
                           ))} km
                         </div>
-                      )}
+                      ) : null}
                     </>
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#FFE4E1] via-[#FFF0F5] to-[#FFE4E1]">
-                      <div className="text-8xl text-[#FF91A4] font-bold">
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#E3F2FD] via-[#BBDEFB] to-[#E3F2FD]">
+                      <div className="text-8xl text-[#64B5F6] font-bold">
                         {currentProfile.name.charAt(0).toUpperCase()}
                       </div>
                     </div>
@@ -1008,7 +1075,7 @@ export default function DiscoveryFeedPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="relative z-10 -mt-8 bg-white rounded-t-3xl shadow-2xl w-full md:max-w-md lg:max-w-lg md:mx-auto mb-4"
+                  className="relative z-10 -mt-8 bg-white rounded-t-3xl shadow-[0_-8px_32px_rgba(0,0,0,0.1)] w-full md:max-w-md lg:max-w-lg md:mx-auto mb-4 border border-[#E8E8E8]"
                   style={{ pointerEvents: 'auto' }}
                   onClick={(e) => e.stopPropagation()}
                   onTouchStart={(e) => e.stopPropagation()}
@@ -1021,17 +1088,17 @@ export default function DiscoveryFeedPage() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.1 }}
-                      className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl p-5 mb-4 shadow-lg border border-[#FFB6C1]/20"
+                      className="bg-white rounded-3xl p-6 mb-5 shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-[#E0E0E0] hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)] transition-all duration-300"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-2">
+                          <h1 className="text-3xl sm:text-4xl font-bold text-[#1A1A1A] tracking-tight mb-3">
                             {currentProfile.name}, {currentProfile.age}
                           </h1>
                           {currentProfile.optional?.profession && (
-                            <div className="flex items-center gap-2 text-base text-[#757575]">
-                              <Briefcase className="w-4 h-4 text-[#FF91A4]" />
-                              <span>{currentProfile.optional.profession}</span>
+                            <div className="flex items-center gap-2.5 text-base text-[#616161] font-semibold">
+                              <Briefcase className="w-4 h-4 text-[#64B5F6]" />
+                              <span className="capitalize">{currentProfile.optional.profession}</span>
                             </div>
                           )}
                         </div>
@@ -1044,29 +1111,26 @@ export default function DiscoveryFeedPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.15 }}
-                        className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl p-4 mb-4 shadow-md border border-[#FFB6C1]/20"
+                        className="bg-white rounded-3xl p-5 mb-5 shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-[#E0E0E0] hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)] transition-all duration-300"
                       >
-                        <div className="flex items-center gap-3 text-sm text-[#757575]">
-                          <div className="w-10 h-10 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] rounded-full flex items-center justify-center">
-                            <MapPin className="w-5 h-5 text-[#FF91A4]" />
-                          </div>
+                        <div className="flex items-center gap-3 text-sm text-[#616161]">
+                          <MapPin className="w-5 h-5 text-[#64B5F6] flex-shrink-0" />
                           <div>
-                            <p className="font-semibold text-[#212121]">{currentProfile.location.city}</p>
-                            {calculateDistance(
-                              currentUserLocation.lat,
-                              currentUserLocation.lng,
-                              currentProfile.location.lat,
-                              currentProfile.location.lng
-                            ) && (
-                              <p className="text-xs text-[#757575]">
+                            <p className="font-bold text-[#1A1A1A] text-base">{currentProfile.location.city}</p>
+                            {currentProfile.distance !== null && currentProfile.distance !== undefined ? (
+                              <p className="text-xs text-[#757575] font-medium mt-1">
+                                {currentProfile.distance} km away
+                              </p>
+                            ) : currentUserLocation && currentProfile.location && currentProfile.location.coordinates ? (
+                              <p className="text-xs text-[#757575] font-medium mt-1">
                                 {Math.round(calculateDistance(
-                                  currentUserLocation.lat,
-                                  currentUserLocation.lng,
-                                  currentProfile.location.lat,
-                                  currentProfile.location.lng
+                                  currentUserLocation.coordinates?.[1] || currentUserLocation.lat,
+                                  currentUserLocation.coordinates?.[0] || currentUserLocation.lng,
+                                  currentProfile.location.coordinates[1],
+                                  currentProfile.location.coordinates[0]
                                 ))} km away
                               </p>
-                            )}
+                            ) : null}
                           </div>
                         </div>
                       </motion.div>
@@ -1078,15 +1142,13 @@ export default function DiscoveryFeedPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl p-5 mb-4 shadow-md border border-[#FFB6C1]/20"
+                        className="bg-white rounded-3xl p-6 mb-5 shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-[#E0E0E0] hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)] transition-all duration-300"
                       >
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] rounded-full flex items-center justify-center">
-                            <User className="w-5 h-5 text-[#FF91A4]" />
-                          </div>
-                          <h2 className="text-lg font-bold text-[#212121]">About</h2>
+                        <div className="flex items-center gap-3 mb-4">
+                          <User className="w-5 h-5 text-[#64B5F6]" />
+                          <h2 className="text-lg font-bold text-[#1A1A1A] tracking-tight">About</h2>
                         </div>
-                        <p className="text-base text-[#212121] leading-relaxed pl-13">
+                        <p className="text-base text-[#1A1A1A] leading-relaxed font-medium">
                           {currentProfile.bio}
                         </p>
                       </motion.div>
@@ -1098,23 +1160,21 @@ export default function DiscoveryFeedPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.25 }}
-                        className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl p-5 mb-4 shadow-md border border-[#FFB6C1]/20"
+                        className="bg-white rounded-3xl p-6 mb-5 shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-[#E0E0E0] hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)] transition-all duration-300"
                       >
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="w-10 h-10 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] rounded-full flex items-center justify-center">
-                            <BookOpen className="w-5 h-5 text-[#FF91A4]" />
-                          </div>
-                          <h2 className="text-lg font-bold text-[#212121]">Interests</h2>
+                        <div className="flex items-center gap-3 mb-5">
+                          <BookOpen className="w-5 h-5 text-[#64B5F6]" />
+                          <h2 className="text-lg font-bold text-[#1A1A1A] tracking-tight">Interests</h2>
                         </div>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-3">
                           {currentProfile.interests.map((interest, idx) => (
                             <motion.span
                               key={idx}
                               initial={{ opacity: 0, scale: 0.8 }}
                               animate={{ opacity: 1, scale: 1 }}
                               transition={{ delay: 0.3 + idx * 0.05 }}
-                              whileHover={{ scale: 1.05 }}
-                              className="px-4 py-2 bg-gradient-to-r from-[#FFE4E1] to-[#FFF0F5] text-[#FF91A4] rounded-full text-sm font-semibold border border-[#FFB6C1]/30 shadow-sm"
+                              whileHover={{ scale: 1.05, y: -1 }}
+                              className="px-4 py-2 bg-white border-2 border-[#64B5F6] text-[#64B5F6] rounded-xl text-sm font-semibold shadow-sm hover:bg-[#E3F2FD] hover:border-[#42A5F5] hover:shadow-md transition-all cursor-default"
                             >
                               {interest}
                             </motion.span>
@@ -1130,15 +1190,13 @@ export default function DiscoveryFeedPage() {
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.4 }}
-                          className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl p-5 shadow-md border border-[#FFB6C1]/20"
+                          className="bg-white rounded-3xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-[#E0E0E0] hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)] transition-all duration-300"
                         >
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="w-10 h-10 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] rounded-full flex items-center justify-center">
-                              <GraduationCap className="w-5 h-5 text-[#FF91A4]" />
-                            </div>
-                            <h3 className="text-base font-bold text-[#212121]">Education</h3>
+                          <div className="flex items-center gap-3 mb-4">
+                            <GraduationCap className="w-5 h-5 text-[#64B5F6]" />
+                            <h3 className="text-base font-bold text-[#1A1A1A] tracking-tight">Education</h3>
                           </div>
-                          <p className="text-base text-[#212121] pl-13">{currentProfile.optional.education}</p>
+                          <p className="text-base text-[#1A1A1A] font-semibold capitalize">{currentProfile.optional.education}</p>
                         </motion.div>
                       )}
                       
@@ -1147,22 +1205,21 @@ export default function DiscoveryFeedPage() {
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.45 }}
-                          className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl p-5 shadow-md border border-[#FFB6C1]/20"
+                          className="bg-white rounded-3xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-[#E0E0E0] hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)] transition-all duration-300"
                         >
-                          <div className="flex items-center gap-3 mb-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] rounded-full flex items-center justify-center">
-                              <Languages className="w-5 h-5 text-[#FF91A4]" />
-                            </div>
-                            <h3 className="text-base font-bold text-[#212121]">Languages</h3>
+                          <div className="flex items-center gap-3 mb-4">
+                            <Languages className="w-5 h-5 text-[#64B5F6]" />
+                            <h3 className="text-base font-bold text-[#1A1A1A] tracking-tight">Languages</h3>
                           </div>
-                          <div className="flex flex-wrap gap-2 pl-13">
+                          <div className="flex flex-wrap gap-3">
                             {currentProfile.optional.languages.map((lang, idx) => (
                               <motion.span
                                 key={idx}
                                 initial={{ opacity: 0, scale: 0.8 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ delay: 0.5 + idx * 0.05 }}
-                                className="px-3 py-1.5 bg-[#FFE4E1] text-[#212121] rounded-full text-sm font-medium shadow-sm"
+                                whileHover={{ scale: 1.05, y: -1 }}
+                                className="px-4 py-2 bg-white border-2 border-[#64B5F6] text-[#64B5F6] rounded-xl text-sm font-semibold shadow-sm hover:bg-[#E3F2FD] hover:border-[#42A5F5] hover:shadow-md transition-all cursor-default"
                               >
                                 {lang}
                               </motion.span>
@@ -1176,79 +1233,88 @@ export default function DiscoveryFeedPage() {
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.5 }}
-                          className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl p-5 shadow-md border border-[#FFB6C1]/20"
+                          className="bg-white rounded-3xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-[#E0E0E0] hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)] transition-all duration-300"
                         >
-                          <div className="flex items-center gap-3 mb-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] rounded-full flex items-center justify-center">
-                              <Coffee className="w-5 h-5 text-[#FF91A4]" />
-                            </div>
-                            <h3 className="text-base font-bold text-[#212121]">Lifestyle</h3>
+                          <div className="flex items-center gap-3 mb-4">
+                            <Coffee className="w-5 h-5 text-[#64B5F6]" />
+                            <h3 className="text-base font-bold text-[#1A1A1A] tracking-tight">Lifestyle</h3>
                           </div>
-                          <div className="flex flex-wrap gap-2 pl-13">
+                          <div className="flex flex-wrap gap-3">
                             {currentProfile.dealbreakers.drinking && (
-                              <span className="px-3 py-1.5 bg-[#FFE4E1] text-[#212121] rounded-full text-sm font-medium shadow-sm">
+                              <motion.span
+                                whileHover={{ scale: 1.05, y: -1 }}
+                                className="px-4 py-2 bg-white border-2 border-[#64B5F6] text-[#64B5F6] rounded-xl text-sm font-semibold shadow-sm hover:bg-[#E3F2FD] hover:border-[#42A5F5] hover:shadow-md transition-all cursor-default inline-block"
+                              >
                                 {currentProfile.dealbreakers.drinking === 'socially' ? 'Social Drinker' : 
                                  currentProfile.dealbreakers.drinking === 'never' ? 'Never Drinks' : 
                                  currentProfile.dealbreakers.drinking === 'regularly' ? 'Regular Drinker' : 
                                  currentProfile.dealbreakers.drinking}
-                              </span>
+                              </motion.span>
                             )}
                             {currentProfile.dealbreakers.smoking && (
-                              <span className="px-3 py-1.5 bg-[#FFE4E1] text-[#212121] rounded-full text-sm font-medium shadow-sm">
+                              <motion.span
+                                whileHover={{ scale: 1.05, y: -1 }}
+                                className="px-4 py-2 bg-white border-2 border-[#64B5F6] text-[#64B5F6] rounded-xl text-sm font-semibold shadow-sm hover:bg-[#E3F2FD] hover:border-[#42A5F5] hover:shadow-md transition-all cursor-default inline-block"
+                              >
                                 {currentProfile.dealbreakers.smoking === 'non-smoker' ? 'Non-Smoker' : 
                                  currentProfile.dealbreakers.smoking === 'socially' ? 'Social Smoker' : 
                                  currentProfile.dealbreakers.smoking === 'regularly' ? 'Smoker' : 
                                  currentProfile.dealbreakers.smoking}
-                              </span>
+                              </motion.span>
                             )}
                             {currentProfile.dealbreakers.kids && (
-                              <span className="px-3 py-1.5 bg-[#FFE4E1] text-[#212121] rounded-full text-sm font-medium shadow-sm">
+                              <motion.span
+                                whileHover={{ scale: 1.05, y: -1 }}
+                                className="px-4 py-2 bg-white border-2 border-[#64B5F6] text-[#64B5F6] rounded-xl text-sm font-semibold shadow-sm hover:bg-[#E3F2FD] hover:border-[#42A5F5] hover:shadow-md transition-all cursor-default inline-block"
+                              >
                                 {currentProfile.dealbreakers.kids === 'want-kids' ? 'Wants Kids' : 
                                  currentProfile.dealbreakers.kids === 'have-kids' ? 'Has Kids' : 
                                  currentProfile.dealbreakers.kids === 'dont-want' ? "Doesn't Want Kids" : 
                                  currentProfile.dealbreakers.kids}
-                              </span>
+                              </motion.span>
                             )}
                             {currentProfile.dealbreakers.pets && (
-                              <span className="px-3 py-1.5 bg-[#FFE4E1] text-[#212121] rounded-full text-sm font-medium shadow-sm">
+                              <motion.span
+                                whileHover={{ scale: 1.05, y: -1 }}
+                                className="px-4 py-2 bg-white border-2 border-[#64B5F6] text-[#64B5F6] rounded-xl text-sm font-semibold shadow-sm hover:bg-[#E3F2FD] hover:border-[#42A5F5] hover:shadow-md transition-all cursor-default inline-block"
+                              >
                                 {currentProfile.dealbreakers.pets === 'love-pets' ? 'Loves Pets' : 
                                  currentProfile.dealbreakers.pets === 'have-pets' ? 'Has Pets' : 
                                  currentProfile.dealbreakers.pets === 'no-pets' ? 'No Pets' : 
                                  currentProfile.dealbreakers.pets}
-                              </span>
+                              </motion.span>
                             )}
                           </div>
                         </motion.div>
                       )}
 
                       {/* Prompts Section */}
-                      {currentProfile.prompts && currentProfile.prompts.length > 0 && (
+                      {currentProfile.optional?.prompts && currentProfile.optional.prompts.length > 0 && (
                         <motion.div
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.55 }}
-                          className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl p-5 shadow-md border border-[#FFB6C1]/20"
+                          className="bg-white rounded-3xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-[#E0E0E0] hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)] transition-all duration-300"
                         >
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] rounded-full flex items-center justify-center">
-                              <MessageSquare className="w-5 h-5 text-[#FF91A4]" />
-                            </div>
-                            <h3 className="text-base font-bold text-[#212121]">Prompts</h3>
+                          <div className="flex items-center gap-3 mb-5">
+                            <MessageSquare className="w-5 h-5 text-[#64B5F6]" />
+                            <h3 className="text-base font-bold text-[#1A1A1A] tracking-tight">Prompts</h3>
                           </div>
                           <div className="space-y-3">
-                            {currentProfile.prompts.map((prompt, idx) => (
+                            {currentProfile.optional.prompts.map((prompt, idx) => (
                               <motion.div
                                 key={idx}
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.6 + idx * 0.05 }}
-                                className="bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] rounded-xl p-4 border border-[#FFB6C1]/30"
+                                whileHover={{ scale: 1.02, y: -2 }}
+                                className="bg-gradient-to-br from-[#F5F7FA] to-[#E8ECF1] rounded-2xl p-5 border border-[#E0E0E0] shadow-sm hover:shadow-md transition-all"
                               >
-                                <p className="text-base font-semibold text-[#212121] mb-2">
+                                <p className="text-base font-bold text-[#1A1A1A] mb-3 tracking-tight">
                                   {prompt.prompt}
                                 </p>
                                 {prompt.answer && (
-                                  <p className="text-sm text-[#757575] leading-relaxed">
+                                  <p className="text-sm text-[#616161] leading-relaxed font-medium">
                                     {prompt.answer}
                                   </p>
                                 )}
@@ -1272,14 +1338,49 @@ export default function DiscoveryFeedPage() {
                 return (
                   <div className="flex items-center justify-center min-h-[400px] w-full">
                     <div className="text-center">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF91A4] mx-auto mb-4"></div>
-                      <p className="text-[#757575]">Loading profile...</p>
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#64B5F6] mx-auto mb-4"></div>
+                      <p className="text-[#616161] font-medium">Loading profile...</p>
             </div>
                   </div>
                 );
               })()
             )
-          ) : null}
+          ) : (
+            // Empty state - No profiles found
+            <div className="flex items-center justify-center min-h-[400px] w-full">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center px-4"
+              >
+                <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_8px_24px_rgba(0,0,0,0.1)] border border-[#E8E8E8]">
+                  <Users className="w-12 h-12 text-[#64B5F6]" />
+                </div>
+                <h2 className="text-2xl font-bold text-[#1A1A1A] mb-2 tracking-tight">No profiles found</h2>
+                <p className="text-[#616161] mb-6 max-w-md mx-auto font-medium">
+                  We couldn't find any profiles matching your preferences. Try adjusting your filters or complete your profile to see more people.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <motion.button
+                    onClick={() => navigate('/filters')}
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-6 py-3 bg-[#64B5F6] hover:bg-[#42A5F5] text-white rounded-xl font-semibold shadow-[0_4px_16px_rgba(100,181,246,0.3)] hover:shadow-[0_8px_24px_rgba(100,181,246,0.4)] transition-all"
+                  >
+                    Adjust Filters
+                  </motion.button>
+                  <motion.button
+                    onClick={() => navigate('/profile')}
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-6 py-3 bg-white border border-[#64B5F6] text-[#64B5F6] rounded-xl font-semibold hover:bg-[#E3F2FD] transition-all shadow-sm"
+                  >
+                    Complete Profile
+                  </motion.button>
+                </div>
+              </motion.div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1299,9 +1400,9 @@ export default function DiscoveryFeedPage() {
               exit={{ scale: 0.9, y: 20, opacity: 0 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl border border-[#FFB6C1]/20 relative overflow-hidden"
+              className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-[0_20px_60px_rgba(0,0,0,0.3)] border border-[#E8E8E8] relative overflow-hidden"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/5 to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-[#64B5F6]/5 to-transparent"></div>
               <div className="text-center mb-6">
                 <motion.div
                   animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}
@@ -1311,10 +1412,10 @@ export default function DiscoveryFeedPage() {
                   <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent"></div>
                   <Crown className="w-10 h-10 text-white relative z-10" />
                 </motion.div>
-                <h3 className="text-2xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-2 relative z-10">
+                <h3 className="text-2xl font-bold text-[#1A1A1A] mb-2 relative z-10 tracking-tight">
                   Upgrade to Premium
                 </h3>
-                <p className="text-sm text-[#757575] relative z-10">
+                <p className="text-sm text-[#616161] relative z-10 font-medium">
                   You've used all {DAILY_LIKE_LIMIT} free likes today!
                 </p>
               </div>
@@ -1331,14 +1432,14 @@ export default function DiscoveryFeedPage() {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="flex items-center gap-3 text-sm text-[#212121]"
+                    className="flex items-center gap-3 text-sm text-[#1A1A1A]"
                   >
                     <div className="w-6 h-6 bg-[#4CAF50] rounded-full flex items-center justify-center flex-shrink-0">
                       <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
-                    <span>{feature}</span>
+                    <span className="font-medium">{feature}</span>
                   </motion.div>
                 ))}
               </div>
@@ -1348,7 +1449,7 @@ export default function DiscoveryFeedPage() {
                   onClick={() => setShowPremiumPrompt(false)}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 px-4 py-3 border-2 border-[#E0E0E0] text-[#212121] rounded-xl font-semibold hover:border-[#757575] hover:bg-[#F5F5F5] transition-all"
+                  className="flex-1 px-4 py-3 border border-[#E0E0E0] text-[#1A1A1A] rounded-xl font-semibold hover:border-[#757575] hover:bg-[#F5F5F5] transition-all shadow-sm"
                 >
                   Maybe Later
                 </motion.button>
@@ -1356,7 +1457,7 @@ export default function DiscoveryFeedPage() {
                   onClick={handleUpgradePremium}
                   whileHover={{ scale: 1.02, y: -2 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] text-white rounded-xl font-semibold hover:shadow-xl transition-all shadow-lg"
+                  className="flex-1 px-4 py-3 bg-[#64B5F6] hover:bg-[#42A5F5] text-white rounded-xl font-semibold hover:shadow-[0_8px_24px_rgba(100,181,246,0.4)] transition-all shadow-[0_4px_16px_rgba(100,181,246,0.3)]"
                 >
                   Upgrade Now
                 </motion.button>
@@ -1385,10 +1486,10 @@ export default function DiscoveryFeedPage() {
               exit={{ scale: 0.8, opacity: 0, y: 50 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-[#FFB6C1]/20 relative overflow-hidden"
+              className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-[0_20px_60px_rgba(0,0,0,0.3)] border border-[#E8E8E8] relative overflow-hidden"
             >
               {/* Decorative Background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/10 to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-[#64B5F6]/10 to-transparent"></div>
               
               {/* Close Button */}
               <button
@@ -1396,9 +1497,9 @@ export default function DiscoveryFeedPage() {
                   setShowMatchModal(false);
                   setMatchedProfile(null);
                 }}
-                className="absolute top-4 right-4 p-2 hover:bg-[#FFE4E1] rounded-full transition-colors z-10"
+                className="absolute top-4 right-4 p-2 hover:bg-[#F5F5F5] rounded-full transition-colors z-10"
               >
-                <X className="w-5 h-5 text-[#212121]" />
+                <X className="w-5 h-5 text-[#616161]" />
               </button>
 
               <div className="text-center relative z-10">
@@ -1414,7 +1515,7 @@ export default function DiscoveryFeedPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-2"
+                    className="text-3xl sm:text-4xl font-bold text-[#1A1A1A] mb-2 tracking-tight"
                   >
                     It's a Match!
                   </motion.h2>
@@ -1422,7 +1523,7 @@ export default function DiscoveryFeedPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
-                    className="text-lg text-[#757575] mb-6"
+                    className="text-lg text-[#616161] mb-6 font-medium"
                   >
                     You and {matchedProfile.name} liked each other!
                   </motion.p>
@@ -1436,7 +1537,7 @@ export default function DiscoveryFeedPage() {
                   className="mb-6"
                 >
                   <div className="relative w-32 h-32 sm:w-40 sm:h-40 mx-auto">
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-full p-1">
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#64B5F6] to-[#42A5F5] rounded-full p-1">
                       <div className="w-full h-full bg-white rounded-full p-1">
                         <img
                           src={matchedProfile.photos?.[0] || matchedProfile.avatar}
@@ -1464,7 +1565,7 @@ export default function DiscoveryFeedPage() {
                     }}
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.95 }}
-                    className="flex-1 px-6 py-3.5 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] text-[#FF91A4] rounded-xl font-semibold hover:from-[#FF91A4] hover:to-[#FF69B4] hover:text-white transition-all border-2 border-[#FF91A4] shadow-md"
+                    className="flex-1 px-6 py-3.5 bg-white border border-[#64B5F6] text-[#64B5F6] rounded-xl font-semibold hover:bg-[#E3F2FD] transition-all shadow-sm"
                   >
                     Keep Swiping
                   </motion.button>
@@ -1482,7 +1583,7 @@ export default function DiscoveryFeedPage() {
                     }}
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.95 }}
-                    className="flex-1 px-6 py-3.5 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] text-white rounded-xl font-semibold hover:shadow-xl transition-all shadow-lg"
+                    className="flex-1 px-6 py-3.5 bg-[#64B5F6] hover:bg-[#42A5F5] text-white rounded-xl font-semibold hover:shadow-[0_8px_24px_rgba(100,181,246,0.4)] transition-all shadow-[0_4px_16px_rgba(100,181,246,0.3)]"
                   >
                     Send Message
                   </motion.button>
@@ -1509,17 +1610,17 @@ export default function DiscoveryFeedPage() {
               exit={{ scale: 0.8, opacity: 0, y: 50 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-gradient-to-br from-white to-[#FFF0F5] rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-[#FFB6C1]/20 relative overflow-hidden"
+              className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-[0_20px_60px_rgba(0,0,0,0.3)] border border-[#E8E8E8] relative overflow-hidden"
             >
               {/* Decorative Background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-[#FF91A4]/10 to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-[#64B5F6]/10 to-transparent"></div>
               
               {/* Close Button */}
               <button
                 onClick={() => setShowCompleteDetailsModal(false)}
-                className="absolute top-4 right-4 p-2 hover:bg-[#FFE4E1] rounded-full transition-colors z-10"
+                className="absolute top-4 right-4 p-2 hover:bg-[#F5F5F5] rounded-full transition-colors z-10"
               >
-                <X className="w-5 h-5 text-[#212121]" />
+                <X className="w-5 h-5 text-[#616161]" />
               </button>
 
               <div className="text-center relative z-10">
@@ -1530,7 +1631,7 @@ export default function DiscoveryFeedPage() {
                   transition={{ type: "spring", stiffness: 200, damping: 10, delay: 0.2 }}
                   className="mb-6"
                 >
-                  <div className="w-20 h-20 bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] rounded-full flex items-center justify-center mx-auto shadow-lg">
+                  <div className="w-20 h-20 bg-gradient-to-br from-[#64B5F6] to-[#42A5F5] rounded-full flex items-center justify-center mx-auto shadow-lg">
                     <UserCircle className="w-10 h-10 text-white" />
                   </div>
                 </motion.div>
@@ -1540,7 +1641,7 @@ export default function DiscoveryFeedPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent mb-3"
+                  className="text-2xl sm:text-3xl font-bold text-[#1A1A1A] mb-3 tracking-tight"
                 >
                   Complete Your Profile
                 </motion.h2>
@@ -1548,38 +1649,28 @@ export default function DiscoveryFeedPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="text-base text-[#757575] mb-6"
+                  className="text-base text-[#616161] mb-6 font-medium"
                 >
                   To swipe, you have to complete your details first.
                 </motion.p>
 
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                  <motion.button
-                    onClick={() => setShowCompleteDetailsModal(false)}
-                    whileHover={{ scale: 1.05, y: -2 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="flex-1 px-6 py-3.5 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] text-[#FF91A4] rounded-xl font-semibold hover:from-[#FF91A4] hover:to-[#FF69B4] hover:text-white transition-all border-2 border-[#FF91A4] shadow-md"
-                  >
-                    Cancel
-                  </motion.button>
+                {/* Action Button */}
+                <div className="flex justify-center mt-6">
                   <motion.button
                     onClick={() => {
                       setShowCompleteDetailsModal(false);
-                      // Navigate to onboarding starting from step 2 (after basic info)
-                      // Pass state to indicate starting from step 2
+                      // Navigate to onboarding page - it will automatically find and show first incomplete step
                       navigate('/onboarding', { 
                         state: { 
-                          startFromStep: 2,
-                          skipBasicInfo: true 
+                          showOnlyIncomplete: true
                         }
                       });
                     }}
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.95 }}
-                    className="flex-1 px-6 py-3.5 bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] text-white rounded-xl font-semibold hover:shadow-xl transition-all shadow-lg"
+                    className="px-8 py-3.5 bg-[#64B5F6] hover:bg-[#42A5F5] text-white rounded-xl font-semibold hover:shadow-[0_8px_24px_rgba(100,181,246,0.4)] transition-all shadow-[0_4px_16px_rgba(100,181,246,0.3)]"
                   >
-                    Complete Details
+                    Complete Profile
                   </motion.button>
                 </div>
               </div>
@@ -1589,7 +1680,7 @@ export default function DiscoveryFeedPage() {
       </AnimatePresence>
 
       {/* Bottom Navigation Bar - Mobile Only */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-white via-white/98 to-white/95 backdrop-blur-lg border-t-2 border-[#FFB6C1]/30 shadow-2xl">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 backdrop-blur-xl bg-white/80 border-t border-[#E0E0E0]/50 shadow-[0_-8px_32px_rgba(0,0,0,0.06)]">
         <div className="flex items-center justify-around px-2 py-2">
           {/* Profile */}
           <motion.button
@@ -1597,8 +1688,8 @@ export default function DiscoveryFeedPage() {
             whileTap={{ scale: 0.9 }}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors"
           >
-            <UserCircle className={`w-5 h-5 ${location.pathname === '/profile' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
-            <span className={`text-xs font-medium ${location.pathname === '/profile' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+            <UserCircle className={`w-5 h-5 ${location.pathname === '/profile' ? 'text-[#64B5F6]' : 'text-[#616161]'}`} />
+            <span className={`text-xs font-medium ${location.pathname === '/profile' ? 'text-[#64B5F6]' : 'text-[#616161]'}`}>
               Profile
             </span>
           </motion.button>
@@ -1609,8 +1700,8 @@ export default function DiscoveryFeedPage() {
             whileTap={{ scale: 0.9 }}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors"
           >
-            <Sparkles className={`w-5 h-5 ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
-            <span className={`text-xs font-medium ${location.pathname === '/discover' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+            <Sparkles className={`w-5 h-5 ${location.pathname === '/discover' ? 'text-[#64B5F6]' : 'text-[#616161]'}`} />
+            <span className={`text-xs font-medium ${location.pathname === '/discover' ? 'text-[#64B5F6]' : 'text-[#616161]'}`}>
               Discover
             </span>
           </motion.button>
@@ -1625,8 +1716,8 @@ export default function DiscoveryFeedPage() {
             whileTap={{ scale: 0.9 }}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative"
           >
-            <Users className={`w-5 h-5 ${location.pathname === '/people' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
-            <span className={`text-xs font-medium ${location.pathname === '/people' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+            <Users className={`w-5 h-5 ${location.pathname === '/people' ? 'text-[#64B5F6]' : 'text-[#616161]'}`} />
+            <span className={`text-xs font-medium ${location.pathname === '/people' ? 'text-[#64B5F6]' : 'text-[#616161]'}`}>
               People
             </span>
           </motion.button>
@@ -1638,14 +1729,14 @@ export default function DiscoveryFeedPage() {
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative"
           >
             <div className="relative inline-block">
-              <Heart className={`w-5 h-5 ${location.pathname === '/liked-you' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+              <Heart className={`w-5 h-5 ${location.pathname === '/liked-you' ? 'text-[#64B5F6] fill-[#64B5F6]' : 'text-[#616161]'}`} />
               {likes.length > 0 && (
-                <span className="absolute top-0 right-0 w-4 h-4 bg-[#FF91A4] text-white text-[10px] rounded-full flex items-center justify-center font-bold transform translate-x-1/2 -translate-y-1/2">
+                <span className="absolute top-0 right-0 w-4 h-4 bg-[#64B5F6] text-white text-[10px] rounded-full flex items-center justify-center font-bold transform translate-x-1/2 -translate-y-1/2">
                   {likes.length}
                 </span>
               )}
             </div>
-            <span className={`text-xs font-medium ${location.pathname === '/liked-you' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+            <span className={`text-xs font-medium ${location.pathname === '/liked-you' ? 'text-[#64B5F6]' : 'text-[#616161]'}`}>
               Liked You
             </span>
           </motion.button>
@@ -1657,14 +1748,14 @@ export default function DiscoveryFeedPage() {
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors relative"
           >
             <div className="relative inline-block">
-              <MessageCircle className={`w-5 h-5 ${location.pathname === '/chats' ? 'text-[#FF91A4]' : 'text-[#212121]'}`} />
+              <MessageCircle className={`w-5 h-5 ${location.pathname === '/chats' ? 'text-[#64B5F6]' : 'text-[#616161]'}`} />
               {matches.length > 0 && (
-                <span className="absolute top-0 right-0 w-4 h-4 bg-[#FF91A4] text-white text-[10px] rounded-full flex items-center justify-center font-bold transform translate-x-1/2 -translate-y-1/2">
+                <span className="absolute top-0 right-0 w-4 h-4 bg-[#64B5F6] text-white text-[10px] rounded-full flex items-center justify-center font-bold transform translate-x-1/2 -translate-y-1/2">
                   {matches.length}
                 </span>
               )}
             </div>
-            <span className={`text-xs font-medium ${location.pathname === '/chats' ? 'text-[#FF91A4]' : 'text-[#212121]'}`}>
+            <span className={`text-xs font-medium ${location.pathname === '/chats' ? 'text-[#64B5F6]' : 'text-[#616161]'}`}>
               Chats
             </span>
           </motion.button>
