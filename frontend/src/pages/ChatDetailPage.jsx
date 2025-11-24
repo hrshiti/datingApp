@@ -18,38 +18,6 @@ export default function ChatDetailPage() {
   const [showMenu, setShowMenu] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
 
-  // Dummy messages data
-  const dummyMessages = [
-    {
-      id: 1,
-      senderId: parseInt(userId) || 1,
-      text: 'Hey! How are you doing?',
-      timestamp: new Date(Date.now() - 2 * 60000).toISOString(),
-      isSent: false
-    },
-    {
-      id: 2,
-      senderId: 'current',
-      text: "Hi! I'm doing great, thanks for asking! 😊",
-      timestamp: new Date(Date.now() - 1 * 60000).toISOString(),
-      isSent: true
-    },
-    {
-      id: 3,
-      senderId: parseInt(userId) || 1,
-      text: 'That\'s awesome! Would you like to meet up sometime?',
-      timestamp: new Date(Date.now() - 30 * 1000).toISOString(),
-      isSent: false
-    },
-    {
-      id: 4,
-      senderId: 'current',
-      text: 'Sure! I\'d love to. When are you free?',
-      timestamp: new Date().toISOString(),
-      isSent: true
-    }
-  ];
-
   useEffect(() => {
     // Load profile data
     const chatUserId = userId ? parseInt(userId) : location.state?.userId || 1;
@@ -60,6 +28,38 @@ export default function ChatDetailPage() {
       // Fallback to first profile
       setProfile(mockProfiles[0]);
     }
+
+    // Generate dummy messages based on the chat user ID
+    const dummyMessages = [
+      {
+        id: 1,
+        senderId: chatUserId,
+        text: 'Hey! How are you doing?',
+        timestamp: new Date(Date.now() - 2 * 60000).toISOString(),
+        isSent: false
+      },
+      {
+        id: 2,
+        senderId: 'current',
+        text: "Hi! I'm doing great, thanks for asking! 😊",
+        timestamp: new Date(Date.now() - 1 * 60000).toISOString(),
+        isSent: true
+      },
+      {
+        id: 3,
+        senderId: chatUserId,
+        text: 'That\'s awesome! Would you like to meet up sometime?',
+        timestamp: new Date(Date.now() - 30 * 1000).toISOString(),
+        isSent: false
+      },
+      {
+        id: 4,
+        senderId: 'current',
+        text: 'Sure! I\'d love to. When are you free?',
+        timestamp: new Date().toISOString(),
+        isSent: true
+      }
+    ];
 
     // Load messages (for now using dummy)
     setMessages(dummyMessages);
@@ -165,46 +165,42 @@ export default function ChatDetailPage() {
 
   if (!profile) {
     return (
-      <div className="h-screen heart-background flex items-center justify-center">
+      <div className="h-screen bg-gradient-to-br from-[#F5F7FA] via-[#E8ECF1] to-[#F5F7FA] flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="text-center"
         >
-          <div className="w-16 h-16 border-4 border-[#FF91A4] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-[#212121] font-medium">Loading chat...</p>
+          <div className="w-16 h-16 border-4 border-[#64B5F6] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-[#1A1A1A] font-medium">Loading chat...</p>
         </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen heart-background flex flex-col relative overflow-hidden">
-      <span className="heart-decoration">💕</span>
-      <span className="heart-decoration">💖</span>
-      <span className="heart-decoration">💗</span>
-      <span className="heart-decoration">💝</span>
-      <span className="heart-decoration">❤️</span>
-      <span className="heart-decoration">💓</span>
-      <div className="decoration-circle"></div>
-      <div className="decoration-circle"></div>
+    <div className="h-screen bg-gradient-to-br from-[#F5F7FA] via-[#E8ECF1] to-[#F5F7FA] flex flex-col relative overflow-hidden">
+      {/* Premium Decorative Background Elements */}
+      <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-gradient-to-br from-[#64B5F6]/8 to-transparent rounded-full blur-3xl -translate-x-1/3 -translate-y-1/3"></div>
+      <div className="absolute bottom-0 right-0 w-[700px] h-[700px] bg-gradient-to-tl from-[#42A5F5]/8 to-transparent rounded-full blur-3xl translate-x-1/3 translate-y-1/3"></div>
 
-      {/* Header - Fixed at Top */}
+      {/* Premium Header - Fixed with Glassmorphism */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="fixed top-0 left-0 right-0 z-30 bg-gradient-to-b from-white via-white/98 to-white/95 backdrop-blur-lg border-b-2 border-[#FFB6C1]/30 shadow-lg"
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="fixed top-0 left-0 right-0 z-30 backdrop-blur-xl bg-white/80 border-b border-[#E0E0E0]/50 shadow-[0_8px_32px_rgba(0,0,0,0.06)]"
       >
-        <div className="max-w-2xl mx-auto px-4 py-4">
+        <div className="max-w-2xl mx-auto px-4 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <motion.button
                 onClick={() => navigate('/chats')}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="p-2 hover:bg-[#FFE4E1] rounded-xl transition-colors flex-shrink-0"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="p-3 hover:bg-[#F5F5F5] rounded-xl transition-all duration-200 flex-shrink-0"
               >
-                <ArrowLeft className="w-5 h-5 text-[#212121]" />
+                <ArrowLeft className="w-5 h-5 text-[#616161]" />
               </motion.button>
               
               {/* Profile Info - Clickable */}
@@ -217,14 +213,14 @@ export default function ChatDetailPage() {
                 <div className="relative flex-shrink-0">
                   <motion.div
                     whileHover={{ rotate: 5 }}
-                    className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FF91A4] to-[#FF69B4] p-1 shadow-lg"
+                    className="w-12 h-12 rounded-full bg-gradient-to-br from-[#64B5F6] to-[#42A5F5] p-1 shadow-[0_4px_16px_rgba(100,181,246,0.3)]"
                   >
                     <img
-                      src={profile.photos?.[0] || `https://ui-avatars.com/api/?name=${profile.name}&background=FF1744&color=fff&size=100`}
+                      src={profile.photos?.[0] || `https://ui-avatars.com/api/?name=${profile.name}&background=64B5F6&color=fff&size=100`}
                       alt={profile.name}
                       className="w-full h-full rounded-full object-cover"
                       onError={(e) => {
-                        e.target.src = `https://ui-avatars.com/api/?name=${profile.name}&background=FF1744&color=fff&size=100`;
+                        e.target.src = `https://ui-avatars.com/api/?name=${profile.name}&background=64B5F6&color=fff&size=100`;
                       }}
                     />
                   </motion.div>
@@ -237,7 +233,7 @@ export default function ChatDetailPage() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-lg font-bold bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] bg-clip-text text-transparent truncate hover:from-[#FF69B4] hover:to-[#FF91A4] transition-all">
+                  <h1 className="text-lg font-bold text-[#1A1A1A] truncate tracking-tight">
                     {profile.name}
                   </h1>
                   <div className="flex items-center gap-2">
@@ -256,20 +252,20 @@ export default function ChatDetailPage() {
             
             <div className="flex items-center gap-2 relative flex-shrink-0">
               <motion.button
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                whileTap={{ scale: 0.9 }}
-                className="p-2.5 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] hover:from-[#FF91A4] hover:to-[#FF69B4] rounded-xl transition-all shadow-md hover:shadow-lg"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="p-3 bg-white border border-[#E0E0E0] text-[#616161] hover:border-[#64B5F6] rounded-xl transition-all shadow-sm hover:shadow-md"
               >
-                <Heart className="w-5 h-5 text-[#FF91A4] transition-colors" />
+                <Heart className="w-5 h-5" />
               </motion.button>
               <div className="relative">
                 <motion.button
                   onClick={() => setShowMenu(!showMenu)}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="p-2.5 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] hover:from-[#FF91A4] hover:to-[#FF69B4] rounded-xl transition-all shadow-md hover:shadow-lg"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="p-3 bg-white border border-[#E0E0E0] text-[#616161] hover:border-[#64B5F6] rounded-xl transition-all shadow-sm hover:shadow-md"
                 >
-                  <MoreVertical className="w-5 h-5 text-[#FF91A4] transition-colors" />
+                  <MoreVertical className="w-5 h-5" />
                 </motion.button>
                 
                 {/* Dropdown Menu */}
@@ -279,16 +275,16 @@ export default function ChatDetailPage() {
                       initial={{ opacity: 0, y: -10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                      className="absolute right-0 top-full mt-2 w-56 bg-gradient-to-br from-white to-[#FFF0F5] rounded-2xl shadow-2xl border-2 border-[#FFB6C1]/30 overflow-hidden z-40"
+                      className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-[#E8E8E8] overflow-hidden z-40"
                     >
                       <button
                         onClick={() => {
                           setShowMenu(false);
                           navigate('/people', { state: { showUserId: profile.id } });
                         }}
-                        className="w-full px-4 py-3 text-left hover:bg-[#FFE4E1] transition-colors flex items-center gap-3 text-[#212121] border-b border-[#FFB6C1]/20"
+                        className="w-full px-4 py-3 text-left hover:bg-[#F5F5F5] transition-colors flex items-center gap-3 text-[#1A1A1A] border-b border-[#E8E8E8]"
                       >
-                        <User className="w-4 h-4 text-[#FF91A4]" />
+                        <User className="w-4 h-4 text-[#64B5F6]" />
                         <span className="text-sm font-medium">View Profile</span>
                       </button>
                       <button
@@ -296,9 +292,9 @@ export default function ChatDetailPage() {
                           setShowMenu(false);
                           setShowReportBlockModal(true);
                         }}
-                        className="w-full px-4 py-3 text-left hover:bg-[#FFE4E1] transition-colors flex items-center gap-3 text-[#212121]"
+                        className="w-full px-4 py-3 text-left hover:bg-[#F5F5F5] transition-colors flex items-center gap-3 text-[#1A1A1A]"
                       >
-                        <Shield className="w-4 h-4 text-[#FF91A4]" />
+                        <Shield className="w-4 h-4 text-[#64B5F6]" />
                         <span className="text-sm font-medium">Report & Block</span>
                       </button>
                     </motion.div>
@@ -340,11 +336,11 @@ export default function ChatDetailPage() {
                     >
                       {showAvatar ? (
                         <img
-                          src={profile.photos?.[0] || `https://ui-avatars.com/api/?name=${profile.name}&background=FF1744&color=fff&size=100`}
+                          src={profile.photos?.[0] || `https://ui-avatars.com/api/?name=${profile.name}&background=64B5F6&color=fff&size=100`}
                           alt={profile.name}
-                          className="w-full h-full rounded-full object-cover border-2 border-[#FFB6C1]/30 shadow-md"
+                          className="w-full h-full rounded-full object-cover border-2 border-[#E8E8E8] shadow-sm"
                           onError={(e) => {
-                            e.target.src = `https://ui-avatars.com/api/?name=${profile.name}&background=FF1744&color=fff&size=100`;
+                            e.target.src = `https://ui-avatars.com/api/?name=${profile.name}&background=64B5F6&color=fff&size=100`;
                           }}
                         />
                       ) : (
@@ -359,17 +355,17 @@ export default function ChatDetailPage() {
                       whileHover={{ scale: 1.02 }}
                       className={`px-4 py-3 rounded-2xl ${
                         message.isSent
-                          ? 'bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] text-white rounded-tr-sm shadow-lg'
-                          : 'bg-white text-[#212121] border-2 border-[#FFB6C1]/30 rounded-tl-sm shadow-md'
+                          ? 'bg-[#64B5F6] text-white rounded-tr-sm shadow-[0_4px_12px_rgba(100,181,246,0.3)]'
+                          : 'bg-white text-[#1A1A1A] border border-[#E8E8E8] rounded-tl-sm shadow-sm'
                       }`}
                     >
-                      <p className="text-sm sm:text-base leading-relaxed break-words">{message.text}</p>
+                      <p className="text-sm sm:text-base leading-relaxed break-words font-medium">{message.text}</p>
                     </motion.div>
                     {showTime && (
                       <motion.span
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className={`text-xs text-[#757575] mt-1.5 px-2 ${message.isSent ? 'text-right' : 'text-left'}`}
+                        className={`text-xs text-[#757575] mt-1.5 px-2 font-medium ${message.isSent ? 'text-right' : 'text-left'}`}
                       >
                         {formatTime(message.timestamp)}
                       </motion.span>
@@ -389,15 +385,15 @@ export default function ChatDetailPage() {
       </div>
 
       {/* Input Area - Fixed at Bottom */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-white via-white/98 to-white/95 backdrop-blur-lg border-t-2 border-[#FFB6C1]/30 shadow-2xl pb-4 sm:pb-3 pt-3">
+      <div className="fixed bottom-0 left-0 right-0 z-30 backdrop-blur-xl bg-white/80 border-t border-[#E0E0E0]/50 shadow-[0_-8px_32px_rgba(0,0,0,0.06)] pb-4 sm:pb-3 pt-3">
         <div className="max-w-2xl mx-auto px-4 py-2">
           <div className="flex items-end gap-3">
             <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="p-3 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] rounded-xl shadow-md hover:shadow-lg border border-[#FFB6C1]/30 flex-shrink-0"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-3 bg-white border border-[#E0E0E0] text-[#616161] hover:border-[#64B5F6] rounded-xl shadow-sm hover:shadow-md transition-all flex-shrink-0"
             >
-              <ImageIcon className="w-5 h-5 text-[#FF91A4]" />
+              <ImageIcon className="w-5 h-5" />
             </motion.button>
             <div className="flex-1 relative">
               <input
@@ -411,17 +407,17 @@ export default function ChatDetailPage() {
                   }
                 }}
                 placeholder="Type a message..."
-                className="w-full px-4 py-3.5 bg-gradient-to-br from-[#FFE4E1] to-[#FFF0F5] border-2 border-[#FFB6C1]/30 rounded-2xl text-[#212121] placeholder-[#757575] focus:outline-none focus:border-[#FF91A4] transition-all shadow-md"
+                className="w-full px-4 py-3.5 bg-white border border-[#E0E0E0] rounded-2xl text-[#1A1A1A] placeholder-[#757575] focus:outline-none focus:border-[#64B5F6] transition-all shadow-sm font-medium"
               />
             </div>
             <motion.button
               onClick={handleSendMessage}
               disabled={!newMessage.trim()}
-              whileHover={newMessage.trim() ? { scale: 1.1, rotate: 5 } : {}}
-              whileTap={newMessage.trim() ? { scale: 0.9 } : {}}
+              whileHover={newMessage.trim() ? { scale: 1.05 } : {}}
+              whileTap={newMessage.trim() ? { scale: 0.95 } : {}}
               className={`p-3.5 rounded-2xl transition-all flex-shrink-0 ${
                 newMessage.trim()
-                  ? 'bg-gradient-to-r from-[#FF91A4] to-[#FF69B4] text-white shadow-xl hover:shadow-2xl'
+                  ? 'bg-[#64B5F6] hover:bg-[#42A5F5] text-white shadow-[0_4px_16px_rgba(100,181,246,0.3)] hover:shadow-[0_8px_24px_rgba(100,181,246,0.4)]'
                   : 'bg-[#E0E0E0] text-[#757575] cursor-not-allowed'
               }`}
             >

@@ -66,7 +66,6 @@ const profileSchema = new mongoose.Schema({
     },
     max: {
       type: Number,
-      default: 100,
       max: 100
     }
   },
@@ -111,7 +110,7 @@ const profileSchema = new mongoose.Schema({
     },
     decision: {
       type: String,
-      enum: ['quick', 'thoughtful', 'decisive', 'indecisive', 'balanced', '']
+      enum: ['quick', 'thoughtful', 'decisive', 'indecisive', 'balanced', 'decision-maker', 'go-with-flow', '']
     },
     communication: {
       type: String,
@@ -123,19 +122,19 @@ const profileSchema = new mongoose.Schema({
   dealbreakers: {
     kids: {
       type: String,
-      enum: ['want-kids', 'dont-want-kids', 'have-kids', 'not-sure', '']
+      enum: ['want-kids', 'dont-want-kids', 'have-kids', 'not-sure', 'want', 'dont-want', 'have', 'open', '']
     },
     smoking: {
       type: String,
-      enum: ['non-smoker', 'social-smoker', 'smoker', 'prefer-non-smoker', '']
+      enum: ['non-smoker', 'social-smoker', 'smoker', 'prefer-non-smoker', 'yes', 'no', 'sometimes', '']
     },
     pets: {
       type: String,
-      enum: ['have-pets', 'love-pets', 'not-interested', '']
+      enum: ['have-pets', 'love-pets', 'not-interested', 'love', 'allergic', 'have', 'dont-like', '']
     },
     drinking: {
       type: String,
-      enum: ['never', 'occasionally', 'socially', 'regularly', '']
+      enum: ['never', 'occasionally', 'socially', 'regularly', 'yes', 'no', 'sometimes', '']
     },
     religion: {
       type: String,

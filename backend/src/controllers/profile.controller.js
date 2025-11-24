@@ -154,23 +154,53 @@ export const checkProfileCompletion = async (req, res) => {
         success: true,
         isComplete: false,
         hasBasicInfo: false,
-        missingFields: ['name', 'dob', 'gender', 'orientation', 'lookingFor', 'location', 'interests', 'personality', 'dealbreakers', 'photos', 'bio']
+        missingFields: ['basicInfo', 'location', 'preferences', 'interests', 'personality', 'dealbreakers', 'prompts', 'languages', 'photos']
       });
     }
 
     // Check basic info
     const hasBasicInfo = !!(profile.name && profile.dob && profile.gender && profile.orientation && profile.lookingFor && profile.lookingFor.length > 0);
 
-    // Check if profile is complete for swiping (needs location, preferences, interests, personality, dealbreakers, photos, bio)
+    // Check if profile is complete for swiping
+    // Mandatory: basic info, location, preferences, interests (3+), personality (all 8), dealbreakers (4 mandatory: kids, smoking, pets, drinking), prompts (3), languages (1+), photos (4)
+    // Optional: bio, religion, education, profession, horoscope
     const missingFields = [];
     
+    // Basic info (already checked above)
+    if (!hasBasicInfo) missingFields.push('basicInfo');
+    
+    // Location & Preferences
     if (!profile.location || !profile.location.city) missingFields.push('location');
     if (!profile.ageRange || !profile.ageRange.min || !profile.ageRange.max) missingFields.push('preferences');
+    
+    // Interests (minimum 3)
     if (!profile.interests || profile.interests.length < 3) missingFields.push('interests');
-    if (!profile.personality || Object.keys(profile.personality).length < 8) missingFields.push('personality');
-    if (!profile.dealbreakers || Object.keys(profile.dealbreakers).length < 4) missingFields.push('dealbreakers');
+    
+    // Personality (all 8 fields mandatory)
+    const personalityFields = ['social', 'planning', 'romantic', 'morning', 'homebody', 'serious', 'decision', 'communication'];
+    const personality = profile.personality || {};
+    const missingPersonalityFields = personalityFields.filter(field => !personality[field] || personality[field].trim() === '');
+    if (missingPersonalityFields.length > 0) missingFields.push('personality');
+    
+    // Dealbreakers (4 mandatory: kids, smoking, pets, drinking - religion is optional)
+    const dealbreakerFields = ['kids', 'smoking', 'pets', 'drinking'];
+    const dealbreakers = profile.dealbreakers || {};
+    const missingDealbreakerFields = dealbreakerFields.filter(field => !dealbreakers[field] || dealbreakers[field].trim() === '');
+    if (missingDealbreakerFields.length > 0) missingFields.push('dealbreakers');
+    
+    // Prompts (minimum 3 with answers)
+    const prompts = profile.optional?.prompts || [];
+    const validPrompts = prompts.filter(p => p.prompt && p.answer && p.answer.trim() !== '');
+    if (validPrompts.length < 3) missingFields.push('prompts');
+    
+    // Languages (mandatory - at least 1)
+    const languages = profile.optional?.languages || [];
+    if (languages.length === 0) missingFields.push('languages');
+    
+    // Photos (minimum 4)
     if (!profile.photos || profile.photos.length < 4) missingFields.push('photos');
-    if (!profile.bio || profile.bio.trim().length === 0) missingFields.push('bio');
+    
+    // Bio is optional - not checking
 
     const isComplete = missingFields.length === 0;
 
